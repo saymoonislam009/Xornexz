@@ -1,82 +1,90 @@
 export const dynamic = 'force-dynamic';
 import { prisma } from "@/lib/db";
-import Link from "next/link";
-import { User, Plus } from "lucide-react";
+import Image from "next/image";
+import { User, ShieldCheck } from "lucide-react";
+import StatusBadge from "@/components/admin/ui/StatusBadge";
 
 export const metadata = { title: "Users | Admin" };
 
 export default async function UsersPage() {
   const users = await prisma.user.findMany({
     orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      image: true,
+      role: true,
+      isActive: true,
+      lastLoginAt: true,
+      createdAt: true,
+    },
   });
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Users</h1>
-          <p className="text-muted-foreground mt-1">Manage team members and administrators.</p>
+          <h1 className="text-2xl font-bold text-white tracking-tight">System Users & Roles</h1>
+          <p className="text-gray-400 text-sm mt-1">
+            Authorized administrative accounts with role-based access control.
+          </p>
         </div>
-        <button className="bg-primary text-primary-foreground px-4 py-2 rounded-md flex items-center gap-2 hover:bg-primary/90 transition">
-          <Plus className="w-4 h-4" />
-          Invite User
-        </button>
       </div>
 
-      <div className="bg-card border border-border rounded-lg overflow-hidden">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-muted text-muted-foreground">
-            <tr>
-              <th className="px-4 py-3 font-medium">Name</th>
-              <th className="px-4 py-3 font-medium">Email</th>
-              <th className="px-4 py-3 font-medium">Role</th>
-              <th className="px-4 py-3 font-medium">Joined</th>
-              <th className="px-4 py-3 font-medium text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {users.map((user) => (
-              <tr key={user.id} className="hover:bg-muted/50 transition">
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                      {user.image ? (
-                        <img src={user.image} alt="" className="w-8 h-8 rounded-full object-cover" />
-                      ) : (
-                        <User className="w-4 h-4" />
-                      )}
-                    </div>
-                    <span className="font-medium text-foreground">{user.name || "Unnamed"}</span>
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">{user.email}</td>
-                <td className="px-4 py-3">
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground capitalize">
-                    {user.role}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-muted-foreground">
-                  {new Date(user.createdAt).toLocaleDateString()}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <Link
-                    href={`/admin/users/${user.id}`}
-                    className="text-sm font-medium text-primary hover:underline"
-                  >
-                    Edit
-                  </Link>
-                </td>
-              </tr>
-            ))}
-            {users.length === 0 && (
+      <div className="bg-[#0B0D14] border border-white/10 rounded-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-white/5 text-gray-400 font-medium border-b border-white/10">
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
-                  No users found.
-                </td>
+                <th className="px-6 py-3.5">User</th>
+                <th className="px-6 py-3.5">Email</th>
+                <th className="px-6 py-3.5">Role</th>
+                <th className="px-6 py-3.5">Status</th>
+                <th className="px-6 py-3.5">Last Active</th>
+                <th className="px-6 py-3.5">Joined</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-white/5 text-white/90">
+              {users.map((user) => (
+                <tr key={user.id} className="hover:bg-white/5 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center gap-3">
+                      <div className="relative w-8 h-8 rounded-full overflow-hidden bg-violet-600/15 border border-violet-500/20 flex items-center justify-center text-violet-400">
+                        {user.image ? (
+                          <Image src={user.image} alt={user.name || ""} fill className="object-cover" />
+                        ) : (
+                          <User size={15} />
+                        )}
+                      </div>
+                      <span className="font-medium text-white">{user.name || "Administrator"}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-gray-400 text-xs">
+                    {user.email}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-violet-600/15 text-violet-300 border border-violet-500/20">
+                      <ShieldCheck size={12} /> {user.role}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <StatusBadge
+                      status={user.isActive ? "Active" : "Disabled"}
+                      type={user.isActive ? "success" : "error"}
+                    />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-400">
+                    {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString() : "Never"}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-400">
+                    {new Date(user.createdAt).toLocaleDateString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

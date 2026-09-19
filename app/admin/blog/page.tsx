@@ -2,95 +2,128 @@ export const dynamic = 'force-dynamic';
 
 import { prisma } from "@/lib/db";
 import Link from "next/link";
+import Image from "next/image";
+import { Plus, Edit, ExternalLink, Calendar } from "lucide-react";
+import StatusBadge from "@/components/admin/ui/StatusBadge";
 
-
-
-export default async function BlogPage() {
+export default async function BlogAdminPage() {
   const posts = await prisma.blogPost.findMany({
     orderBy: { createdAt: "desc" },
-    include: { author: true },
+    include: {
+      author: {
+        select: { name: true, email: true },
+      },
+    },
   });
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Blog Posts</h1>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Blog Posts</h1>
+          <p className="text-gray-400 text-sm mt-1">
+            Manage articles, editorial scheduling, and technical publications.
+          </p>
+        </div>
         <Link
           href="/admin/blog/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400 text-white text-sm font-medium rounded-lg shadow-lg shadow-violet-500/20 transition-all"
         >
-          Add Post
+          <Plus size={16} /> New Article
         </Link>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Title
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Category
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Date
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {posts.map((post) => (
-              <tr key={post.id}>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    {post.coverImage && (
-                      <div className="flex-shrink-0 h-10 w-10 mr-4">
-                        <img className="h-10 w-10 rounded object-cover" src={post.coverImage} alt="" />
-                      </div>
-                    )}
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{post.title}</div>
-                      <div className="text-sm text-gray-500">{post.slug}</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    post.status === "PUBLISHED" ? "bg-green-100 text-green-800" :
-                    post.status === "SCHEDULED" ? "bg-blue-100 text-blue-800" :
-                    "bg-gray-100 text-gray-800"
-                  }`}>
-                    {post.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {post.category}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {new Date(post.createdAt).toLocaleDateString()}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <Link href={`/admin/blog/${post.id}/edit`} className="text-indigo-600 hover:text-indigo-900">
-                    Edit
-                  </Link>
-                </td>
-              </tr>
-            ))}
-            {posts.length === 0 && (
+      <div className="bg-[#0B0D14] border border-white/10 rounded-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-white/5 text-gray-400 font-medium border-b border-white/10">
               <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                  No posts found.
-                </td>
+                <th className="px-6 py-4">Article</th>
+                <th className="px-6 py-4">Category</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Author</th>
+                <th className="px-6 py-4">Date</th>
+                <th className="px-6 py-4 text-right">Actions</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-white/5 text-white/90">
+              {posts.map((post) => {
+                const statusType =
+                  post.status === "PUBLISHED"
+                    ? "success"
+                    : post.status === "SCHEDULED"
+                    ? "info"
+                    : "default";
+
+                return (
+                  <tr key={post.id} className="hover:bg-white/5 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        {post.coverImage ? (
+                          <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border border-white/10 bg-[#0E1018]">
+                            <Image
+                              src={post.coverImage}
+                              alt={post.title}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-12 h-12 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-gray-500 flex-shrink-0">
+                            <Calendar size={18} />
+                          </div>
+                        )}
+                        <div>
+                          <div className="font-medium text-white max-w-sm truncate">{post.title}</div>
+                          <div className="text-xs text-gray-500">/blog/{post.slug}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-400">
+                      <span className="px-2 py-0.5 rounded bg-white/5 text-xs text-gray-300">
+                        {post.category}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <StatusBadge status={post.status} type={statusType} />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-400 text-xs">
+                      {post.author?.name || "Team"}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-400 text-xs">
+                      {new Date(post.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <div className="flex items-center justify-end gap-3">
+                        <Link
+                          href={`/blog/${post.slug}`}
+                          target="_blank"
+                          className="text-gray-500 hover:text-white transition-colors"
+                          title="View on public site"
+                        >
+                          <ExternalLink size={16} />
+                        </Link>
+                        <Link
+                          href={`/admin/blog/${post.id}/edit`}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-white/5 hover:bg-violet-600/20 border border-white/10 hover:border-violet-500/30 text-xs font-medium text-gray-300 hover:text-violet-300 transition-all"
+                        >
+                          <Edit size={13} /> Edit
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+              {posts.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                    No articles found. Click "New Article" to create one.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

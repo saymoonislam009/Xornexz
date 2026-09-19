@@ -1,6 +1,7 @@
 import { requireRole, isAuthError } from '@/lib/requireRole'
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 
 
 export async function POST(req: Request) {
@@ -41,6 +42,7 @@ export async function POST(req: Request) {
       },
     });
 
+    revalidateTag('blog');
     return NextResponse.json(post);
   } catch (error: any) {
     console.error("Error creating blog post:", error);

@@ -1,6 +1,7 @@
 import { requireRole, isAuthError } from '@/lib/requireRole'
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { revalidateTag } from "next/cache";
 
 export async function GET(req: NextRequest) {
   const auth = await requireRole('VIEWER')
@@ -58,6 +59,7 @@ export async function PUT(req: NextRequest) {
       create: { id: "default", ...parsed.data },
     });
 
+    revalidateTag('site-settings');
     return NextResponse.json(settings);
   } catch (error) {
     return NextResponse.json({ error: "Failed to update settings" }, { status: 500 });

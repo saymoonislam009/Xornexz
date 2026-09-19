@@ -1,6 +1,7 @@
 import { requireRole, isAuthError } from '@/lib/requireRole'
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -28,6 +29,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       data: dataToUpdate,
     });
 
+    revalidateTag('blog');
     return NextResponse.json(post);
   } catch (error: any) {
     console.error("Error updating blog post:", error);
@@ -44,6 +46,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     await prisma.blogPost.delete({
       where: { id },
     });
+    revalidateTag('blog');
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error("Error deleting blog post:", error);
