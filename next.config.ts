@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 import withBundleAnalyzer from "@next/bundle-analyzer";
 
+const mediaHostname = process.env.NEXT_PUBLIC_MEDIA_HOSTNAME?.trim() || "media.xornexz.com";
+
 const nextConfig: NextConfig = {
   // TypeScript and ESLint errors MUST fail the build
   typescript: { ignoreBuildErrors: false },
@@ -12,17 +14,18 @@ const nextConfig: NextConfig = {
 
   images: {
     // Vercel Image Optimization not used for R2 (already WebP/sized client-side)
-    // Still declare remotePatterns for any next/image usage
     remotePatterns: [
-      // Cloudflare R2 via custom media domain
       {
-        protocol: "https",
-        hostname: process.env.NEXT_PUBLIC_MEDIA_HOSTNAME ?? "media.xornexz.com",
+        protocol: "https" as const,
+        hostname: mediaHostname,
       },
-      // Allow unsplash for placeholder images during development
       {
-        protocol: "https",
+        protocol: "https" as const,
         hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https" as const,
+        hostname: "*.r2.cloudflarestorage.com",
       },
     ],
     formats: ["image/avif", "image/webp"],
@@ -32,8 +35,8 @@ const nextConfig: NextConfig = {
   async headers() {
     const cspDirectives = [
       "default-src 'self'",
-      `img-src 'self' data: blob: https://${process.env.NEXT_PUBLIC_MEDIA_HOSTNAME ?? "media.xornexz.com"} https://images.unsplash.com`,
-      `media-src 'self' https://${process.env.NEXT_PUBLIC_MEDIA_HOSTNAME ?? "media.xornexz.com"}`,
+      `img-src 'self' data: blob: https://${mediaHostname} https://images.unsplash.com`,
+      `media-src 'self' https://${mediaHostname}`,
       "font-src 'self' https://fonts.gstatic.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       // Three.js needs unsafe-eval in dev; in prod use strict-dynamic
