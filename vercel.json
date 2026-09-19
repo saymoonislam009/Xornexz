@@ -1,0 +1,10 @@
+{
+  "buildCommand": "prisma generate && prisma migrate deploy && next build",
+  "crons": [
+    {
+      "path": "/api/cron/publish",
+      "schedule": "*/5 * * * *"
+    }
+  ],
+  "regions": ["iad1"]
+}
