@@ -3,8 +3,6 @@ import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 const ContactSchema = z.object({
   name: z.string().min(1).max(100),
   email: z.string().email().max(200),
@@ -69,6 +67,7 @@ export async function POST(req: NextRequest) {
 
     // Send email via Resend — all user input HTML-escaped
     if (process.env.RESEND_API_KEY) {
+      const resend = new Resend(process.env.RESEND_API_KEY)
       await resend.emails.send({
         from: `${process.env.RESEND_FROM_NAME ?? 'Xornexz'} <${process.env.RESEND_FROM_EMAIL ?? 'hello@xornexz.com'}>`,
         to: [process.env.RESEND_FROM_EMAIL ?? 'hello@xornexz.com'],

@@ -3,8 +3,6 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { z } from "zod";
 
-const resend = new Resend(process.env.RESEND_API_KEY || "re_dummy");
-
 const estimatorSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email("Invalid email address"),
@@ -54,6 +52,7 @@ export async function POST(req: Request) {
 
     // Send email notification
     if (process.env.RESEND_API_KEY) {
+      const resend = new Resend(process.env.RESEND_API_KEY);
       await resend.emails.send({
         from: "Xornexz Estimator <estimator@xornexz.com>",
         to: ["admin@xornexz.com", validatedData.email],
