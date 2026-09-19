@@ -3,8 +3,29 @@ import { SERVICES_DATA as services } from '@/lib/data/services';
 import { PROJECTS_DATA as projects } from '@/lib/data/projects';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { CheckCircle2, ArrowRight } from 'lucide-react';
+import { 
+  CheckCircle2, 
+  ArrowRight,
+  Globe, 
+  Smartphone, 
+  Cloud, 
+  Layers, 
+  Cpu, 
+  Plug, 
+  Code,
+  type LucideIcon 
+} from 'lucide-react';
 import type { Metadata } from 'next';
+
+const iconMap: Record<string, LucideIcon> = {
+  Globe,
+  Smartphone,
+  Cloud,
+  Layers,
+  Cpu,
+  Plug,
+  Code,
+};
 
 export function generateStaticParams() {
   return services.map((service) => ({
@@ -31,7 +52,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
     notFound();
   }
 
-  const Icon = service.icon;
+  const Icon = iconMap[service.icon] || Globe;
   // Get a few sample projects related to this service
   const relatedProjects = projects.slice(0, 2);
 
@@ -40,7 +61,6 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
       {/* Hero */}
       <section className="px-6 md:px-12 max-w-5xl mx-auto mb-24">
         <div className="w-20 h-20 bg-gradient-to-br from-violet-500/20 to-cyan-500/20 rounded-3xl flex items-center justify-center mb-8 border border-white/10">
-          {/* @ts-ignore */}
           <Icon className="w-10 h-10 text-cyan-400" />
         </div>
         <h1 className="text-4xl md:text-6xl font-display font-bold mb-6 tracking-tight">

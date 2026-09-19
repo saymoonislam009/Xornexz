@@ -1,5 +1,5 @@
 {
-  "buildCommand": "prisma generate && (prisma migrate deploy || true) && next build",
+  "buildCommand": "prisma generate && (if [ -n \"$DATABASE_URL\" ]; then prisma migrate deploy; fi || true) && next build",
   "crons": [
     {
       "path": "/api/cron/publish",

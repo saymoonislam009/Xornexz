@@ -3,7 +3,27 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { SERVICES_DATA as services } from '@/lib/data/services';
-import { ArrowRight } from 'lucide-react';
+import { 
+  ArrowRight,
+  Globe, 
+  Smartphone, 
+  Cloud, 
+  Layers, 
+  Cpu, 
+  Plug, 
+  Code,
+  type LucideIcon 
+} from 'lucide-react';
+
+const iconMap: Record<string, LucideIcon> = {
+  Globe,
+  Smartphone,
+  Cloud,
+  Layers,
+  Cpu,
+  Plug,
+  Code,
+};
 
 export default function ServicesPage() {
   return (
@@ -32,7 +52,7 @@ export default function ServicesPage() {
       <section className="px-6 md:px-12 max-w-7xl mx-auto mb-32">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service, index) => {
-            const Icon = service.icon;
+            const Icon = iconMap[service.icon] || Globe;
             return (
               <motion.div
                 key={service.slug}
@@ -47,7 +67,6 @@ export default function ServicesPage() {
                   <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-500/10 to-transparent rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
                   
                   <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                    {/* @ts-ignore */}
                     <Icon className="w-7 h-7 text-cyan-400" />
                   </div>
                   
