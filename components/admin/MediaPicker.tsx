@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { UploadCloud, X, FileImage } from "lucide-react";
+import { UploadCloud, X } from "lucide-react";
 import Image from "next/image";
 
 interface MediaPickerProps {
@@ -52,7 +52,6 @@ export default function MediaPicker({
         canvas.toBlob(
           (blob) => {
             if (!blob) return reject(new Error("Canvas toBlob failed"));
-            // Create a new File object with the original name but .webp extension
             const originalName = file.name.substring(0, file.name.lastIndexOf("."));
             const webpFile = new File([blob], `${originalName || "image"}.webp`, {
               type: "image/webp",
@@ -61,7 +60,7 @@ export default function MediaPicker({
             resolve(webpFile);
           },
           "image/webp",
-          0.85 // quality
+          0.85
         );
       };
 
@@ -80,19 +79,16 @@ export default function MediaPicker({
     setProgress(0);
 
     try {
-      // Basic validation
       if (!rawFile.type.startsWith("image/")) {
         throw new Error("Only image files are allowed");
       }
 
-      // 1. Convert to WebP and resize
       const fileToUpload = await convertToWebP(rawFile);
 
       if (fileToUpload.size > maxSizeMB * 1024 * 1024) {
         throw new Error(`File is too large (max ${maxSizeMB}MB)`);
       }
 
-      // 2. Fetch presigned URL
       const presignRes = await fetch("/api/admin/media/presign", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -110,7 +106,6 @@ export default function MediaPicker({
 
       const { url, key } = await presignRes.json();
 
-      // 3. Upload directly to R2 via XHR to track progress
       await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhr.open("PUT", url, true);
@@ -135,7 +130,6 @@ export default function MediaPicker({
         xhr.send(fileToUpload);
       });
 
-      // 4. Confirm upload and save to DB
       const completeRes = await fetch("/api/admin/media/complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -148,12 +142,11 @@ export default function MediaPicker({
       }
 
       const { media } = await completeRes.json();
-      
-      // Update UI with the final URL
       onChange(media.url);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "An unexpected error occurred";
       console.error("Upload error:", err);
-      setError(err.message || "An unexpected error occurred");
+      setError(message);
     } finally {
       setIsUploading(false);
       setProgress(0);
@@ -222,7 +215,6 @@ export default function MediaPicker({
             onChange={(e) => {
               if (e.target.files && e.target.files[0]) {
                 handleUpload(e.target.files[0]);
-                // Reset input so the same file can be selected again if needed
                 e.target.value = "";
               }
             }}

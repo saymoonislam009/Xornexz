@@ -37,7 +37,21 @@ const serviceSchema = z.object({
 type ServiceFormValues = z.infer<typeof serviceSchema>;
 
 interface ServiceFormProps {
-  initialData?: any;
+  initialData?: {
+    id: string;
+    title: string;
+    slug: string;
+    tagline: string;
+    description: string;
+    icon: string;
+    features?: string[];
+    deliverables?: string[];
+    techStack?: string[];
+    order?: number;
+    isActive?: boolean;
+    metaTitle?: string | null;
+    metaDescription?: string | null;
+  };
 }
 
 export default function ServiceForm({ initialData }: ServiceFormProps) {
@@ -97,8 +111,9 @@ export default function ServiceForm({ initialData }: ServiceFormProps) {
 
       router.push("/admin/services");
       router.refresh();
-    } catch (err: any) {
-      alert(err.message || "Failed to save service");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to save service";
+      alert(message);
     } finally {
       setLoading(false);
     }
@@ -112,8 +127,9 @@ export default function ServiceForm({ initialData }: ServiceFormProps) {
       if (!res.ok) throw new Error(await res.text());
       router.push("/admin/services");
       router.refresh();
-    } catch (err: any) {
-      alert(err.message || "Failed to delete service");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to delete service";
+      alert(message);
       setLoading(false);
     }
   };

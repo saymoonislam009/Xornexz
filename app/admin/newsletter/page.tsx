@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Mail, Trash2, Download, Users } from "lucide-react";
+import { Trash2, Download, Users } from "lucide-react";
 import StatusBadge from "@/components/admin/ui/StatusBadge";
 
 interface Subscriber {

@@ -12,7 +12,7 @@ import {
   BarChart,
   Bar,
 } from "recharts";
-import { Users, FileText, CheckCircle, TrendingUp, ArrowUpRight, Plus, ExternalLink, Briefcase, Mail } from "lucide-react";
+import { Users, FileText, CheckCircle, TrendingUp, ArrowUpRight, Plus, Briefcase } from "lucide-react";
 import Link from "next/link";
 import StatusBadge from "@/components/admin/ui/StatusBadge";
 

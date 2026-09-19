@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Plus, Edit, ExternalLink, Code, Smartphone, Cloud, Brain, Shield, Cpu, Layers, Palette } from "lucide-react";
 import StatusBadge from "@/components/admin/ui/StatusBadge";
 
-const ICON_MAP: Record<string, any> = {
+const ICON_MAP: Record<string, React.ComponentType<{ size?: number }>> = {
   Code,
   Smartphone,
   Cloud,
@@ -100,7 +100,7 @@ export default async function ServicesAdminPage() {
               {services.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                    No services configured. Click "Add Service" to create one.
+                    No services configured. Click &quot;Add Service&quot; to create one.
                   </td>
                 </tr>
               )}

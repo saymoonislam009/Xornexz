@@ -21,7 +21,7 @@ export default function SettingsPage() {
       .catch(() => setIsLoading(false));
   }, [reset]);
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: Record<string, unknown>) => {
     setIsSaving(true);
     setSaved(false);
     try {
@@ -33,8 +33,9 @@ export default function SettingsPage() {
       if (!res.ok) throw new Error("Failed to save settings");
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-    } catch (err: any) {
-      alert(err.message || "Failed to update settings");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to update settings";
+      alert(message);
     } finally {
       setIsSaving(false);
     }

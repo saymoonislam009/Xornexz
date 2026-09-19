@@ -117,7 +117,7 @@ export default async function BlogAdminPage() {
               {posts.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                    No articles found. Click "New Article" to create one.
+                    No articles found. Click &quot;New Article&quot; to create one.
                   </td>
                 </tr>
               )}

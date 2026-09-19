@@ -97,8 +97,9 @@ export default function BlogForm({ initialData }: BlogFormProps) {
 
       router.push("/admin/blog");
       router.refresh();
-    } catch (error: any) {
-      alert("Error: " + (error.message || "Failed to save post"));
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to save post";
+      alert("Error: " + message);
     } finally {
       setLoading(false);
     }
@@ -112,8 +113,9 @@ export default function BlogForm({ initialData }: BlogFormProps) {
       if (!res.ok) throw new Error(await res.text());
       router.push("/admin/blog");
       router.refresh();
-    } catch (error: any) {
-      alert("Error: " + error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to delete post";
+      alert("Error: " + message);
       setLoading(false);
     }
   };

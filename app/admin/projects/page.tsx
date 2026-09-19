@@ -112,7 +112,7 @@ export default async function ProjectsAdminPage() {
               {projects.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                    No projects found. Click "Add Project" to showcase work.
+                    No projects found. Click &quot;Add Project&quot; to showcase work.
                   </td>
                 </tr>
               )}

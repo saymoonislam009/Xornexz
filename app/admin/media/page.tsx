@@ -52,7 +52,7 @@ export default function MediaPage() {
       if (!res.ok) throw new Error("Delete failed");
       setSelectedMedia(null);
       fetchMedia();
-    } catch (err) {
+    } catch (_err) {
       alert("Failed to delete media item");
     } finally {
       setIsDeleting(false);

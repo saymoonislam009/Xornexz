@@ -68,8 +68,9 @@ export default function HomepageEditorPage() {
       if (!res.ok) throw new Error("Failed to save homepage layout");
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-    } catch (err: any) {
-      alert(err.message || "Failed to save homepage layout");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to save homepage layout";
+      alert(message);
     } finally {
       setSaving(false);
     }
