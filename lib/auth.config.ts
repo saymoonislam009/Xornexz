@@ -9,7 +9,9 @@ export const authConfig: NextAuthConfig = {
       const isLoggedIn = !!auth?.user
       const isAuthRoute =
         nextUrl.pathname.startsWith('/admin/login') ||
-        nextUrl.pathname.startsWith('/api/admin/auth')
+        nextUrl.pathname.startsWith('/admin/gate') ||
+        nextUrl.pathname.startsWith('/api/admin/auth') ||
+        nextUrl.pathname.startsWith('/api/admin-gate')
       const isAdminRoute =
         nextUrl.pathname.startsWith('/admin') ||
         nextUrl.pathname.startsWith('/api/admin')
