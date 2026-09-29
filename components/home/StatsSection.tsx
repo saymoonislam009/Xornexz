@@ -42,12 +42,12 @@ function StatItem({ end, suffix = "", label, duration = 2000 }: StatItemProps) {
   }, [inView, end, duration]);
 
   return (
-    <div ref={ref} className="flex flex-col items-center justify-center p-6 md:p-8 border border-white/5 bg-white/[0.02] rounded-2xl relative overflow-hidden group hover:bg-white/[0.04] transition-colors">
+    <div ref={ref} className="flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 border border-white/5 bg-white/[0.02] rounded-2xl relative overflow-hidden group hover:bg-white/[0.04] transition-colors">
       <div className="absolute inset-0 bg-gradient-to-br from-violet-600/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      <div className="text-4xl md:text-5xl lg:text-6xl font-bold font-display text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400 mb-2">
+      <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold font-display text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400 mb-1.5 sm:mb-2">
         {count}{suffix}
       </div>
-      <div className="text-xs md:text-sm lg:text-base text-gray-400 font-medium tracking-wider uppercase text-center">
+      <div className="text-[11px] sm:text-xs md:text-sm lg:text-base text-gray-400 font-medium tracking-wider uppercase text-center leading-tight">
         {label}
       </div>
     </div>
@@ -56,9 +56,9 @@ function StatItem({ end, suffix = "", label, duration = 2000 }: StatItemProps) {
 
 export default function StatsSection() {
   return (
-    <section className="py-24 bg-[#05060A] relative border-t border-white/5">
+    <section className="py-16 sm:py-24 bg-[#05060A] relative border-t border-white/5">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
           <StatItem end={120} suffix="+" label="Projects Delivered" />
           <StatItem end={98} suffix="%" label="Client Satisfaction" />
           <StatItem end={7} suffix="+" label="Years Building" />

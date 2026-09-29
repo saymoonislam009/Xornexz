@@ -8,21 +8,29 @@ export function CookieConsent() {
   const [show, setShow] = useState(false)
 
   useEffect(() => {
-    const consent = localStorage.getItem("cookie-consent")
-    if (!consent) {
-      // Delay showing the banner slightly for better UX
-      const timer = setTimeout(() => setShow(true), 1500)
-      return () => clearTimeout(timer)
+    try {
+      const consent = localStorage.getItem("cookie-consent")
+      if (!consent) {
+        // Delay showing the banner slightly for better UX
+        const timer = setTimeout(() => setShow(true), 1500)
+        return () => clearTimeout(timer)
+      }
+    } catch {
+      // In private mode or restricted contexts
     }
   }, [])
 
   const handleAccept = () => {
-    localStorage.setItem("cookie-consent", "accepted")
+    try {
+      localStorage.setItem("cookie-consent", "accepted")
+    } catch {}
     setShow(false)
   }
 
   const handleReject = () => {
-    localStorage.setItem("cookie-consent", "rejected")
+    try {
+      localStorage.setItem("cookie-consent", "rejected")
+    } catch {}
     setShow(false)
   }
 

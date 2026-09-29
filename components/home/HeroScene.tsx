@@ -41,102 +41,108 @@ export default function HeroScene() {
     const init = () => {
       if (stopped) return;
 
-      // Cap DPR at 1.5, disable antialias at high DPR
-      const dpr = Math.min(window.devicePixelRatio, 1.5);
+      try {
+        // Cap DPR at 1.5, disable antialias at high DPR
+        const dpr = Math.min(window.devicePixelRatio, 1.5);
 
-      const renderer = new WebGLRenderer({
-        alpha: true,
-        antialias: dpr <= 1,
-        powerPreference: "high-performance",
-      });
-      renderer.setPixelRatio(dpr);
-      renderer.setSize(container.clientWidth, container.clientHeight);
-      renderer.setClearColor(0x000000, 0);
-      container.appendChild(renderer.domElement);
-
-      const scene = new Scene();
-      const camera = new PerspectiveCamera(
-        45,
-        container.clientWidth / container.clientHeight,
-        0.1,
-        100
-      );
-      camera.position.set(0, 0, 7);
-
-      // Detail 2 instead of 4 — same visual, 60% less geometry
-      const geo = new EdgesGeometry(new IcosahedronGeometry(2.5, 2));
-      const mat = new LineBasicMaterial({
-        color: new Color("#7C3AED"),
-        transparent: true,
-        opacity: 0.5,
-      });
-      const mesh = new LineSegments(geo, mat);
-      scene.add(mesh);
-
-      let mouseX = 0,
-        mouseY = 0,
-        targetX = 0,
-        targetY = 0;
-      const onMouseMove = (e: MouseEvent) => {
-        mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-        mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
-      };
-      window.addEventListener("mousemove", onMouseMove, { passive: true });
-
-      const onResize = () => {
-        camera.aspect = container.clientWidth / container.clientHeight;
-        camera.updateProjectionMatrix();
+        const renderer = new WebGLRenderer({
+          alpha: true,
+          antialias: dpr <= 1,
+          powerPreference: "high-performance",
+        });
+        renderer.setPixelRatio(dpr);
         renderer.setSize(container.clientWidth, container.clientHeight);
-      };
-      window.addEventListener("resize", onResize, { passive: true });
+        renderer.setClearColor(0x000000, 0);
+        container.appendChild(renderer.domElement);
 
-      // Pause when off-screen
-      let isVisible = true;
-      const observer = new IntersectionObserver(
-        ([entry]) => { isVisible = entry.isIntersecting; },
-        { threshold: 0.1 }
-      );
-      observer.observe(container);
+        const scene = new Scene();
+        const camera = new PerspectiveCamera(
+          45,
+          container.clientWidth / container.clientHeight,
+          0.1,
+          100
+        );
+        camera.position.set(0, 0, 7);
 
-      // Pause when tab hidden
-      let isTabActive = true;
-      const onVisibility = () => { isTabActive = document.visibilityState === "visible"; };
-      document.addEventListener("visibilitychange", onVisibility);
+        // Detail 2 instead of 4 — same visual, 60% less geometry
+        const geo = new EdgesGeometry(new IcosahedronGeometry(2.5, 2));
+        const mat = new LineBasicMaterial({
+          color: new Color("#7C3AED"),
+          transparent: true,
+          opacity: 0.5,
+        });
+        const mesh = new LineSegments(geo, mat);
+        scene.add(mesh);
 
-      let t = 0;
-      const animate = () => {
-        rafId = requestAnimationFrame(animate);
-        if (!isVisible || !isTabActive) return;
+        let mouseX = 0,
+          mouseY = 0,
+          targetX = 0,
+          targetY = 0;
+        const onMouseMove = (e: MouseEvent) => {
+          mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+          mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+        };
+        window.addEventListener("mousemove", onMouseMove, { passive: true });
 
-        t += 0.008;
-        targetX = MathUtils.lerp(targetX, mouseX * 0.4, 0.05);
-        targetY = MathUtils.lerp(targetY, mouseY * 0.4, 0.05);
-        mesh.rotation.y = t + targetX;
-        mesh.rotation.x = targetY * 0.5;
-        mesh.position.y = Math.sin(t * 0.6) * 0.18;
+        const onResize = () => {
+          if (!container) return;
+          camera.aspect = container.clientWidth / container.clientHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(container.clientWidth, container.clientHeight);
+        };
+        window.addEventListener("resize", onResize, { passive: true });
 
-        // Pulse between violet and cyan
-        const pulse = (Math.sin(t * 0.8) + 1) / 2;
-        mat.color.lerpColors(new Color("#7C3AED"), new Color("#06B6D4"), pulse);
-        mat.opacity = 0.35 + pulse * 0.15;
+        // Pause when off-screen
+        let isVisible = true;
+        const observer = new IntersectionObserver(
+          ([entry]) => { isVisible = entry.isIntersecting; },
+          { threshold: 0.1 }
+        );
+        observer.observe(container);
 
-        renderer.render(scene, camera);
-      };
-      animate();
+        // Pause when tab hidden
+        let isTabActive = true;
+        const onVisibility = () => { isTabActive = document.visibilityState === "visible"; };
+        document.addEventListener("visibilitychange", onVisibility);
 
-      cleanup = () => {
-        cancelAnimationFrame(rafId);
-        observer.disconnect();
-        window.removeEventListener("mousemove", onMouseMove);
-        window.removeEventListener("resize", onResize);
-        document.removeEventListener("visibilitychange", onVisibility);
-        geo.dispose();
-        mat.dispose();
-        renderer.dispose();
-        if (container.contains(renderer.domElement)) {
-          container.removeChild(renderer.domElement);
-        }
-      };
+        let t = 0;
+        const animate = () => {
+          rafId = requestAnimationFrame(animate);
+          if (!isVisible || !isTabActive) return;
+
+          t += 0.008;
+          targetX = MathUtils.lerp(targetX, mouseX * 0.4, 0.05);
+          targetY = MathUtils.lerp(targetY, mouseY * 0.4, 0.05);
+          mesh.rotation.y = t + targetX;
+          mesh.rotation.x = targetY * 0.5;
+          mesh.position.y = Math.sin(t * 0.6) * 0.18;
+
+          // Pulse between violet and cyan
+          const pulse = (Math.sin(t * 0.8) + 1) / 2;
+          mat.color.lerpColors(new Color("#7C3AED"), new Color("#06B6D4"), pulse);
+          mat.opacity = 0.35 + pulse * 0.15;
+
+          renderer.render(scene, camera);
+        };
+        animate();
+
+        cleanup = () => {
+          cancelAnimationFrame(rafId);
+          observer.disconnect();
+          window.removeEventListener("mousemove", onMouseMove);
+          window.removeEventListener("resize", onResize);
+          document.removeEventListener("visibilitychange", onVisibility);
+          geo.dispose();
+          mat.dispose();
+          renderer.dispose();
+          if (container.contains(renderer.domElement)) {
+            container.removeChild(renderer.domElement);
+          }
+        };
+      } catch (e) {
+        // Fall back gracefully to CSS gradient when WebGL fails or context is lost
+        console.warn("HeroScene WebGL unavailable:", e);
+      }
     };
 
     // Defer until after first paint

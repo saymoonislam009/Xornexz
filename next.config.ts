@@ -86,6 +86,8 @@ const nextConfig: NextConfig = {
       { source: "/cookies", destination: "/legal/cookies", permanent: true },
       { source: "/work", destination: "/portfolio", permanent: true },
       { source: "/work/:slug*", destination: "/portfolio/:slug*", permanent: true },
+      { source: "/services/saas", destination: "/services/saas-software", permanent: true },
+      { source: "/services/maintenance", destination: "/services/maintenance-support", permanent: true },
     ];
   },
 };

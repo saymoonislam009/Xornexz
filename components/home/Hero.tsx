@@ -65,7 +65,7 @@ export default function Hero() {
             <motion.span
               variants={child}
               key={index}
-              className="mr-3 lg:mr-5 text-5xl md:text-7xl lg:text-8xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-white/70 font-display pb-2"
+              className="mr-2 sm:mr-3 lg:mr-5 text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white via-white to-white/70 font-display pb-2"
             >
               {word}
             </motion.span>
@@ -76,7 +76,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1, duration: 0.8 }}
-          className="max-w-2xl text-lg md:text-xl text-gray-400 mb-10 font-light"
+          className="max-w-2xl text-base sm:text-lg md:text-xl text-gray-400 mb-8 sm:mb-10 font-light px-2"
         >
           Xornexz designs and builds websites, web apps, SaaS platforms, and AI-powered systems that make your competitors sweat.
         </motion.p>
@@ -85,18 +85,18 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.2, duration: 0.8 }}
-          className="flex flex-col sm:flex-row gap-4 items-center"
+          className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center w-full sm:w-auto max-w-xs sm:max-w-none"
         >
           <Link
             href="/contact"
-            className="group relative inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-cyan-500 px-8 py-4 text-sm font-semibold text-white shadow-lg transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(124,58,237,0.3)]"
+            className="group relative inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-cyan-500 px-8 py-4 text-sm font-semibold text-white shadow-lg transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(124,58,237,0.3)]"
           >
             Start a Project
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
           <Link
             href="/portfolio"
-            className="group inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-8 py-4 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/10"
+            className="group inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-8 py-4 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/10"
           >
             See Our Work
           </Link>

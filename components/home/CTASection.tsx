@@ -42,7 +42,7 @@ export default function CTASection() {
             Currently accepting new projects
           </motion.div>
 
-          <h2 className="text-5xl md:text-6xl lg:text-7xl font-bold font-display text-white mb-6 leading-tight tracking-tight">
+          <h2 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold font-display text-white mb-4 sm:mb-6 leading-tight tracking-tight">
             Ready to Build{" "}
             <br className="hidden md:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-purple-400 to-cyan-400">
@@ -50,7 +50,7 @@ export default function CTASection() {
             </span>
           </h2>
 
-          <p className="text-lg md:text-xl text-gray-400 mb-12 font-light max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-gray-400 mb-8 sm:mb-12 font-light max-w-2xl mx-auto leading-relaxed px-2">
             Let&apos;s turn your ambitious vision into an exceptional digital reality.
             Our team is ready when you are.
           </p>

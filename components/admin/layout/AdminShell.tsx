@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Session } from "next-auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -65,10 +65,12 @@ function SidebarContent({
   collapsed,
   pathname,
   session,
+  onLinkClick,
 }: {
   collapsed: boolean;
   pathname: string;
   session: Session;
+  onLinkClick?: () => void;
 }) {
   return (
     <div className="flex flex-col h-full">
@@ -98,6 +100,7 @@ function SidebarContent({
                   <li key={item.href}>
                     <Link
                       href={item.href}
+                      onClick={onLinkClick}
                       className={`flex items-center gap-3 px-2 py-2 rounded-lg text-sm font-medium transition-all duration-150 group
                         ${active
                           ? "bg-violet-600/15 text-violet-300 border border-violet-500/20"
@@ -156,6 +159,10 @@ export default function AdminShell({ children, session }: Props) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
   // Derive page title from pathname
   const currentItem = NAV_GROUPS.flatMap((g) => g.items).find(
     (item) => pathname === item.href || pathname.startsWith(item.href + "/")
@@ -185,7 +192,7 @@ export default function AdminShell({ children, session }: Props) {
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <SidebarContent collapsed={false} pathname={pathname} session={session} />
+        <SidebarContent collapsed={false} pathname={pathname} session={session} onLinkClick={() => setMobileOpen(false)} />
       </aside>
 
       {/* Main */}

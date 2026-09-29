@@ -23,7 +23,7 @@ const services = [
     title: "SaaS & Custom Software",
     description: "End-to-end bespoke software solutions tailored to your business needs.",
     icon: Cloud,
-    slug: "saas",
+    slug: "saas-software",
     className: "md:col-span-1 md:row-span-1",
   },
   {
@@ -51,7 +51,7 @@ const services = [
     title: "Maintenance & Support",
     description: "Ongoing technical support to keep your products running smoothly.",
     icon: Wrench,
-    slug: "maintenance",
+    slug: "maintenance-support",
     className: "md:col-span-2 md:row-span-1",
   },
 ];
@@ -121,7 +121,7 @@ function ServiceCard({ service }: { service: typeof services[0] }) {
           {service.description}
         </p>
         
-        <div className="mt-auto flex items-center text-sm font-semibold text-violet-400 opacity-0 transform translate-y-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">
+        <div className="mt-auto flex items-center text-sm font-semibold text-violet-400 opacity-100 md:opacity-0 md:group-hover:opacity-100 transform translate-y-0 md:translate-y-4 md:group-hover:translate-y-0 transition-all duration-300">
           Explore {service.title}
           <ArrowRight className="ml-2 h-4 w-4" />
         </div>
@@ -132,13 +132,13 @@ function ServiceCard({ service }: { service: typeof services[0] }) {
 
 export default function ServicesSection() {
   return (
-    <section className="py-32 bg-[#05060A] relative" id="services">
+    <section className="py-20 sm:py-32 bg-[#05060A] relative" id="services">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="mb-16 text-center">
-          <h2 className="mb-4 text-4xl md:text-5xl font-bold font-display text-white">
+        <div className="mb-12 sm:mb-16 text-center">
+          <h2 className="mb-3 sm:mb-4 text-3xl sm:text-4xl md:text-5xl font-bold font-display text-white">
             What We Build
           </h2>
-          <p className="mx-auto max-w-2xl text-lg text-gray-400">
+          <p className="mx-auto max-w-2xl text-base sm:text-lg text-gray-400 px-2">
             End-to-end digital product creation, from strategic discovery to flawless execution and continuous scale.
           </p>
         </div>

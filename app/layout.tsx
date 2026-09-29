@@ -1,14 +1,20 @@
 import "./globals.css"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Space_Grotesk, Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/providers/ThemeProvider"
 import { LenisProvider } from "@/components/providers/LenisProvider"
-import { CustomCursor } from "@/components/ui/CustomCursor"
 import { CommandPalette } from "@/components/ui/CommandPalette"
 import { CookieConsent } from "@/components/ui/CookieConsent"
 import { Toaster } from "sonner"
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#05060A",
+}
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -65,8 +71,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           <LenisProvider>
-            {/* Custom cursor — desktop only, hidden on touch */}
-            <CustomCursor />
             {/* Cmd+K command palette */}
             <CommandPalette />
 

@@ -85,14 +85,6 @@
   body {
     @apply bg-background text-foreground;
     overflow-x: hidden;
-    cursor: none; /* Replaced by custom cursor */
-  }
-
-  /* Restore cursor for touch/mobile where custom cursor doesn't apply */
-  @media (hover: none) {
-    body {
-      cursor: auto;
-    }
   }
 
   /* ── Typography defaults ──────────────────────────────────────────────── */
@@ -313,13 +305,6 @@
     flex-direction: column;
   }
 
-  /* Custom cursor */
-  .cursor {
-    position: fixed;
-    pointer-events: none;
-    z-index: 9999;
-    mix-blend-mode: difference;
-  }
 
   /* Gradient text button */
   .btn-gradient {
@@ -438,4 +423,63 @@
   .ProseMirror hr {
     @apply border-border my-8;
   }
+}
+
+/* ── Light Mode Dynamic Styles ────────────────────────────────────────── */
+html.light body {
+  background-color: #F8FAFC !important;
+  color: #0F172A !important;
+}
+
+html.light header {
+  background-color: rgba(248, 250, 252, 0.9) !important;
+  border-bottom-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+html.light footer {
+  background-color: #F1F5F9 !important;
+  border-top-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+html.light [class*="bg-[#05060A]"] {
+  background-color: #F8FAFC !important;
+}
+
+html.light [class*="bg-[#0B0D14]"],
+html.light [class*="bg-[#0A0D14]"] {
+  background-color: #FFFFFF !important;
+}
+
+html.light [class*="bg-[#0E1018]"],
+html.light [class*="bg-[#12151F]"] {
+  background-color: #F1F5F9 !important;
+}
+
+html.light [class*="text-white"]:not(.btn-gradient):not([class*="from-"]):not([class*="to-"]) {
+  color: #0F172A !important;
+}
+
+html.light [class*="text-gray-200"],
+html.light [class*="text-gray-300"],
+html.light [class*="text-gray-400"] {
+  color: #475569 !important;
+}
+
+html.light [class*="text-gray-500"] {
+  color: #64748B !important;
+}
+
+html.light [class*="border-white/"] {
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+
+html.light [class*="bg-white/5"],
+html.light [class*="bg-white/10"],
+html.light [class*="bg-white/[0.02]"],
+html.light [class*="bg-white/[0.04]"] {
+  background-color: rgba(15, 23, 42, 0.04) !important;
+}
+
+html.light ::-webkit-scrollbar-track {
+  background: #F1F5F9;
 }

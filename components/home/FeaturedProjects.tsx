@@ -52,44 +52,48 @@ export default function FeaturedProjects() {
     
     if (!isDesktop || !containerRef.current || !sliderRef.current) return;
 
-    const sections = gsap.utils.toArray(".project-panel");
-    
+    const sections = gsap.utils.toArray<HTMLElement>(".project-panel");
+    if (!sections.length) return;
+
+    const slider = sliderRef.current;
+    const container = containerRef.current;
+
     const ctx = gsap.context(() => {
       gsap.to(sections, {
         xPercent: -100 * (sections.length - 1),
         ease: "none",
         scrollTrigger: {
-          trigger: containerRef.current,
+          trigger: container,
           pin: true,
           scrub: 1,
-          snap: 1 / (sections.length - 1),
-          end: () => "+=" + sliderRef.current!.offsetWidth
-        }
+          snap: sections.length > 1 ? 1 / (sections.length - 1) : 1,
+          end: () => "+=" + (slider ? slider.offsetWidth : (typeof window !== "undefined" ? window.innerWidth * 3 : 1000)),
+        },
       });
-    }, containerRef);
+    }, container);
 
     return () => ctx.revert();
   }, []);
 
   return (
     <section ref={containerRef} className="relative bg-[#0B0D14] md:h-screen md:overflow-hidden overflow-visible" id="work">
-      <div className="md:absolute top-0 left-0 w-full h-full flex flex-col justify-center py-20 md:py-0">
-        <div className="container mx-auto px-4 md:px-6 mb-8 md:mb-12">
-          <h2 className="text-4xl md:text-6xl font-bold font-display text-white">
+      <div className="md:absolute top-0 left-0 w-full h-full flex flex-col justify-center py-16 md:py-0">
+        <div className="container mx-auto px-4 md:px-6 mb-6 md:mb-12">
+          <h2 className="text-3xl sm:text-4xl md:text-6xl font-bold font-display text-white">
             Selected Work
           </h2>
         </div>
 
         <div 
           ref={sliderRef}
-          className="flex flex-col md:flex-row md:w-[400vw] gap-8 md:gap-0 px-4 md:px-0"
+          className="flex flex-col md:flex-row md:w-[400vw] gap-6 md:gap-0 px-4 md:px-0"
         >
           {projects.map((project) => (
             <div 
               key={project.id} 
-              className="project-panel md:w-screen h-[50vh] md:h-[60vh] flex flex-col justify-center md:px-6 lg:px-12 xl:px-24"
+              className="project-panel md:w-screen h-[420px] sm:h-[480px] md:h-[60vh] flex flex-col justify-center md:px-6 lg:px-12 xl:px-24"
             >
-              <Link href={`/portfolio/${project.slug}`} className="group relative block w-full h-full rounded-3xl overflow-hidden cursor-pointer shadow-2xl">
+              <Link href={`/portfolio/${project.slug}`} className="group relative block w-full h-full rounded-2xl sm:rounded-3xl overflow-hidden cursor-pointer shadow-2xl">
                 <Image
                   src={project.image}
                   alt={project.title}
@@ -99,16 +103,16 @@ export default function FeaturedProjects() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity duration-300" />
                 
-                <div className="absolute inset-0 p-8 md:p-12 flex flex-col justify-end">
-                  <div className="flex items-center gap-4 mb-4">
+                <div className="absolute inset-0 p-6 sm:p-8 md:p-12 flex flex-col justify-end">
+                  <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
                     <span className="px-3 py-1 text-xs font-medium uppercase tracking-wider text-white bg-white/10 backdrop-blur-md rounded-full border border-white/20">
                       {project.category}
                     </span>
-                    <span className="text-gray-300 text-sm">{project.client}</span>
+                    <span className="text-gray-300 text-xs sm:text-sm">{project.client}</span>
                   </div>
                   
                   <div className="flex justify-between items-end">
-                    <h3 className="text-3xl md:text-5xl font-bold text-white font-display">
+                    <h3 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white font-display">
                       {project.title}
                     </h3>
                     <div className="hidden md:flex w-14 h-14 rounded-full bg-white text-black items-center justify-center transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">

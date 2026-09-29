@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AnimatePresence } from "framer-motion";
 import Preloader from "./Preloader";
 
@@ -19,9 +19,13 @@ export default function PreloaderWrapper() {
     }
   }, []);
 
+  const handleDone = useCallback(() => {
+    setShow(false);
+  }, []);
+
   return (
     <AnimatePresence mode="wait">
-      {show && <Preloader onDone={() => setShow(false)} />}
+      {show && <Preloader onDone={handleDone} />}
     </AnimatePresence>
   );
 }

@@ -21,8 +21,17 @@ export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [megaMenuOpen, setMegaMenuOpen] = useState(false)
-  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+  const { resolvedTheme, setTheme } = useTheme()
   const pathname = usePathname()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === "dark" ? "light" : "dark")
+  }
 
   // Don't render the public navbar on admin pages
   useEffect(() => {
@@ -115,11 +124,20 @@ export function Navbar() {
           {/* Desktop Right */}
           <div className="hidden items-center gap-4 md:flex">
             <button
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              onClick={toggleTheme}
               className="rounded-full p-2 text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
               aria-label="Toggle theme"
+              type="button"
             >
-              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              {mounted ? (
+                resolvedTheme === "dark" ? (
+                  <Sun className="h-5 w-5 text-amber-300 transition-transform duration-200 hover:rotate-45" />
+                ) : (
+                  <Moon className="h-5 w-5 text-cyan-400 transition-transform duration-200 hover:-rotate-12" />
+                )
+              ) : (
+                <div className="h-5 w-5" />
+              )}
             </button>
             <Link
               href="/contact"
@@ -144,40 +162,113 @@ export function Navbar() {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "100vh" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="fixed inset-0 top-[72px] z-30 bg-[#05060A] md:hidden"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-x-0 top-[64px] bottom-0 z-40 bg-[#05060A]/95 backdrop-blur-xl md:hidden flex flex-col border-t border-white/5"
           >
-            <div className="flex h-full flex-col overflow-y-auto px-6 pb-24 pt-8">
-              <nav className="flex flex-col gap-6 text-xl font-display font-medium">
-                <Link href="/">Home</Link>
-                <div className="flex flex-col gap-4">
-                  <span className="text-gray-400">Services</span>
-                  <div className="ml-4 flex flex-col gap-4 text-lg">
+            <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+              <nav className="flex flex-col gap-4 text-lg font-display font-medium">
+                <Link
+                  href="/"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`py-2 transition-colors ${pathname === "/" ? "text-cyan-400" : "text-white"}`}
+                >
+                  Home
+                </Link>
+
+                <div className="flex flex-col gap-2 py-1">
+                  <span className="text-xs uppercase font-semibold tracking-wider text-gray-500">
+                    Services
+                  </span>
+                  <div className="grid grid-cols-1 gap-2 pl-2 border-l border-white/10">
                     {services.map((s) => (
-                      <Link key={s.name} href={`/services/${s.slug}`} className="flex items-center gap-3">
-                        <s.icon className="h-5 w-5 text-cyan-400" /> {s.name}
+                      <Link
+                        key={s.name}
+                        href={`/services/${s.slug}`}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center gap-3 py-1.5 text-sm text-gray-300 hover:text-cyan-400 transition-colors"
+                      >
+                        <s.icon className="h-4 w-4 text-cyan-400 shrink-0" />
+                        <span>{s.name}</span>
                       </Link>
                     ))}
                   </div>
                 </div>
-                <Link href="/portfolio">Portfolio</Link>
-                <Link href="/about">About</Link>
-                <Link href="/process">Process</Link>
-                <Link href="/pricing">Pricing</Link>
-                <Link href="/blog">Blog</Link>
-                <Link href="/contact">Contact</Link>
+
+                <Link
+                  href="/portfolio"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`py-2 transition-colors ${pathname === "/portfolio" ? "text-cyan-400" : "text-white"}`}
+                >
+                  Portfolio
+                </Link>
+                <Link
+                  href="/about"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`py-2 transition-colors ${pathname === "/about" ? "text-cyan-400" : "text-white"}`}
+                >
+                  About
+                </Link>
+                <Link
+                  href="/process"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`py-2 transition-colors ${pathname === "/process" ? "text-cyan-400" : "text-white"}`}
+                >
+                  Process
+                </Link>
+                <Link
+                  href="/pricing"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`py-2 transition-colors ${pathname === "/pricing" ? "text-cyan-400" : "text-white"}`}
+                >
+                  Pricing
+                </Link>
+                <Link
+                  href="/blog"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`py-2 transition-colors ${pathname === "/blog" ? "text-cyan-400" : "text-white"}`}
+                >
+                  Blog
+                </Link>
+                <Link
+                  href="/contact"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`py-2 transition-colors ${pathname === "/contact" ? "text-cyan-400" : "text-white"}`}
+                >
+                  Contact
+                </Link>
               </nav>
 
-              <div className="mt-auto pt-8 border-t border-white/10 flex items-center justify-between">
-                <button
-                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                  className="flex items-center gap-2 text-sm text-gray-300"
+              <div className="pt-4 space-y-4">
+                <Link
+                  href="/contact"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block w-full text-center rounded-xl bg-gradient-to-r from-violet-600 to-cyan-500 py-3 text-sm font-semibold text-white shadow-lg"
                 >
-                  {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />} Toggle Theme
-                </button>
+                  Start a Project
+                </Link>
+
+                <div className="flex items-center justify-between pt-2 border-t border-white/10 text-xs text-gray-400">
+                  <span>Theme</span>
+                  <button
+                    onClick={toggleTheme}
+                    type="button"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white transition-colors hover:bg-white/10"
+                  >
+                    {mounted ? (
+                      resolvedTheme === "dark" ? (
+                        <Sun className="h-4 w-4 text-amber-300" />
+                      ) : (
+                        <Moon className="h-4 w-4 text-cyan-400" />
+                      )
+                    ) : (
+                      <div className="h-4 w-4" />
+                    )}
+                    <span>{mounted ? (resolvedTheme === "dark" ? "Light Mode" : "Dark Mode") : "Theme"}</span>
+                  </button>
+                </div>
               </div>
             </div>
           </motion.div>

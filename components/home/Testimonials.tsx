@@ -64,18 +64,18 @@ export default function Testimonials() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-violet-600/10 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="container mx-auto px-4 md:px-6 relative z-10">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold font-display text-white mb-4">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-display text-white mb-3 sm:mb-4">
             What Our Clients Say
           </h2>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Don't just take our word for it. Here's what the leaders we've partnered with have to say about our work.
+          <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto px-2">
+            Don&apos;t just take our word for it. Here&apos;s what the leaders we&apos;ve partnered with have to say about our work.
           </p>
         </div>
 
         <div className="max-w-4xl mx-auto relative" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
           
-          <div className="relative h-[450px] md:h-[400px]">
+          <div className="relative min-h-[460px] sm:min-h-[420px] md:h-[400px]">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentIndex}
@@ -83,12 +83,12 @@ export default function Testimonials() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -50 }}
                 transition={{ duration: 0.5, ease: "easeInOut" }}
-                className="absolute inset-0 flex flex-col items-center justify-center text-center p-8 md:p-16 bg-[#0A0D14] border border-white/10 rounded-3xl shadow-2xl"
+                className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 sm:p-8 md:p-16 bg-[#0A0D14] border border-white/10 rounded-3xl shadow-2xl"
               >
-                <Quote className="w-10 h-10 md:w-14 md:h-14 text-white/10 mb-8" />
+                <Quote className="w-8 h-8 sm:w-10 sm:h-10 md:w-14 md:h-14 text-white/10 mb-6 sm:mb-8" />
                 
-                <p className="text-lg md:text-2xl text-gray-200 font-light leading-relaxed mb-10">
-                  "{testimonials[currentIndex].quote}"
+                <p className="text-base sm:text-lg md:text-2xl text-gray-200 font-light leading-relaxed mb-8 sm:mb-10">
+                  &ldquo;{testimonials[currentIndex].quote}&rdquo;
                 </p>
                 
                 <div className="flex flex-col md:flex-row items-center gap-4">

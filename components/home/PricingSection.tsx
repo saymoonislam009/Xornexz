@@ -44,22 +44,22 @@ const models = [
 
 export default function PricingSection() {
   return (
-    <section className="py-32 bg-[#05060A] relative" id="pricing">
+    <section className="py-20 sm:py-32 bg-[#05060A] relative" id="pricing">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold font-display text-white mb-4">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-display text-white mb-3 sm:mb-4">
             How We Engage
           </h2>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+          <p className="text-gray-400 text-base sm:text-lg max-w-2xl mx-auto px-2">
             Flexible partnership models designed to align with your business goals, team size, and project requirements.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-center">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto items-center">
           {models.map((model, idx) => (
             <div 
               key={idx} 
-              className={`relative rounded-3xl p-8 h-full flex flex-col transition-transform duration-300 hover:-translate-y-2 ${
+              className={`relative rounded-3xl p-6 sm:p-8 h-full flex flex-col transition-transform duration-300 hover:-translate-y-2 ${
                 model.highlighted 
                   ? "bg-gradient-to-b from-violet-900/30 to-[#0A0D14] border-violet-500/50 border-2 shadow-[0_0_30px_rgba(124,58,237,0.15)] md:-translate-y-4 hover:md:-translate-y-6" 
                   : "bg-[#0A0D14] border border-white/10 hover:border-white/20"
