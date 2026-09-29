@@ -75,7 +75,7 @@ export default function Testimonials() {
 
         <div className="max-w-4xl mx-auto relative" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
           
-          <div className="relative min-h-[460px] sm:min-h-[420px] md:h-[400px]">
+          <div className="relative h-[480px] sm:h-[440px] md:h-[400px]">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentIndex}

@@ -42,7 +42,8 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  // Close mobile menu on path change
+  // Close mobile menu AND mega menu on path change to prevent
+  // AnimatePresence exit animations firing on already-removed DOM nodes
   useEffect(() => {
     setMobileMenuOpen(false)
     setMegaMenuOpen(false)
