@@ -1,12 +1,37 @@
 import Link from 'next/link';
-import { jobs } from '@/lib/data/jobs';
+import { jobs as staticJobs } from '@/lib/data/jobs';
+import { prisma } from '@/lib/db';
 
 export const metadata = {
   title: 'Careers | Xornexz',
   description: 'Join our team and help us build the future.',
 };
 
-export default function CareersPage() {
+export default async function CareersPage() {
+  let jobsList = staticJobs;
+  try {
+    const dbJobs = await prisma.job.findMany({
+      where: { status: 'OPEN' },
+      orderBy: { order: 'asc' },
+    });
+    if (dbJobs && dbJobs.length > 0) {
+      jobsList = dbJobs.map((j) => ({
+        id: j.id,
+        slug: j.slug,
+        title: j.title,
+        department: j.department,
+        location: j.location,
+        type: j.type,
+        experience: '3+ years',
+        description: j.description,
+        responsibilities: j.requirements,
+        requirements: j.requirements,
+      }));
+    }
+  } catch {
+    // Database query failed, fallback to static
+  }
+
   return (
     <div className="min-h-screen bg-[#05060A] text-white font-inter pb-20">
       {/* Hero Section */}
@@ -45,7 +70,7 @@ export default function CareersPage() {
       <section className="py-20 px-6 max-w-4xl mx-auto" id="open-roles">
         <h2 className="text-3xl md:text-4xl font-space font-bold mb-10 text-center">Open Positions</h2>
         <div className="space-y-4">
-          {jobs.map((job) => (
+          {jobsList.map((job) => (
             <Link 
               href={`/careers/${job.slug}`} 
               key={job.id}

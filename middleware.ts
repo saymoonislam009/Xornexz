@@ -5,7 +5,7 @@ export const { auth: middleware } = NextAuth(authConfig)
 
 export const config = {
   matcher: [
-    '/admin/((?!login).*)',
+    '/admin/:path*',
     '/api/admin/:path*',
   ],
 }

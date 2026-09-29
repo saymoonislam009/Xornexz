@@ -27,6 +27,43 @@ const iconMap: Record<string, LucideIcon> = {
   Code,
 };
 
+import { prisma } from '@/lib/db';
+
+export const dynamicParams = true;
+
+async function getService(slug: string) {
+  try {
+    const dbService = await prisma.service.findUnique({
+      where: { slug },
+    });
+    if (dbService && dbService.isActive) {
+      return {
+        slug: dbService.slug,
+        title: dbService.title,
+        tagline: dbService.tagline,
+        description: dbService.description,
+        icon: dbService.icon,
+        features: dbService.features,
+        deliverables: dbService.deliverables,
+        techStack: dbService.techStack,
+        processSteps: Array.isArray(dbService.processSteps) ? (dbService.processSteps as any) : [],
+        startingPrice: '$8,000',
+      };
+    }
+  } catch {
+    // Database query failed, fallback to static
+  }
+
+  const staticService = services.find((s) => s.slug === slug);
+  if (staticService) {
+    return {
+      ...staticService,
+      startingPrice: typeof staticService.startingPrice === 'number' ? `$${staticService.startingPrice.toLocaleString()}` : staticService.startingPrice,
+    };
+  }
+  return null;
+}
+
 export function generateStaticParams() {
   return services.map((service) => ({
     slug: service.slug,
@@ -35,7 +72,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const service = services.find((s) => s.slug === slug);
+  const service = await getService(slug);
   if (!service) return { title: 'Service Not Found' };
   
   return {
@@ -46,7 +83,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ServiceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const service = services.find((s) => s.slug === slug);
+  const service = await getService(slug);
   
   if (!service) {
     notFound();
@@ -96,7 +133,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
           <div>
             <h2 className="text-3xl font-display font-bold mb-8">Our Process</h2>
             <div className="space-y-6">
-              {service.processSteps.map((step, i) => (
+              {service.processSteps.map((step: { title: string; description: string }, i: number) => (
                 <div key={i} className="flex gap-6 relative">
                   {i !== service.processSteps.length - 1 && (
                     <div className="absolute left-[19px] top-10 bottom-[-24px] w-px bg-white/10" />

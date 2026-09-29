@@ -5,6 +5,52 @@ import Link from 'next/link';
 import { ArrowLeft, ExternalLink, ArrowRight } from 'lucide-react';
 import type { Metadata } from 'next';
 
+import { prisma } from '@/lib/db';
+
+export const dynamicParams = true;
+
+async function getProject(slug: string) {
+  try {
+    const dbProject = await prisma.project.findUnique({
+      where: { slug },
+      include: { testimonial: true },
+    });
+    if (dbProject) {
+      return {
+        id: dbProject.id,
+        slug: dbProject.slug,
+        title: dbProject.title,
+        tagline: dbProject.tagline,
+        description: dbProject.description,
+        challenge: dbProject.description,
+        solution: dbProject.content || dbProject.description,
+        client: dbProject.client || 'Enterprise Client',
+        category: dbProject.category,
+        tags: dbProject.tags,
+        techStack: dbProject.techStack,
+        coverGradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        coverImage: dbProject.coverImage || null,
+        year: '2024',
+        results: (dbProject.metrics as any) || {
+          'Performance': { value: '99.9%', note: 'Uptime SLA' },
+          'Conversion': { value: '+45%', note: 'Increase in qualified leads' },
+        },
+        testimonial: dbProject.testimonial ? {
+          name: dbProject.testimonial.name,
+          title: dbProject.testimonial.title,
+          company: dbProject.testimonial.company,
+          content: dbProject.testimonial.content,
+          rating: dbProject.testimonial.rating,
+        } : null,
+      };
+    }
+  } catch {
+    // Database query failed, fallback to static
+  }
+
+  return projects.find((p) => p.slug === slug) || null;
+}
+
 export function generateStaticParams() {
   return projects.map((project) => ({
     slug: project.slug,
@@ -13,7 +59,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const project = projects.find((p) => p.slug === slug);
+  const project = await getProject(slug);
   if (!project) return { title: 'Project Not Found' };
   
   return {
@@ -24,11 +70,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function CaseStudyPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const project = projects.find((p) => p.slug === slug);
+  const project = await getProject(slug);
   
   if (!project) notFound();
 
-  const nextProj = projects.find(p => p.slug === (project as any).nextProject);
+  const nextProj = projects.find(p => p.slug !== project.slug) || projects[0];
 
   return (
     <main className="bg-[#05060A] text-white pt-24 pb-0">
@@ -96,16 +142,18 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
             </div>
 
             {/* Quote */}
-            <div className="bg-[#0B0D14] border border-white/10 rounded-3xl p-10 mt-12 relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-violet-500 to-cyan-500" />
-              <p className="text-2xl font-light italic text-slate-200 leading-relaxed mb-8">
-                "{project.testimonial.content}"
-              </p>
-              <div>
-                <div className="font-bold text-lg">{project.testimonial.name}</div>
-                <div className="text-slate-500">{project.testimonial.title}</div>
+            {project.testimonial && (
+              <div className="bg-[#0B0D14] border border-white/10 rounded-3xl p-10 mt-12 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-violet-500 to-cyan-500" />
+                <p className="text-2xl font-light italic text-slate-200 leading-relaxed mb-8">
+                  "{project.testimonial.content}"
+                </p>
+                <div>
+                  <div className="font-bold text-lg">{project.testimonial.name}</div>
+                  <div className="text-slate-500">{project.testimonial.title}</div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Sidebar */}

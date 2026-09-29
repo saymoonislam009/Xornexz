@@ -8,13 +8,13 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Menu, X, Sun, Moon, ChevronDown, Monitor, Code, Smartphone, Database, Cloud, Shield, Cpu } from "lucide-react"
 
 const services = [
-  { name: "Web Development", icon: Monitor, tag: "Scalable Apps" },
-  { name: "Mobile Apps", icon: Smartphone, tag: "iOS & Android" },
-  { name: "UI/UX Design", icon: Code, tag: "Digital Experiences" },
-  { name: "Cloud Architecture", icon: Cloud, tag: "AWS / Azure / GCP" },
-  { name: "Data Engineering", icon: Database, tag: "Pipelines & AI" },
-  { name: "Cybersecurity", icon: Shield, tag: "Enterprise Grade" },
-  { name: "IoT Solutions", icon: Cpu, tag: "Connected Systems" },
+  { name: "Web Development", slug: "web-development", icon: Monitor, tag: "Scalable Apps" },
+  { name: "Mobile Apps", slug: "mobile-apps", icon: Smartphone, tag: "iOS & Android" },
+  { name: "UI/UX Design", slug: "ui-ux-design", icon: Code, tag: "Digital Experiences" },
+  { name: "Cloud Architecture", slug: "cloud-architecture", icon: Cloud, tag: "AWS / Azure / GCP" },
+  { name: "Data Engineering", slug: "data-engineering", icon: Database, tag: "Pipelines & AI" },
+  { name: "Cybersecurity", slug: "cybersecurity", icon: Shield, tag: "Enterprise Grade" },
+  { name: "IoT Solutions", slug: "iot-solutions", icon: Cpu, tag: "Connected Systems" },
 ]
 
 export function Navbar() {
@@ -87,7 +87,7 @@ export function Navbar() {
                       {services.map((s) => (
                         <Link 
                           key={s.name} 
-                          href={`/services/${s.name.toLowerCase().replace(/\s+/g, '-')}`}
+                          href={`/services/${s.slug}`}
                           className="group flex items-start gap-4 rounded-lg p-3 transition-colors hover:bg-white/5"
                         >
                           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-400 transition-colors group-hover:bg-cyan-500/10 group-hover:text-cyan-400">
@@ -157,7 +157,7 @@ export function Navbar() {
                   <span className="text-gray-400">Services</span>
                   <div className="ml-4 flex flex-col gap-4 text-lg">
                     {services.map((s) => (
-                      <Link key={s.name} href={`/services/${s.name.toLowerCase().replace(/\s+/g, '-')}`} className="flex items-center gap-3">
+                      <Link key={s.name} href={`/services/${s.slug}`} className="flex items-center gap-3">
                         <s.icon className="h-5 w-5 text-cyan-400" /> {s.name}
                       </Link>
                     ))}

@@ -7,8 +7,14 @@ export const authConfig: NextAuthConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user
-      const isAdminRoute = nextUrl.pathname.startsWith('/admin') || nextUrl.pathname.startsWith('/api/admin')
-      if (isAdminRoute && nextUrl.pathname !== '/admin/login') {
+      const isAuthRoute =
+        nextUrl.pathname.startsWith('/admin/login') ||
+        nextUrl.pathname.startsWith('/api/admin/auth')
+      const isAdminRoute =
+        nextUrl.pathname.startsWith('/admin') ||
+        nextUrl.pathname.startsWith('/api/admin')
+
+      if (isAdminRoute && !isAuthRoute) {
         return isLoggedIn
       }
       return true

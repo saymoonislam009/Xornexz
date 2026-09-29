@@ -10,36 +10,36 @@ import { ArrowUpRight } from "lucide-react";
 const projects = [
   {
     id: 1,
-    title: "NexScale CRM",
-    client: "NexScale",
-    category: "SaaS Platform",
+    title: "Nexus Commerce",
+    client: "Nexus Retail Group",
+    category: "Web Development",
     image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2070",
-    slug: "nexscale-crm"
+    slug: "nexus-commerce",
   },
   {
     id: 2,
-    title: "FinFlow Mobile",
-    client: "FinFlow Inc",
-    category: "Mobile App",
+    title: "PulseHealth",
+    client: "PulseHealth Inc.",
+    category: "Mobile App Development",
     image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=1470",
-    slug: "finflow-mobile"
+    slug: "pulsehealth",
   },
   {
     id: 3,
-    title: "Aura E-Commerce",
-    client: "Aura Beauty",
-    category: "Web App",
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=2015",
-    slug: "aura-ecommerce"
+    title: "VaultAI",
+    client: "VaultAI (YC W24)",
+    category: "SaaS & Custom Software",
+    image: "https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&q=80&w=2070",
+    slug: "vaultai",
   },
   {
     id: 4,
-    title: "Nova AI Analytics",
-    client: "Nova Corp",
-    category: "AI & Automation",
-    image: "https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&q=80&w=2070",
-    slug: "nova-ai"
-  }
+    title: "FlowSync",
+    client: "FlowSync Logistics",
+    category: "API & Integrations",
+    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=2015",
+    slug: "flowsync",
+  },
 ];
 
 export default function FeaturedProjects() {
@@ -89,7 +89,7 @@ export default function FeaturedProjects() {
               key={project.id} 
               className="project-panel md:w-screen h-[50vh] md:h-[60vh] flex flex-col justify-center md:px-6 lg:px-12 xl:px-24"
             >
-              <Link href={`/work/${project.slug}`} className="group relative block w-full h-full rounded-3xl overflow-hidden cursor-pointer shadow-2xl">
+              <Link href={`/portfolio/${project.slug}`} className="group relative block w-full h-full rounded-3xl overflow-hidden cursor-pointer shadow-2xl">
                 <Image
                   src={project.image}
                   alt={project.title}

@@ -78,8 +78,12 @@ export default function BlogPage() {
               
               <div className="flex items-center justify-between mt-auto">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-slate-800 overflow-hidden border border-white/10">
-                    <Image src={featuredPost.author.avatar} alt={featuredPost.author.name} className="w-full h-full object-cover" />
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-cyan-500 overflow-hidden border border-white/10 flex items-center justify-center text-xs font-bold text-white">
+                    {featuredPost.author.avatar.startsWith('http') || featuredPost.author.avatar.startsWith('/') ? (
+                      <Image src={featuredPost.author.avatar} alt={featuredPost.author.name} fill className="object-cover" />
+                    ) : (
+                      featuredPost.author.avatar
+                    )}
                   </div>
                   <div>
                     <div className="text-sm font-medium text-white">{featuredPost.author.name}</div>
@@ -124,7 +128,13 @@ export default function BlogPage() {
                 
                 <div className="mt-auto pt-6 border-t border-white/5 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Image src={post.author.avatar} alt={post.author.name} className="w-6 h-6 rounded-full" />
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-600 to-cyan-500 overflow-hidden flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+                      {post.author.avatar.startsWith('http') || post.author.avatar.startsWith('/') ? (
+                        <Image src={post.author.avatar} alt={post.author.name} width={24} height={24} className="rounded-full" />
+                      ) : (
+                        post.author.avatar
+                      )}
+                    </div>
                     <span className="text-xs text-slate-300">{post.author.name}</span>
                   </div>
                   <span className="text-xs text-slate-500">{post.readingTime}</span>

@@ -8,10 +8,45 @@ export const metadata = {
   title: 'Blog Post | Xornexz',
 };
 
+import { prisma } from '@/lib/db';
+
+export const dynamicParams = true;
+
+async function getPost(slug: string) {
+  try {
+    const dbPost = await prisma.blogPost.findUnique({
+      where: { slug },
+      include: { author: true },
+    });
+    if (dbPost && dbPost.status === 'PUBLISHED') {
+      return {
+        slug: dbPost.slug,
+        title: dbPost.title,
+        excerpt: dbPost.excerpt,
+        content: dbPost.content,
+        author: {
+          name: dbPost.author?.name || 'Xornexz Editorial',
+          role: 'Engineering Team',
+          avatar: dbPost.author?.name ? dbPost.author.name.slice(0, 2).toUpperCase() : 'XE',
+        },
+        publishedAt: dbPost.publishedAt ? dbPost.publishedAt.toISOString() : dbPost.createdAt.toISOString(),
+        readingTime: dbPost.readingTime ? `${dbPost.readingTime} min read` : '5 min read',
+        category: dbPost.category,
+        tags: dbPost.tags,
+        coverGradient: 'from-violet-600 to-cyan-500',
+      };
+    }
+  } catch {
+    // Database query failed, fallback to static
+  }
+
+  return blogPosts.find((p) => p.slug === slug) || null;
+}
+
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   
-  const post = blogPosts.find((p) => p.slug === slug);
+  const post = await getPost(slug);
 
   if (!post) {
     notFound();

@@ -128,9 +128,9 @@ export function Footer() {
             © {new Date().getFullYear()} Xornexz. All rights reserved. Built with precision.
           </p>
           <div className="flex items-center gap-6 text-xs text-gray-500">
-            <Link href="/privacy" className="transition-colors hover:text-white">Privacy Policy</Link>
-            <Link href="/terms" className="transition-colors hover:text-white">Terms of Service</Link>
-            <Link href="/cookies" className="transition-colors hover:text-white">Cookie Policy</Link>
+            <Link href="/legal/privacy" className="transition-colors hover:text-white">Privacy Policy</Link>
+            <Link href="/legal/terms" className="transition-colors hover:text-white">Terms of Service</Link>
+            <Link href="/legal/cookies" className="transition-colors hover:text-white">Cookie Policy</Link>
           </div>
         </div>
       </div>

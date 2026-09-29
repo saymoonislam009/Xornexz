@@ -10,7 +10,7 @@ import { Search, Home, Briefcase, FolderOpen, Info, Cog, DollarSign, Mail, FileT
 export function CommandPalette({ isAuthenticated = false }: { isAuthenticated?: boolean }) {
   const [open, setOpen] = useState(false)
   const router = useRouter()
-  const { setTheme, theme } = useTheme()
+  const { setTheme } = useTheme()
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
