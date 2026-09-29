@@ -4,33 +4,28 @@ import { authConfig } from '@/lib/auth.config'
 
 const ADMIN_GATE_COOKIE = 'admin_gate'
 const ADMIN_GATE_TOKEN = 'FaltuXornexz'
-const GATE_PATH = '/admin/gate'
 
 const { auth } = NextAuth(authConfig)
 
-export default auth(function middleware(req) {
+export default auth(function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
 
-  // ── Gate check ────────────────────────────────────────────────────────────
-  // The gate page and its API route are always accessible
-  if (pathname === GATE_PATH || pathname.startsWith('/api/admin-gate')) {
+  // The unlock API is always reachable (it validates the key itself)
+  if (pathname.startsWith('/api/admin-gate')) {
     return NextResponse.next()
   }
 
-  // For all admin routes, enforce the gate cookie FIRST
+  // For ALL /admin routes: check gate cookie — return 404 if missing
   if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) {
     const gateCookie = req.cookies.get(ADMIN_GATE_COOKIE)?.value
     if (gateCookie !== ADMIN_GATE_TOKEN) {
-      const gateUrl = req.nextUrl.clone()
-      gateUrl.pathname = GATE_PATH
-      gateUrl.search = ''
-      return NextResponse.redirect(gateUrl)
+      // Rewrite to /admin-blocked which calls notFound()
+      // This returns a genuine 404 with the site's not-found page
+      return NextResponse.rewrite(new URL('/admin-blocked', req.url))
     }
   }
 
-  // ── NextAuth session check ─────────────────────────────────────────────────
-  // Gate passed — NextAuth's authorized() callback in authConfig handles
-  // redirecting unauthenticated users to /admin/login
+  // Gate passed — NextAuth's authorized() callback handles login redirect
   return NextResponse.next()
 })
 
