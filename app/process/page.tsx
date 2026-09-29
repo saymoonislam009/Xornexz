@@ -71,6 +71,35 @@ const processSteps = [
   }
 ];
 
+// Must be a stable top-level component — AnimatePresence cannot track
+// Fragment children returned from IIFEs for exit animations.
+function StepDetail({ step }: { step: typeof processSteps[0] }) {
+  const Icon = step.icon;
+  return (
+    <div>
+      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/20 to-cyan-500/20 flex items-center justify-center mb-8 border border-white/10">
+        <Icon className="w-8 h-8 text-cyan-400" />
+      </div>
+
+      <h3 className="text-3xl font-display font-bold mb-4">{step.title}</h3>
+
+      <div className="inline-block px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs font-medium text-slate-300 mb-8">
+        Duration: {step.duration}
+      </div>
+
+      <h4 className="text-lg font-medium text-white mb-4">Key Deliverables</h4>
+      <ul className="space-y-4">
+        {step.details.map((detail, idx) => (
+          <li key={idx} className="flex items-start">
+            <CheckCircle2 className="w-5 h-5 text-violet-400 shrink-0 mr-3 mt-0.5" />
+            <span className="text-slate-300">{detail}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export default function ProcessPage() {
   const [activeStep, setActiveStep] = useState(0);
 
@@ -141,33 +170,7 @@ export default function ProcessPage() {
                 transition={{ duration: 0.3 }}
                 className="bg-[#0B0D14] border border-white/10 rounded-3xl p-8"
               >
-                {(() => {
-                  const step = processSteps[activeStep];
-                  const Icon = step.icon;
-                  return (
-                    <>
-                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/20 to-cyan-500/20 flex items-center justify-center mb-8 border border-white/10">
-                        <Icon className="w-8 h-8 text-cyan-400" />
-                      </div>
-                      
-                      <h3 className="text-3xl font-display font-bold mb-4">{step.title}</h3>
-                      
-                      <div className="inline-block px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs font-medium text-slate-300 mb-8">
-                        Duration: {step.duration}
-                      </div>
-
-                      <h4 className="text-lg font-medium text-white mb-4">Key Deliverables</h4>
-                      <ul className="space-y-4">
-                        {step.details.map((detail, idx) => (
-                          <li key={idx} className="flex items-start">
-                            <CheckCircle2 className="w-5 h-5 text-violet-400 shrink-0 mr-3 mt-0.5" />
-                            <span className="text-slate-300">{detail}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </>
-                  );
-                })()}
+                <StepDetail step={processSteps[activeStep]} />
               </motion.div>
             </AnimatePresence>
           </div>
