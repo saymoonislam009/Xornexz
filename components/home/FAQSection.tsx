@@ -39,21 +39,20 @@ const faqs = [
   }
 ];
 
-export default function FAQSection() {
-  const midpoint = Math.ceil(faqs.length / 2);
-  const leftColumn = faqs.slice(0, midpoint);
-  const rightColumn = faqs.slice(midpoint);
-
-  const AccordionItem = ({ value, question, answer }: { value: string, question: string, answer: string }) => (
-    <Accordion.Item 
-      value={value} 
+// AccordionItem MUST be defined outside FAQSection — defining it inside causes
+// React to see a new component type on every render, forcing Radix to
+// unmount/remount and crash accordion state.
+function AccordionItem({ value, question, answer }: { value: string; question: string; answer: string }) {
+  return (
+    <Accordion.Item
+      value={value}
       className="mb-4 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02] data-[state=open]:bg-white/[0.04] transition-colors"
     >
       <Accordion.Header className="flex">
         <Accordion.Trigger className="group flex flex-1 items-center justify-between p-6 text-left text-lg font-medium text-white transition-all hover:text-cyan-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-inset rounded-2xl">
           {question}
-          <ChevronDown 
-            className="h-5 w-5 shrink-0 text-gray-500 transition-transform duration-300 ease-[cubic-bezier(0.87,_0,_0.13,_1)] group-data-[state=open]:rotate-180 group-data-[state=open]:text-cyan-400 ml-4" 
+          <ChevronDown
+            className="h-5 w-5 shrink-0 text-gray-500 transition-transform duration-300 ease-[cubic-bezier(0.87,_0,_0.13,_1)] group-data-[state=open]:rotate-180 group-data-[state=open]:text-cyan-400 ml-4"
             aria-hidden
           />
         </Accordion.Trigger>
@@ -65,6 +64,12 @@ export default function FAQSection() {
       </Accordion.Content>
     </Accordion.Item>
   );
+}
+
+export default function FAQSection() {
+  const midpoint = Math.ceil(faqs.length / 2);
+  const leftColumn = faqs.slice(0, midpoint);
+  const rightColumn = faqs.slice(midpoint);
 
   return (
     <section className="py-32 bg-[#05060A]" id="faq">
