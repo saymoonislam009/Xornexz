@@ -1,186 +1,156 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import {
-  WebGLRenderer,
-  Scene,
-  PerspectiveCamera,
-  IcosahedronGeometry,
-  EdgesGeometry,
-  LineSegments,
-  LineBasicMaterial,
-  Color,
-  MathUtils,
-} from "three";
 
-function shouldSkipScene(): boolean {
+function shouldSkip(): boolean {
   if (typeof window === "undefined") return true;
-  // Touch/mobile — skip
   if (window.matchMedia("(hover: none) and (pointer: coarse)").matches) return true;
-  // Reduced motion
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return true;
-  // Save-Data header
   const nav = navigator as Navigator & { connection?: { saveData?: boolean } };
   if (nav.connection?.saveData) return true;
-  // Low-power devices (fewer than 4 cores)
-  if (navigator.hardwareConcurrency !== undefined && navigator.hardwareConcurrency < 4) return true;
+  if ((navigator.hardwareConcurrency ?? 8) < 4) return true;
   return false;
 }
 
+interface Particle {
+  x: number; y: number; z: number;
+  vx: number; vy: number;
+  size: number; hue: number;
+}
+
 export default function HeroScene() {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container || shouldSkipScene()) return;
+    const canvas = canvasRef.current;
+    if (!canvas || shouldSkip()) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
     let stopped = false;
-    let rafId: number;
-    let cleanup: (() => void) | undefined;
+    let animId = 0;
+    let W = 0, H = 0;
+    let mx = 0.5, my = 0.5;
 
-    const init = () => {
+    const resize = () => {
+      W = canvas.offsetWidth;
+      H = canvas.offsetHeight;
+      canvas.width = W * Math.min(devicePixelRatio, 1.5);
+      canvas.height = H * Math.min(devicePixelRatio, 1.5);
+      ctx.scale(Math.min(devicePixelRatio, 1.5), Math.min(devicePixelRatio, 1.5));
+    };
+    resize();
+
+    const count = Math.min(130, Math.floor((W * H) / 7000));
+    const DIST = Math.min(W, H) * 0.18;
+
+    const particles: Particle[] = Array.from({ length: count }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      z: Math.random(),
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      size: 0.8 + Math.random() * 2,
+      hue: Math.random() > 0.5 ? 265 : 190,
+    }));
+
+    const onMove = (e: MouseEvent) => { mx = e.clientX / W; my = e.clientY / H; };
+    window.addEventListener("mousemove", onMove, { passive: true });
+    window.addEventListener("resize", resize, { passive: true });
+
+    let active = true;
+    const io = new IntersectionObserver(([e]) => { active = e.isIntersecting; }, { threshold: 0.05 });
+    io.observe(canvas);
+    const onVis = () => { active = document.visibilityState === "visible"; };
+    document.addEventListener("visibilitychange", onVis);
+
+    let t = 0;
+    const draw = () => {
       if (stopped) return;
+      animId = requestAnimationFrame(draw);
+      if (!active) return;
+      t += 0.005;
 
-      try {
-        // Cap DPR at 1.5, disable antialias at high DPR
-        const dpr = Math.min(window.devicePixelRatio, 1.5);
+      ctx.clearRect(0, 0, W, H);
 
-        const renderer = new WebGLRenderer({
-          alpha: true,
-          antialias: dpr <= 1,
-          powerPreference: "high-performance",
-        });
-        renderer.setPixelRatio(dpr);
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        renderer.setClearColor(0x000000, 0);
-        container.appendChild(renderer.domElement);
+      const ox = (mx - 0.5) * 60;
+      const oy = (my - 0.5) * 60;
 
-        const scene = new Scene();
-        const camera = new PerspectiveCamera(
-          45,
-          container.clientWidth / container.clientHeight,
-          0.1,
-          100
-        );
-        camera.position.set(0, 0, 7);
+      for (const p of particles) {
+        p.x += p.vx + Math.sin(t + p.z * 10) * 0.15;
+        p.y += p.vy + Math.cos(t + p.z * 8) * 0.12;
+        if (p.x < -50) p.x = W + 50;
+        if (p.x > W + 50) p.x = -50;
+        if (p.y < -50) p.y = H + 50;
+        if (p.y > H + 50) p.y = -50;
+      }
 
-        // Detail 2 instead of 4 — same visual, 60% less geometry
-        const geo = new EdgesGeometry(new IcosahedronGeometry(2.5, 2));
-        const mat = new LineBasicMaterial({
-          color: new Color("#7C3AED"),
-          transparent: true,
-          opacity: 0.5,
-        });
-        const mesh = new LineSegments(geo, mat);
-        scene.add(mesh);
-
-        let mouseX = 0,
-          mouseY = 0,
-          targetX = 0,
-          targetY = 0;
-        const onMouseMove = (e: MouseEvent) => {
-          mouseX = (e.clientX / window.innerWidth) * 2 - 1;
-          mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
-        };
-        window.addEventListener("mousemove", onMouseMove, { passive: true });
-
-        const onResize = () => {
-          if (!container) return;
-          camera.aspect = container.clientWidth / container.clientHeight;
-          camera.updateProjectionMatrix();
-          renderer.setSize(container.clientWidth, container.clientHeight);
-        };
-        window.addEventListener("resize", onResize, { passive: true });
-
-        // Pause when off-screen
-        let isVisible = true;
-        const observer = new IntersectionObserver(
-          ([entry]) => { isVisible = entry.isIntersecting; },
-          { threshold: 0.1 }
-        );
-        observer.observe(container);
-
-        // Pause when tab hidden
-        let isTabActive = true;
-        const onVisibility = () => { isTabActive = document.visibilityState === "visible"; };
-        document.addEventListener("visibilitychange", onVisibility);
-
-        let t = 0;
-        const animate = () => {
-          rafId = requestAnimationFrame(animate);
-          if (!isVisible || !isTabActive) return;
-
-          t += 0.008;
-          targetX = MathUtils.lerp(targetX, mouseX * 0.4, 0.05);
-          targetY = MathUtils.lerp(targetY, mouseY * 0.4, 0.05);
-          mesh.rotation.y = t + targetX;
-          mesh.rotation.x = targetY * 0.5;
-          mesh.position.y = Math.sin(t * 0.6) * 0.18;
-
-          // Pulse between violet and cyan
-          const pulse = (Math.sin(t * 0.8) + 1) / 2;
-          mat.color.lerpColors(new Color("#7C3AED"), new Color("#06B6D4"), pulse);
-          mat.opacity = 0.35 + pulse * 0.15;
-
-          renderer.render(scene, camera);
-        };
-        animate();
-
-        cleanup = () => {
-          cancelAnimationFrame(rafId);
-          observer.disconnect();
-          window.removeEventListener("mousemove", onMouseMove);
-          window.removeEventListener("resize", onResize);
-          document.removeEventListener("visibilitychange", onVisibility);
-          geo.dispose();
-          mat.dispose();
-          renderer.dispose();
-          if (container.contains(renderer.domElement)) {
-            container.removeChild(renderer.domElement);
+      ctx.lineWidth = 0.6;
+      for (let i = 0; i < particles.length; i++) {
+        const a = particles[i];
+        const ax = a.x + ox * a.z;
+        const ay = a.y + oy * a.z;
+        for (let j = i + 1; j < particles.length; j++) {
+          const b = particles[j];
+          const bx = b.x + ox * b.z;
+          const by = b.y + oy * b.z;
+          const dx = ax - bx, dy = ay - by;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          if (d < DIST) {
+            const alpha = (1 - d / DIST) * 0.35 * Math.min(a.z, b.z + 0.3);
+            ctx.beginPath();
+            ctx.moveTo(ax, ay);
+            ctx.lineTo(bx, by);
+            ctx.strokeStyle = `hsla(${(a.hue + b.hue) / 2},80%,65%,${alpha})`;
+            ctx.stroke();
           }
-        };
-      } catch (e) {
-        // Fall back gracefully to CSS gradient when WebGL fails or context is lost
-        console.warn("HeroScene WebGL unavailable:", e);
+        }
+      }
+
+      for (const p of particles) {
+        const px = p.x + ox * p.z;
+        const py = p.y + oy * p.z;
+        const r = p.size * (0.4 + p.z);
+        const alpha = 0.25 + p.z * 0.75;
+
+        const grd = ctx.createRadialGradient(px, py, 0, px, py, r * 4);
+        grd.addColorStop(0, `hsla(${p.hue},80%,65%,${alpha * 0.4})`);
+        grd.addColorStop(1, `hsla(${p.hue},80%,65%,0)`);
+        ctx.beginPath();
+        ctx.arc(px, py, r * 4, 0, Math.PI * 2);
+        ctx.fillStyle = grd;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(px, py, r, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.hue},80%,72%,${alpha})`;
+        ctx.fill();
       }
     };
+    animId = requestAnimationFrame(draw);
 
-    // Defer until after first paint
-    if ("requestIdleCallback" in window) {
-      const id = requestIdleCallback(init);
-      return () => {
-        stopped = true;
-        cancelIdleCallback(id);
-        cleanup?.();
-      };
-    } else {
-      const id = setTimeout(init, 200);
-      return () => {
-        stopped = true;
-        clearTimeout(id);
-        cleanup?.();
-      };
-    }
+    return () => {
+      stopped = true;
+      cancelAnimationFrame(animId);
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("resize", resize);
+      document.removeEventListener("visibilitychange", onVis);
+      io.disconnect();
+    };
   }, []);
 
   return (
     <>
-      {/* Canvas mount point */}
-      <div
-        ref={containerRef}
-        className="absolute inset-0 z-0 pointer-events-none overflow-hidden"
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full pointer-events-none"
         aria-hidden="true"
       />
-      {/* CSS fallback — visible on mobile / reduced-motion, covered by canvas otherwise */}
-      <div
-        className="absolute inset-0 z-0 pointer-events-none"
-        aria-hidden="true"
-      >
+      <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
         <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[55vw] h-[55vw] rounded-full"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] max-w-3xl rounded-full"
           style={{
-            background:
-              "radial-gradient(circle, rgba(124,58,237,0.18) 0%, rgba(6,182,212,0.08) 60%, transparent 100%)",
+            background: "radial-gradient(circle at 40% 40%, rgba(124,58,237,0.15) 0%, rgba(6,182,212,0.07) 50%, transparent 80%)",
           }}
         />
       </div>
