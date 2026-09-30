@@ -45,7 +45,7 @@ export default function FeaturedCaseStudy() {
           transition={{ duration: 0.8 }}
           className="grid lg:grid-cols-2 gap-0 rounded-3xl overflow-hidden border border-white/10"
         >
-          <div className="relative h-[300px] sm:h-[400px] lg:h-auto min-h-[400px]">
+          <div className="relative h-[220px] sm:h-[340px] lg:h-auto lg:min-h-[400px]">
             <Image
               src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1470"
               alt="VaultAI Dashboard"
@@ -62,7 +62,7 @@ export default function FeaturedCaseStudy() {
             </div>
           </div>
 
-          <div className="bg-[#0B0D14] p-8 sm:p-10 lg:p-14 flex flex-col justify-center">
+          <div className="bg-[#0B0D14] p-6 sm:p-10 lg:p-14 flex flex-col justify-center">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center">
                 <span className="text-white font-black text-xs">V</span>
@@ -81,7 +81,7 @@ export default function FeaturedCaseStudy() {
               VaultAI needed a production-grade AI document intelligence platform built fast. We assembled a cross-functional team of 6, designed the architecture from scratch, and shipped a platform that scaled from zero to enterprise contracts under budget and ahead of schedule.
             </p>
 
-            <div className="grid grid-cols-2 gap-4 mb-10">
+            <div className="grid grid-cols-2 gap-3 mb-8">
               {metrics.map((m) => (
                 <div key={m.label} className="p-4 rounded-xl border border-white/5 bg-white/[0.02]">
                   <m.icon className="w-4 h-4 text-violet-400 mb-2" />

@@ -39,7 +39,7 @@ const items = [
 
 export default function LiveMetrics() {
   return (
-    <section className="py-24 bg-[#0B0D14] relative overflow-hidden border-t border-white/5">
+    <section className="py-16 sm:py-24 bg-[#0B0D14] relative overflow-hidden border-t border-white/5">
       <div className="absolute inset-0 bg-[linear-gradient(rgba(124,58,237,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(124,58,237,0.03)_1px,transparent_1px)] bg-[size:60px_60px] pointer-events-none" />
 
       <div className="container mx-auto px-4 md:px-6">
@@ -71,7 +71,7 @@ export default function LiveMetrics() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="group p-6 sm:p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-violet-500/20 hover:bg-white/[0.04] transition-all duration-500 text-center"
+              className="group p-5 sm:p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-violet-500/20 hover:bg-white/[0.04] transition-all duration-500 text-center"
             >
               <div className="text-4xl sm:text-5xl font-black font-display text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400 mb-2">
                 <AnimatedCounter target={item.target} suffix={item.suffix} />

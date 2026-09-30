@@ -16,8 +16,8 @@ const repeated = [...clients, ...clients, ...clients, ...clients];
 
 export default function ClientLogos() {
   return (
-    <section className="py-16 bg-[#05060A] border-t border-b border-white/5 overflow-hidden">
-      <div className="container mx-auto px-4 md:px-6 mb-10 text-center">
+    <section className="py-10 sm:py-16 bg-[#05060A] border-t border-b border-white/5 overflow-hidden">
+      <div className="container mx-auto px-4 md:px-6 mb-6 sm:mb-10 text-center">
         <p className="text-sm font-medium tracking-[0.2em] uppercase text-gray-500">
           Trusted by teams at world-class companies
         </p>

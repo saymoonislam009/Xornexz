@@ -56,12 +56,12 @@ const advantages = [
 
 export default function WhyUs() {
   return (
-    <section className="py-32 bg-[#0B0D14] relative overflow-hidden" id="why-us">
+    <section className="py-20 sm:py-32 bg-[#0B0D14] relative overflow-hidden" id="why-us">
       {/* Background grid */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:48px_48px] pointer-events-none" />
 
       <div className="container mx-auto px-4 md:px-6 relative z-10">
-        <div className="text-center mb-20">
+        <div className="text-center mb-12 sm:mb-20">
           <motion.p
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -100,7 +100,7 @@ export default function WhyUs() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.6, delay: index * 0.08 }}
-              className="group relative p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-white/10 hover:bg-white/[0.04] transition-all duration-500"
+              className="group relative p-5 sm:p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-white/10 hover:bg-white/[0.04] transition-all duration-500"
             >
               {/* Gradient accent on hover */}
               <div className={`absolute top-0 left-0 right-0 h-px bg-gradient-to-r ${adv.color} opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-t-2xl`} />

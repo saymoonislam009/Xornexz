@@ -45,7 +45,7 @@ export default function Recognition() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4"
         >
           {recognitions.map((item, index) => (
             <motion.div
@@ -54,7 +54,7 @@ export default function Recognition() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.07 }}
-              className="flex flex-col items-center text-center p-6 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-violet-500/20 hover:bg-white/[0.04] transition-all duration-300 group"
+              className="flex flex-col items-center text-center p-4 sm:p-6 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-violet-500/20 hover:bg-white/[0.04] transition-all duration-300 group"
             >
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500/20 to-cyan-500/20 flex items-center justify-center mb-4 group-hover:from-violet-500/30 group-hover:to-cyan-500/30 transition-all">
                 <item.icon className="w-5 h-5 text-violet-400" />

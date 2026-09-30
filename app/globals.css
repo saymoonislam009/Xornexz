@@ -499,3 +499,19 @@ html.light ::-webkit-scrollbar-track {
 html {
   scroll-behavior: auto;
 }
+
+/* ── Mobile bare layout improvements ─────────────────────────────────────── */
+@media (max-width: 639px) {
+  /* Prevent any horizontal overflow on mobile */
+  .overflow-hidden { overflow: hidden; }
+  
+  /* Kinetic marquee: smaller text so it doesn't cause layout shifts */
+  .animate-marquee-fast { will-change: transform; }
+  
+  /* Section padding tightening */
+  section { padding-left: 1.25rem; padding-right: 1.25rem; }
+  section .container { padding-left: 0; padding-right: 0; }
+}
+
+/* Ensure horizontal scroll doesn't leak */
+body { overflow-x: hidden; }

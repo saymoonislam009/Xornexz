@@ -48,9 +48,9 @@ export default function ProcessSection() {
   const lineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
   return (
-    <section className="py-32 bg-[#05060A] relative" id="process">
+    <section className="py-20 sm:py-32 bg-[#05060A] relative" id="process">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="mb-20 text-center">
+        <div className="mb-12 sm:mb-20 text-center">
           <h2 className="mb-4 text-4xl md:text-5xl font-bold font-display text-white">
             How We Work
           </h2>
