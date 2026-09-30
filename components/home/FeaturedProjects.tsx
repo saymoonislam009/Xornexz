@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { motion } from "framer-motion";
 
 const projects = [
   {
@@ -15,114 +14,115 @@ const projects = [
     category: "Web Development",
     image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2070",
     slug: "nexus-commerce",
+    year: "2024",
   },
   {
     id: 2,
     title: "PulseHealth",
     client: "PulseHealth Inc.",
-    category: "Mobile App Development",
+    category: "Mobile App",
     image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=1470",
     slug: "pulsehealth",
+    year: "2024",
   },
   {
     id: 3,
     title: "VaultAI",
     client: "VaultAI (YC W24)",
-    category: "SaaS & Custom Software",
+    category: "SaaS Platform",
     image: "https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&q=80&w=2070",
     slug: "vaultai",
+    year: "2023",
   },
   {
     id: 4,
     title: "FlowSync",
     client: "FlowSync Logistics",
-    category: "API & Integrations",
+    category: "API Integration",
     image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=2015",
     slug: "flowsync",
+    year: "2023",
   },
 ];
 
 export default function FeaturedProjects() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const sliderRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
-    const isDesktop = window.matchMedia("(min-width: 768px)").matches;
-    
-    if (!isDesktop || !containerRef.current || !sliderRef.current) return;
-
-    const sections = gsap.utils.toArray<HTMLElement>(".project-panel");
-    if (!sections.length) return;
-
-    const slider = sliderRef.current;
-    const container = containerRef.current;
-
-    const ctx = gsap.context(() => {
-      gsap.to(sections, {
-        xPercent: -100 * (sections.length - 1),
-        ease: "none",
-        scrollTrigger: {
-          trigger: container,
-          pin: true,
-          scrub: 1,
-          snap: sections.length > 1 ? 1 / (sections.length - 1) : 1,
-          end: () => "+=" + (slider ? slider.offsetWidth : (typeof window !== "undefined" ? window.innerWidth * 3 : 1000)),
-        },
-      });
-    }, container);
-
-    return () => ctx.revert();
-  }, []);
-
   return (
-    <section ref={containerRef} className="relative bg-[#0B0D14] md:h-screen md:overflow-hidden overflow-visible" id="work">
-      <div className="md:absolute top-0 left-0 w-full h-full flex flex-col justify-center py-16 md:py-0">
-        <div className="container mx-auto px-4 md:px-6 mb-6 md:mb-12">
-          <h2 className="text-3xl sm:text-4xl md:text-6xl font-bold font-display text-white">
-            Selected Work
-          </h2>
+    <section className="py-24 bg-[#0B0D14] relative" id="work">
+      <div className="container mx-auto px-4 md:px-6 mb-12">
+        <div className="flex items-end justify-between">
+          <div>
+            <p className="text-xs font-semibold tracking-[0.2em] text-violet-400 uppercase mb-3">Portfolio</p>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-display text-white">
+              Selected Work
+            </h2>
+          </div>
+          <Link
+            href="/portfolio"
+            className="hidden md:inline-flex items-center gap-2 text-sm font-medium text-gray-400 hover:text-cyan-400 transition-colors"
+          >
+            View all <ArrowUpRight className="w-4 h-4" />
+          </Link>
         </div>
+      </div>
 
-        <div 
-          ref={sliderRef}
-          className="flex flex-col md:flex-row md:w-[400vw] gap-6 md:gap-0 px-4 md:px-0"
-        >
-          {projects.map((project) => (
-            <div 
-              key={project.id} 
-              className="project-panel md:w-screen h-[420px] sm:h-[480px] md:h-[60vh] flex flex-col justify-center md:px-6 lg:px-12 xl:px-24"
+      <div className="container mx-auto px-4 md:px-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {projects.map((project, index) => (
+            <motion.div
+              key={project.id}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
             >
-              <Link href={`/portfolio/${project.slug}`} className="group relative block w-full h-full rounded-2xl sm:rounded-3xl overflow-hidden cursor-pointer shadow-2xl">
-                <Image
-                  src={project.image}
-                  alt={project.title}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  sizes="(max-width: 768px) 100vw, 80vw"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-60 transition-opacity duration-300" />
-                
-                <div className="absolute inset-0 p-6 sm:p-8 md:p-12 flex flex-col justify-end">
-                  <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-                    <span className="px-3 py-1 text-xs font-medium uppercase tracking-wider text-white bg-white/10 backdrop-blur-md rounded-full border border-white/20">
+              <Link
+                href={`/portfolio/${project.slug}`}
+                className="group relative block w-full overflow-hidden rounded-2xl"
+              >
+                <div className="relative w-full h-[300px] sm:h-[360px] md:h-[400px]">
+                  <Image
+                    src={project.image}
+                    alt={project.title}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  <div className="absolute inset-0 bg-violet-600/0 group-hover:bg-violet-600/10 transition-colors duration-500" />
+                </div>
+
+                <div className="absolute inset-0 p-6 md:p-8 flex flex-col justify-between">
+                  <div className="flex items-center justify-between">
+                    <span className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white/80 bg-white/10 backdrop-blur-md rounded-full border border-white/10">
                       {project.category}
                     </span>
-                    <span className="text-gray-300 text-xs sm:text-sm">{project.client}</span>
+                    <span className="text-xs text-white/50">{project.year}</span>
                   </div>
-                  
-                  <div className="flex justify-between items-end">
-                    <h3 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white font-display">
-                      {project.title}
-                    </h3>
-                    <div className="hidden md:flex w-14 h-14 rounded-full bg-white text-black items-center justify-center transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                      <ArrowUpRight className="w-6 h-6" />
+
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <p className="text-sm text-gray-400 mb-1">{project.client}</p>
+                      <h3 className="text-2xl md:text-3xl font-bold text-white font-display">
+                        {project.title}
+                      </h3>
+                    </div>
+                    <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 shrink-0 ml-4">
+                      <ArrowUpRight className="w-5 h-5 text-black" />
                     </div>
                   </div>
                 </div>
               </Link>
-            </div>
+            </motion.div>
           ))}
+        </div>
+
+        <div className="mt-8 text-center md:hidden">
+          <Link
+            href="/portfolio"
+            className="inline-flex items-center gap-2 text-sm font-medium text-violet-400 hover:text-cyan-400 transition-colors"
+          >
+            View all projects <ArrowUpRight className="w-4 h-4" />
+          </Link>
         </div>
       </div>
     </section>

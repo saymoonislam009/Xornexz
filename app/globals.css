@@ -483,3 +483,19 @@ html.light [class*="bg-white/[0.04]"] {
 html.light ::-webkit-scrollbar-track {
   background: #F1F5F9;
 }
+
+/* Safari backdrop-filter fix */
+.backdrop-blur-sm, .backdrop-blur-md, .backdrop-blur-lg, .backdrop-blur-xl {
+  -webkit-backdrop-filter: var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);
+}
+
+/* Fix Safari 100vh issue */
+.min-h-screen {
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
+
+/* Safari smooth scroll fix */
+html {
+  scroll-behavior: auto;
+}

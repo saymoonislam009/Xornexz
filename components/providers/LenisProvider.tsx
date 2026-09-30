@@ -3,9 +3,16 @@
 import { useEffect } from "react"
 import Lenis from "lenis"
 
+function isSafari() {
+  if (typeof window === "undefined") return false
+  const ua = navigator.userAgent
+  return /Safari/.test(ua) && !/Chrome/.test(ua) && !/Chromium/.test(ua)
+}
+
 export function LenisProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    // Fine-pointer desktop only — use native scroll on touch
+    // Skip on Safari (conflicts with native momentum scroll) and touch/reduced-motion
+    if (isSafari()) return
     if (!window.matchMedia("(pointer: fine)").matches) return
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
 

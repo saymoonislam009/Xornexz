@@ -8,6 +8,7 @@ import { CookieConsent } from "@/components/ui/CookieConsent"
 import { Toaster } from "sonner"
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
+import { ScrollProgress } from "@/components/ui/ScrollProgress"
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -61,6 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning className={`${spaceGrotesk.variable} ${inter.variable}`}>
       <body className="font-sans bg-[#05060A] text-white antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+        <ScrollProgress />
         {/* Skip to content — accessibility */}
         <a
           href="#main-content"
