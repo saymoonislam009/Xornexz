@@ -1,10 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { Session } from "next-auth";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
 import {
   LayoutDashboard, FileText, Briefcase, Users, Settings,
   Image, MessageSquare, Star, HelpCircle, CreditCard,
@@ -56,9 +54,18 @@ const NAV_GROUPS = [
   },
 ];
 
+interface AdminUser {
+  id?: string;
+  name?: string | null;
+  email?: string | null;
+  role?: string | null;
+}
+
 interface Props {
   children: React.ReactNode;
-  session: Session;
+  session?: {
+    user?: AdminUser;
+  };
 }
 
 function SidebarContent({
@@ -69,7 +76,7 @@ function SidebarContent({
 }: {
   collapsed: boolean;
   pathname: string;
-  session: Session;
+  session?: Props["session"];
   onLinkClick?: () => void;
 }) {
   return (
@@ -122,7 +129,6 @@ function SidebarContent({
       </nav>
 
       {/* User */}
-      {/* User */}
       <div className={`border-t border-white/5 p-3 ${collapsed ? "flex justify-center" : ""}`}>
         {!collapsed ? (
           <div className="flex items-center gap-3 px-2 py-2">
@@ -130,13 +136,12 @@ function SidebarContent({
               <User className="h-4 w-4 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{session.user.name}</p>
-              <p className="text-xs text-gray-500 truncate">{session.user.role}</p>
+              <p className="text-sm font-medium text-white truncate">{session?.user?.name ?? "Admin"}</p>
+              <p className="text-xs text-gray-500 truncate">{session?.user?.role ?? "SUPER_ADMIN"}</p>
             </div>
             <button
               onClick={async () => {
                 try { await fetch("/api/admin-auth/logout", { method: "POST" }); } catch {}
-                try { await signOut({ redirect: false }); } catch {}
                 window.location.href = "/admin/login";
               }}
               className="p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-400/10 transition-all"
@@ -149,7 +154,6 @@ function SidebarContent({
           <button
             onClick={async () => {
               try { await fetch("/api/admin-auth/logout", { method: "POST" }); } catch {}
-              try { await signOut({ redirect: false }); } catch {}
               window.location.href = "/admin/login";
             }}
             className="p-2 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-400/10 transition-all"
@@ -244,7 +248,7 @@ export default function AdminShell({ children, session }: Props) {
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center">
               <span className="text-white text-xs font-bold">
-                {(session.user.name ?? "A").charAt(0).toUpperCase()}
+                {(session?.user?.name ?? "A").charAt(0).toUpperCase()}
               </span>
             </div>
           </div>

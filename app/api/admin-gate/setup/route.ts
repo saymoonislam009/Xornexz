@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
     return await handleSetup(emailParam, passwordParam, req)
   }
 
-  // Otherwise, render an elegant setup UI
+  // Otherwise, render an interactive setup UI
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -50,6 +50,10 @@ export async function GET(req: NextRequest) {
     input:focus { border-color: #8b5cf6; }
     button { width: 100%; background: linear-gradient(135deg, #7c3aed, #06b6d4); color: #fff; border: none; border-radius: 10px; padding: 14px; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; margin-top: 8px; }
     button:hover { opacity: 0.9; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .status { margin-top: 15px; font-size: 13px; text-align: center; display: none; }
+    .status.error { color: #f87171; display: block; }
+    .status.success { color: #4ade80; display: block; }
     .note { margin-top: 20px; text-align: center; font-size: 12px; color: #64748b; }
   </style>
 </head>
@@ -57,8 +61,7 @@ export async function GET(req: NextRequest) {
   <div class="card">
     <h1>Configure Super Admin</h1>
     <p class="sub">Set up or reset your admin credentials directly</p>
-    <form method="POST" action="/api/admin-gate/setup">
-      <input type="hidden" name="key" value="${ADMIN_GATE_TOKEN}">
+    <form id="setupForm">
       <div class="field">
         <label for="email">Admin Email</label>
         <input type="email" id="email" name="email" placeholder="admin@xornexz.com" required autocomplete="email">
@@ -67,10 +70,58 @@ export async function GET(req: NextRequest) {
         <label for="password">New Password</label>
         <input type="password" id="password" name="password" placeholder="Choose a strong password" required autocomplete="new-password">
       </div>
-      <button type="submit">Set Admin Credentials & Log In</button>
+      <button type="submit" id="btn">Set Admin Credentials & Log In</button>
+      <div id="status" class="status"></div>
     </form>
     <p class="note">This securely writes the hashed password to your database and logs you in immediately.</p>
   </div>
+
+  <script>
+    const form = document.getElementById('setupForm');
+    const btn = document.getElementById('btn');
+    const status = document.getElementById('status');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      btn.disabled = true;
+      btn.textContent = 'Saving & Logging In...';
+      status.className = 'status';
+      status.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/admin-gate/setup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            key: '${ADMIN_GATE_TOKEN}',
+            email: document.getElementById('email').value.trim(),
+            password: document.getElementById('password').value,
+          })
+        });
+
+        if (res.ok) {
+          status.className = 'status success';
+          status.textContent = 'Success! Redirecting to Dashboard...';
+          status.style.display = 'block';
+          // Clean client-side GET navigation with cookies attached
+          window.location.href = '/admin/dashboard';
+        } else {
+          const data = await res.json().catch(() => ({}));
+          status.className = 'status error';
+          status.textContent = data.error || 'Failed to configure admin credentials.';
+          status.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'Set Admin Credentials & Log In';
+        }
+      } catch (err) {
+        status.className = 'status error';
+        status.textContent = 'Network or server error. Please try again.';
+        status.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Set Admin Credentials & Log In';
+      }
+    });
+  </script>
 </body>
 </html>`
 
@@ -86,7 +137,9 @@ export async function POST(req: NextRequest) {
   let password = ""
 
   const contentType = req.headers.get("content-type") || ""
-  if (contentType.includes("application/json")) {
+  const isJson = contentType.includes("application/json")
+
+  if (isJson) {
     const body = await req.json().catch(() => ({}))
     key = body.key || ""
     email = body.email || ""
@@ -108,54 +161,70 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing email or password" }, { status: 400 })
   }
 
-  return await handleSetup(email, password, req)
+  return await handleSetup(email, password, req, isJson)
 }
 
-async function handleSetup(email: string, password: string, req: NextRequest) {
-  const normalizedEmail = email.trim().toLowerCase()
-  const hashedPassword = await bcrypt.hash(password, 12)
+async function handleSetup(email: string, password: string, req: NextRequest, isJson = false) {
+  try {
+    const normalizedEmail = email.trim().toLowerCase()
+    const hashedPassword = await bcrypt.hash(password, 12)
 
-  // Upsert user in database
-  const user = await prisma.user.upsert({
-    where: { email: normalizedEmail },
-    update: {
-      password: hashedPassword,
-      role: "SUPER_ADMIN",
-      isActive: true,
-      lastLoginAt: new Date(),
-    },
-    create: {
-      name: "Admin",
-      email: normalizedEmail,
-      password: hashedPassword,
-      role: "SUPER_ADMIN",
-      isActive: true,
-      lastLoginAt: new Date(),
-    },
-  })
+    // Upsert user in database
+    const user = await prisma.user.upsert({
+      where: { email: normalizedEmail },
+      update: {
+        password: hashedPassword,
+        role: "SUPER_ADMIN",
+        isActive: true,
+        lastLoginAt: new Date(),
+      },
+      create: {
+        name: "Admin",
+        email: normalizedEmail,
+        password: hashedPassword,
+        role: "SUPER_ADMIN",
+        isActive: true,
+        lastLoginAt: new Date(),
+      },
+    })
 
-  // Sign JWT session token
-  const token = await signAdminToken({
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    role: user.role,
-  })
+    // Sign JWT session token
+    const token = await signAdminToken({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    })
 
-  // Redirect to dashboard with both cookies set
-  const res = NextResponse.redirect(new URL("/admin/dashboard", req.url))
+    // If client requested via JSON, return JSON with cookies attached
+    if (isJson) {
+      const res = NextResponse.json({ ok: true, redirect: "/admin/dashboard" })
+      res.cookies.set(ADMIN_GATE_COOKIE, ADMIN_GATE_TOKEN, GATE_COOKIE_OPTS)
+      res.cookies.set(COOKIE_NAME, token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60 * 24 * 7,
+        path: "/",
+      })
+      return res
+    }
 
-  // Set gate cookie
-  res.cookies.set(ADMIN_GATE_COOKIE, ADMIN_GATE_TOKEN, GATE_COOKIE_OPTS)
+    // Standard redirect: MUST use 303 (See Other) so POST converts to GET!
+    // Next.js default is 307 which causes browsers to POST to the page route, resulting in an empty white screen.
+    const res = NextResponse.redirect(new URL("/admin/dashboard", req.url), 303)
+    res.cookies.set(ADMIN_GATE_COOKIE, ADMIN_GATE_TOKEN, GATE_COOKIE_OPTS)
+    res.cookies.set(COOKIE_NAME, token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7,
+      path: "/",
+    })
 
-  // Set session cookie
-  res.cookies.set(COOKIE_NAME, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7, // 7 days
-    path: "/",
-  })
-
-  return res
+    return res
+  } catch (error) {
+    console.error("[admin-setup] Error creating admin:", error)
+    return NextResponse.json({ error: "Failed to configure database record" }, { status: 500 })
+  }
 }

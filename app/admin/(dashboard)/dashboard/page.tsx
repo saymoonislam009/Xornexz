@@ -44,15 +44,44 @@ interface DashboardData {
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
+  const [mounted, setMounted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const loadStats = () => {
+    setError(null);
     fetch("/api/admin/dashboard/stats")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Status " + res.status);
+        return res.json();
+      })
       .then((d) => {
         if (d?.stats) setData(d);
+        else throw new Error(d?.error || "Incomplete metrics payload");
       })
-      .catch((err) => console.error("Failed to load dashboard stats", err));
+      .catch((err) => {
+        console.error("Failed to load dashboard stats", err);
+        setError("Could not load telemetry metrics. Database tables may still be initializing.");
+      });
+  };
+
+  useEffect(() => {
+    setMounted(true);
+    loadStats();
   }, []);
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-6 bg-[#0E1018] rounded-2xl border border-white/10">
+        <p className="text-sm text-gray-400 mb-4">{error}</p>
+        <button
+          onClick={loadStats}
+          className="px-4 py-2 bg-violet-600 hover:bg-violet-500 rounded-lg text-white text-xs font-semibold"
+        >
+          Retry Loading
+        </button>
+      </div>
+    );
+  }
 
   if (!data) {
     return (
@@ -170,50 +199,56 @@ export default function DashboardPage() {
           </div>
 
           <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data.chartData}>
-                <defs>
-                  <linearGradient id="leadGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#7C3AED" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#7C3AED" stopOpacity={0.0} />
-                  </linearGradient>
-                  <linearGradient id="convGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#06B6D4" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#06B6D4" stopOpacity={0.0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke="#1F2430" strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" stroke="#6B7280" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#6B7280" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#0E1018",
-                    borderColor: "rgba(255,255,255,0.1)",
-                    borderRadius: "0.5rem",
-                    color: "#FFFFFF",
-                    fontSize: "12px",
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="leads"
-                  stroke="#7C3AED"
-                  strokeWidth={2}
-                  fillOpacity={1}
-                  fill="url(#leadGrad)"
-                  name="Leads"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="conversions"
-                  stroke="#06B6D4"
-                  strokeWidth={2}
-                  fillOpacity={1}
-                  fill="url(#convGrad)"
-                  name="Conversions"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            {mounted && data.chartData ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={data.chartData}>
+                  <defs>
+                    <linearGradient id="leadGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#7C3AED" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="#7C3AED" stopOpacity={0.0} />
+                    </linearGradient>
+                    <linearGradient id="convGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#06B6D4" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="#06B6D4" stopOpacity={0.0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid stroke="#1F2430" strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="name" stroke="#6B7280" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="#6B7280" fontSize={12} tickLine={false} axisLine={false} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#0E1018",
+                      borderColor: "rgba(255,255,255,0.1)",
+                      borderRadius: "0.5rem",
+                      color: "#FFFFFF",
+                      fontSize: "12px",
+                    }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="leads"
+                    stroke="#7C3AED"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#leadGrad)"
+                    name="Leads"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="conversions"
+                    stroke="#06B6D4"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#convGrad)"
+                    name="Conversions"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center text-xs text-gray-600">
+                Loading telemetry visualizer...
+              </div>
+            )}
           </div>
         </div>
 
@@ -227,25 +262,31 @@ export default function DashboardPage() {
           </div>
 
           <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.chartData}>
-                <CartesianGrid stroke="#1F2430" strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" stroke="#6B7280" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#6B7280" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip
-                  cursor={{ fill: "rgba(255,255,255,0.02)" }}
-                  contentStyle={{
-                    backgroundColor: "#0E1018",
-                    borderColor: "rgba(255,255,255,0.1)",
-                    borderRadius: "0.5rem",
-                    color: "#FFFFFF",
-                    fontSize: "12px",
-                  }}
-                />
-                <Bar dataKey="leads" fill="#7C3AED" radius={[4, 4, 0, 0]} maxBarSize={32} name="Qualified" />
-                <Bar dataKey="conversions" fill="#06B6D4" radius={[4, 4, 0, 0]} maxBarSize={32} name="Won Deals" />
-              </BarChart>
-            </ResponsiveContainer>
+            {mounted && data.chartData ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={data.chartData}>
+                  <CartesianGrid stroke="#1F2430" strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="name" stroke="#6B7280" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="#6B7280" fontSize={12} tickLine={false} axisLine={false} />
+                  <Tooltip
+                    cursor={{ fill: "rgba(255,255,255,0.02)" }}
+                    contentStyle={{
+                      backgroundColor: "#0E1018",
+                      borderColor: "rgba(255,255,255,0.1)",
+                      borderRadius: "0.5rem",
+                      color: "#FFFFFF",
+                      fontSize: "12px",
+                    }}
+                  />
+                  <Bar dataKey="leads" fill="#7C3AED" radius={[4, 4, 0, 0]} maxBarSize={32} name="Qualified" />
+                  <Bar dataKey="conversions" fill="#06B6D4" radius={[4, 4, 0, 0]} maxBarSize={32} name="Won Deals" />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex items-center justify-center text-xs text-gray-600">
+                Loading telemetry visualizer...
+              </div>
+            )}
           </div>
         </div>
       </div>
