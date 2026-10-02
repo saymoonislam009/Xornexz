@@ -122,6 +122,7 @@ function SidebarContent({
       </nav>
 
       {/* User */}
+      {/* User */}
       <div className={`border-t border-white/5 p-3 ${collapsed ? "flex justify-center" : ""}`}>
         {!collapsed ? (
           <div className="flex items-center gap-3 px-2 py-2">
@@ -133,7 +134,11 @@ function SidebarContent({
               <p className="text-xs text-gray-500 truncate">{session.user.role}</p>
             </div>
             <button
-              onClick={() => signOut({ callbackUrl: "/admin/login" })}
+              onClick={async () => {
+                try { await fetch("/api/admin-auth/logout", { method: "POST" }); } catch {}
+                try { await signOut({ redirect: false }); } catch {}
+                window.location.href = "/admin/login";
+              }}
               className="p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-400/10 transition-all"
               title="Sign out"
             >
@@ -142,7 +147,11 @@ function SidebarContent({
           </div>
         ) : (
           <button
-            onClick={() => signOut({ callbackUrl: "/admin/login" })}
+            onClick={async () => {
+              try { await fetch("/api/admin-auth/logout", { method: "POST" }); } catch {}
+              try { await signOut({ redirect: false }); } catch {}
+              window.location.href = "/admin/login";
+            }}
             className="p-2 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-400/10 transition-all"
             title="Sign out"
           >

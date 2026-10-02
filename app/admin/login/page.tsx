@@ -1,8 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Lock, Mail, Loader2, ArrowRight, ShieldCheck } from "lucide-react";
 
@@ -11,7 +10,6 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
   const searchParams = useSearchParams();
   const resetSuccess = searchParams.get("reset") === "success";
 
@@ -21,21 +19,22 @@ function LoginForm() {
     setError("");
 
     try {
-      const res = await signIn("credentials", {
-        email: email.trim(),
-        password,
-        redirect: false,
+      const res = await fetch("/api/admin-auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim(), password }),
       });
 
-      if (!res || res.error) {
-        setError("Invalid email or password. Please verify your credentials.");
+      if (res.ok) {
+        // Full navigation ensures cookies are attached to all server components
+        window.location.href = "/admin/dashboard";
       } else {
-        router.push("/admin/dashboard");
-        router.refresh();
+        const data = await res.json().catch(() => null);
+        setError(data?.error || "Invalid email or password. Please verify your credentials.");
+        setIsLoading(false);
       }
     } catch {
-      setError("An unexpected error occurred during sign in. Please try again.");
-    } finally {
+      setError("An unexpected error occurred. Please try again.");
       setIsLoading(false);
     }
   };

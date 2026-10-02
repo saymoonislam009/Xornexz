@@ -3,8 +3,9 @@ import { NextRequest, NextResponse } from 'next/server'
 const ADMIN_GATE_COOKIE = 'admin_gate'
 const ADMIN_GATE_TOKEN = 'FaltuXornexz'
 
-// NextAuth v5 writes the session under these cookie names depending on env
+// Session cookies recognized across the app
 const SESSION_COOKIES = [
+  'admin_session',
   'authjs.session-token',
   '__Secure-authjs.session-token',
   'next-auth.session-token',
@@ -32,12 +33,13 @@ export function middleware(req: NextRequest) {
       return NextResponse.rewrite(new URL('/admin-blocked', req.url))
     }
 
-    // Gate passed. For protected pages (not login), also check session cookie.
-    // Real JWT validation happens server-side in app/admin/(dashboard)/layout.tsx.
-    // Here we only check for cookie presence to avoid unnecessary server hits.
-    const isLoginPage = pathname.startsWith('/admin/login')
+    // Gate passed.
+    // Auth routes (login, custom admin-auth) can proceed without session
+    const isAuthRoute =
+      pathname.startsWith('/admin/login') ||
+      pathname.startsWith('/api/admin-auth')
 
-    if (!isLoginPage && !hasSessionCookie(req)) {
+    if (!isAuthRoute && !hasSessionCookie(req)) {
       const loginUrl = new URL('/admin/login', req.url)
       loginUrl.searchParams.set('callbackUrl', pathname)
       return NextResponse.redirect(loginUrl)
@@ -51,6 +53,7 @@ export const config = {
   matcher: [
     '/admin/:path*',
     '/api/admin/:path*',
+    '/api/admin-auth/:path*',
     '/api/admin-gate/:path*',
   ],
 }
