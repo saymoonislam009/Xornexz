@@ -1,43 +1,15 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useActionState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Lock, Mail, Loader2, ArrowRight, ShieldCheck } from "lucide-react";
+import { adminLoginAction } from "./actions";
 
 function LoginForm() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [state, formAction, isPending] = useActionState(adminLoginAction, null);
   const searchParams = useSearchParams();
   const resetSuccess = searchParams.get("reset") === "success";
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError("");
-
-    try {
-      const res = await fetch("/api/admin-auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), password }),
-      });
-
-      if (res.ok) {
-        // Full navigation ensures cookies are attached to all server components
-        window.location.href = "/admin/dashboard";
-      } else {
-        const data = await res.json().catch(() => null);
-        setError(data?.error || "Invalid email or password. Please verify your credentials.");
-        setIsLoading(false);
-      }
-    } catch {
-      setError("An unexpected error occurred. Please try again.");
-      setIsLoading(false);
-    }
-  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#05060A] px-4 py-12 text-white">
@@ -60,13 +32,13 @@ function LoginForm() {
             </div>
           )}
 
-          {error && (
+          {state?.error && (
             <div className="mb-6 rounded-xl border border-red-500/30 bg-red-950/30 p-4 text-sm text-red-300">
-              {error}
+              {state.error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form action={formAction} className="space-y-5">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
                 Email Address
@@ -75,12 +47,11 @@ function LoginForm() {
                 <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
                 <input
                   type="email"
+                  name="email"
                   required
                   placeholder="admin@xornexz.com"
                   autoComplete="email"
                   className="w-full rounded-xl border border-white/10 bg-white/5 py-3 pl-10 pr-4 text-sm text-white placeholder:text-slate-600 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500 transition-all"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
             </div>
@@ -101,22 +72,21 @@ function LoginForm() {
                 <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
                 <input
                   type="password"
+                  name="password"
                   required
                   placeholder="••••••••••••"
                   autoComplete="current-password"
                   className="w-full rounded-xl border border-white/10 bg-white/5 py-3 pl-10 pr-4 text-sm text-white placeholder:text-slate-600 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500 transition-all"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
             </div>
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isPending}
               className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-500 py-3.5 text-sm font-semibold text-white shadow-lg transition-all hover:from-violet-500 hover:to-cyan-400 hover:shadow-[0_0_25px_rgba(124,58,237,0.35)] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? (
+              {isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
                   <span>Authenticating...</span>

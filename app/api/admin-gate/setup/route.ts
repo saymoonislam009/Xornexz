@@ -61,7 +61,8 @@ export async function GET(req: NextRequest) {
   <div class="card">
     <h1>Configure Super Admin</h1>
     <p class="sub">Set up or reset your admin credentials directly</p>
-    <form id="setupForm">
+    <form id="setupForm" method="POST" action="/api/admin-gate/setup">
+      <input type="hidden" name="key" value="${ADMIN_GATE_TOKEN}">
       <div class="field">
         <label for="email">Admin Email</label>
         <input type="email" id="email" name="email" placeholder="admin@xornexz.com" required autocomplete="email">
@@ -101,10 +102,11 @@ export async function GET(req: NextRequest) {
 
         if (res.ok) {
           status.className = 'status success';
-          status.textContent = 'Success! Redirecting to Dashboard...';
+          status.innerHTML = 'Success! Credentials saved.<br><a href="/admin/dashboard" style="display:inline-block;margin-top:8px;color:#38bdf8;font-weight:600;text-decoration:underline;">Click here to enter Admin Dashboard &rarr;</a>';
           status.style.display = 'block';
-          // Clean client-side GET navigation with cookies attached
-          window.location.href = '/admin/dashboard';
+          setTimeout(() => {
+            window.location.href = '/admin/dashboard';
+          }, 400);
         } else {
           const data = await res.json().catch(() => ({}));
           status.className = 'status error';
