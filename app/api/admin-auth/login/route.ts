@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const { email, password } = await req.json()
 
     if (!email || !password) {
-      return NextResponse.json({ error: "Missing email or password" }, { status: 400 })
+      return NextResponse.json({ error: "Please provide both email and password." }, { status: 400 })
     }
 
     const normalizedEmail = String(email).trim().toLowerCase()
@@ -19,13 +19,21 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    if (!user || !user.password || user.isActive === false) {
-      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
+    if (!user) {
+      return NextResponse.json({ error: `No admin account found for "${normalizedEmail}". Check the email or run the setup.` }, { status: 401 })
+    }
+
+    if (user.isActive === false) {
+      return NextResponse.json({ error: "This admin account is disabled." }, { status: 401 })
+    }
+
+    if (!user.password) {
+      return NextResponse.json({ error: "This account does not have a password set." }, { status: 401 })
     }
 
     const valid = await bcrypt.compare(String(password), user.password)
     if (!valid) {
-      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
+      return NextResponse.json({ error: "Incorrect password. Please try again." }, { status: 401 })
     }
 
     await prisma.user.update({
@@ -35,7 +43,7 @@ export async function POST(req: NextRequest) {
 
     const token = await signAdminToken({
       id: user.id,
-      email: user.email ?? "",
+      email: user.email ?? normalizedEmail,
       name: user.name,
       role: user.role,
     })
@@ -51,6 +59,6 @@ export async function POST(req: NextRequest) {
     return res
   } catch (e) {
     console.error("[admin-login]", e)
-    return NextResponse.json({ error: "Server authentication error" }, { status: 500 })
+    return NextResponse.json({ error: "Server authentication error. Please try again." }, { status: 500 })
   }
 }

@@ -54,6 +54,7 @@ export const config = {
     '/admin/:path*',
     '/api/admin/:path*',
     '/api/admin-auth/:path*',
+    '/api/admin-gate',
     '/api/admin-gate/:path*',
   ],
 }
