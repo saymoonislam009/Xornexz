@@ -4,6 +4,7 @@ import type { NextAuthConfig } from 'next-auth'
 export const authConfig: NextAuthConfig = {
   pages: { signIn: '/admin/login', error: '/admin/login/error' },
   session: { strategy: 'jwt' },
+  trustHost: true,
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user
