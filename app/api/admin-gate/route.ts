@@ -6,7 +6,9 @@ const ADMIN_GATE_COOKIE = 'admin_gate'
 const COOKIE_OPTS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict' as const,
+  // 'lax' (not 'strict') — Safari drops SameSite=Strict cookies during redirects.
+  // Lax still blocks cross-site POST but allows top-level navigation redirects.
+  sameSite: 'lax' as const,
   maxAge: 60 * 60 * 24 * 7, // 7 days
   path: '/',
 }

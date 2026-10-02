@@ -2,7 +2,7 @@ import type { NextAuthConfig } from 'next-auth'
 
 // Edge-safe: no Prisma, no bcrypt — only JWT reading
 export const authConfig: NextAuthConfig = {
-  pages: { signIn: '/admin/login' },
+  pages: { signIn: '/admin/login', error: '/admin/login/error' },
   session: { strategy: 'jwt' },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
