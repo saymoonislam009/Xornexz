@@ -7,7 +7,7 @@ import {
   LayoutDashboard, FileText, Briefcase, Users, Settings,
   Image, MessageSquare, Star, HelpCircle, CreditCard,
   BarChart3, Mail, Layers, Cpu, Play, ChevronLeft,
-  ChevronRight, LogOut, ExternalLink, Menu, X, User,
+  ChevronRight, LogOut, ExternalLink, Menu, X, User, Calculator,
 } from "lucide-react";
 
 const NAV_GROUPS = [
@@ -35,6 +35,7 @@ const NAV_GROUPS = [
     items: [
       { href: "/admin/leads", icon: BarChart3, label: "Leads" },
       { href: "/admin/contact-submissions", icon: Mail, label: "Contact" },
+      { href: "/admin/estimates", icon: Calculator, label: "Estimates" },
       { href: "/admin/newsletter", icon: Mail, label: "Newsletter" },
     ],
   },
