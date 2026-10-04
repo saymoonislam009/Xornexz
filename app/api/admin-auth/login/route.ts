@@ -13,18 +13,11 @@ const COOKIE_OPTS = {
   path: "/",
 }
 
-function isJsonRequest(req: NextRequest): boolean {
-  const accept = req.headers.get("accept") || ""
-  const ct = req.headers.get("content-type") || ""
-  return ct.includes("application/json") || accept.includes("application/json")
-}
-
-function errorRedirect(req: NextRequest, msg: string, callbackUrl: string): NextResponse {
+/** Redirect back to login with an error message in the URL */
+function loginError(req: NextRequest, msg: string): NextResponse {
   const url = new URL("/admin/login", req.url)
   url.searchParams.set("error", msg)
-  if (callbackUrl && callbackUrl !== "/admin/dashboard") {
-    url.searchParams.set("callbackUrl", callbackUrl)
-  }
+  console.log("[admin-login] error →", msg)
   return NextResponse.redirect(url, 303)
 }
 
@@ -32,83 +25,98 @@ export async function POST(req: NextRequest) {
   let email = ""
   let password = ""
   let callbackUrl = "/admin/dashboard"
-  const json = isJsonRequest(req)
 
   try {
-    if (json) {
+    const ct = req.headers.get("content-type") || ""
+    console.log("[admin-login] content-type:", ct)
+
+    if (ct.includes("application/json")) {
+      // JSON body (e.g. from a fetch() call)
       const body = await req.json().catch(() => ({}))
       email = String(body.email || "").trim().toLowerCase()
       password = String(body.password || "")
       callbackUrl = String(body.callbackUrl || "/admin/dashboard")
     } else {
-      const form = await req.formData().catch(() => null)
-      email = String(form?.get("email") || "").trim().toLowerCase()
-      password = String(form?.get("password") || "")
-      callbackUrl = String(form?.get("callbackUrl") || "/admin/dashboard")
+      // Native HTML form POST: application/x-www-form-urlencoded
+      // Use req.text() + URLSearchParams — more reliable than req.formData()
+      const raw = await req.text().catch(() => "")
+      console.log("[admin-login] raw body length:", raw.length)
+      const params = new URLSearchParams(raw)
+      email = (params.get("email") || "").trim().toLowerCase()
+      password = params.get("password") || ""
+      callbackUrl = params.get("callbackUrl") || "/admin/dashboard"
     }
+
+    console.log("[admin-login] email:", email ? email.substring(0, 3) + "***" : "(empty)")
+    console.log("[admin-login] password length:", password.length)
 
     if (!email || !password) {
-      const msg = "Please enter both email and password."
-      if (json) return NextResponse.json({ error: msg }, { status: 400 })
-      return errorRedirect(req, msg, callbackUrl)
+      return loginError(req, "Please enter both email and password.")
     }
 
-    const user = await prisma.user.findFirst({
-      where: { email: { equals: email, mode: "insensitive" } },
-    })
+    // ── DB lookup ─────────────────────────────────────────────────────────
+    let user: {
+      id: string
+      email: string | null
+      name: string | null
+      password: string | null
+      role: string
+      isActive: boolean | null
+    } | null = null
+
+    try {
+      user = await prisma.user.findFirst({
+        where: { email: { equals: email, mode: "insensitive" } },
+        select: { id: true, email: true, name: true, password: true, role: true, isActive: true },
+      })
+    } catch (dbErr) {
+      console.error("[admin-login] prisma error:", dbErr)
+      return loginError(req, "Database connection error. Check DATABASE_URL in Vercel environment variables.")
+    }
+
+    console.log("[admin-login] user found:", !!user)
 
     if (!user) {
-      const msg = `No admin account found for "${email}". Use the setup link to create one.`
-      if (json) return NextResponse.json({ error: msg }, { status: 401 })
-      return errorRedirect(req, msg, callbackUrl)
+      return loginError(req, `No account for "${email}". Visit /api/admin-gate/setup?key=FaltuXornexz to create one.`)
     }
 
     if (user.isActive === false) {
-      const msg = "This account has been disabled."
-      if (json) return NextResponse.json({ error: msg }, { status: 401 })
-      return errorRedirect(req, msg, callbackUrl)
+      return loginError(req, "This account has been disabled.")
     }
 
     if (!user.password) {
-      const msg = "No password set on this account. Please use the setup page to configure credentials."
-      if (json) return NextResponse.json({ error: msg }, { status: 401 })
-      return errorRedirect(req, msg, callbackUrl)
+      return loginError(req, "No password set. Visit /api/admin-gate/setup?key=FaltuXornexz to reset credentials.")
     }
 
-    const valid = await bcrypt.compare(password, user.password)
+    const valid = await bcrypt.compare(password, user.password).catch(() => false)
+    console.log("[admin-login] password valid:", valid)
+
     if (!valid) {
-      const msg = "Incorrect password. Please try again."
-      if (json) return NextResponse.json({ error: msg }, { status: 401 })
-      return errorRedirect(req, msg, callbackUrl)
+      return loginError(req, "Incorrect password. Please try again.")
     }
 
-    // Non-critical update — don't let this fail the login
-    prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } }).catch(() => {})
-
+    // ── Sign JWT ──────────────────────────────────────────────────────────
     const token = await signAdminToken({
       id: user.id,
       email: user.email ?? email,
       name: user.name,
       role: user.role,
     })
+    console.log("[admin-login] token signed, length:", token.length)
 
-    if (json) {
-      const res = NextResponse.json({ ok: true })
-      res.cookies.set("admin_gate", ADMIN_GATE_TOKEN, COOKIE_OPTS)
-      res.cookies.set(COOKIE_NAME, token, COOKIE_OPTS)
-      return res
-    }
+    // Non-critical — don't let this fail the login
+    prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } }).catch(() => {})
 
-    // Native form POST → server-side redirect with cookies in response headers
+    // ── Build redirect response with cookies ──────────────────────────────
     const dest = callbackUrl.startsWith("/admin") ? callbackUrl : "/admin/dashboard"
+    console.log("[admin-login] success → redirecting to:", dest)
+
     const res = NextResponse.redirect(new URL(dest, req.url), 303)
     res.cookies.set("admin_gate", ADMIN_GATE_TOKEN, COOKIE_OPTS)
     res.cookies.set(COOKIE_NAME, token, COOKIE_OPTS)
     return res
   } catch (err) {
-    console.error("[admin-login]", err)
-    const msg = "Server error during authentication. Check your Vercel DATABASE_URL environment variable."
-    if (json) return NextResponse.json({ error: msg }, { status: 500 })
-    return errorRedirect(req, msg, callbackUrl)
+    console.error("[admin-login] unexpected error:", err)
+    return loginError(req, "Unexpected server error. Please try again.")
   }
 }

@@ -1,24 +1,23 @@
-"use client";
-
-import { Suspense, useState, useRef } from "react";
-import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Lock, Mail, Loader2, ArrowRight, ShieldCheck, AlertCircle } from "lucide-react";
+import { Lock, Mail, ArrowRight, ShieldCheck, AlertCircle } from "lucide-react";
 
-function LoginForm() {
-  const searchParams = useSearchParams();
-  const urlError = searchParams.get("error");
-  const callbackUrl = searchParams.get("callbackUrl") || "/admin/dashboard";
-  const resetSuccess = searchParams.get("reset") === "success";
-  const [isLoading, setIsLoading] = useState(false);
+// Pure Server Component — zero JavaScript, zero React hooks.
+// The form posts natively (HTML spec) to the API route which sets cookies
+// and responds with a 303 redirect. No client-side navigation involved.
 
-  // Show loading state on submit, but let the native form POST handle everything.
-  // This avoids ALL client-side navigation, cookie timing, and autofill issues.
-  const handleSubmit = () => {
-    setIsLoading(true);
-    // Do NOT call e.preventDefault() — let the browser POST natively to
-    // /api/admin-auth/login, which responds with 303 + Set-Cookie.
-  };
+interface Props {
+  searchParams: Promise<{
+    error?: string;
+    reset?: string;
+    callbackUrl?: string;
+  }>;
+}
+
+export default async function AdminLoginPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const urlError = params.error ? decodeURIComponent(params.error) : null;
+  const resetSuccess = params.reset === "success";
+  const callbackUrl = params.callbackUrl || "/admin/dashboard";
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#05060A] px-4 py-12 text-white">
@@ -29,7 +28,9 @@ function LoginForm() {
             <Lock className="h-6 w-6 text-white" />
           </div>
           <h1 className="font-display text-3xl font-bold tracking-tight">Admin Portal</h1>
-          <p className="mt-2 text-sm text-slate-400">Sign in to manage your Xornexz platform</p>
+          <p className="mt-2 text-sm text-slate-400">
+            Sign in to manage your Xornexz platform
+          </p>
         </div>
 
         {/* Card */}
@@ -37,33 +38,35 @@ function LoginForm() {
           {resetSuccess && (
             <div className="mb-6 flex items-center gap-3 rounded-xl border border-green-500/20 bg-green-950/30 p-4 text-sm text-green-300">
               <ShieldCheck className="h-5 w-5 shrink-0 text-green-400" />
-              <span>Password reset successfully. Please sign in with your new password.</span>
+              <span>Password reset successfully. Please sign in.</span>
             </div>
           )}
 
           {urlError && (
             <div className="mb-6 flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-950/30 p-4 text-sm text-red-300">
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
-              <span>{decodeURIComponent(urlError)}</span>
+              <span>{urlError}</span>
             </div>
           )}
 
           {/*
-            Native HTML form POST — no JavaScript fetch, no client-side navigation.
-            The server responds with Set-Cookie + 303 redirect to dashboard.
-            This works in every browser including Safari, with any autofill manager.
+            IMPORTANT: This is a pure HTML form. No JavaScript. No onSubmit handler.
+            The browser sends a native POST to /api/admin-auth/login.
+            The server validates, sets httpOnly cookies, and responds with 303 redirect.
+            Works in every browser, every password manager, every autofill engine.
           */}
           <form
             method="POST"
             action="/api/admin-auth/login"
-            onSubmit={handleSubmit}
             className="space-y-5"
           >
-            {/* Pass callbackUrl and gate key so they survive the redirect */}
             <input type="hidden" name="callbackUrl" value={callbackUrl} />
 
             <div>
-              <label htmlFor="email" className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+              <label
+                htmlFor="email"
+                className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2"
+              >
                 Email Address
               </label>
               <div className="relative">
@@ -82,13 +85,15 @@ function LoginForm() {
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <label
+                  htmlFor="password"
+                  className="text-xs font-semibold uppercase tracking-wider text-slate-400"
+                >
                   Password
                 </label>
                 <Link
                   href="/admin/login/forgot-password"
                   className="text-xs text-violet-400 hover:text-cyan-400 transition-colors"
-                  tabIndex={-1}
                 >
                   Forgot password?
                 </Link>
@@ -109,20 +114,10 @@ function LoginForm() {
 
             <button
               type="submit"
-              disabled={isLoading}
-              className="group relative flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-500 py-3.5 text-sm font-semibold text-white shadow-lg transition-all hover:from-violet-500 hover:to-cyan-400 hover:shadow-[0_0_25px_rgba(124,58,237,0.35)] disabled:opacity-70 disabled:cursor-wait"
+              className="group flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-500 py-3.5 text-sm font-semibold text-white shadow-lg transition-all hover:from-violet-500 hover:to-cyan-400 hover:shadow-[0_0_25px_rgba(124,58,237,0.35)]"
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Authenticating...</span>
-                </>
-              ) : (
-                <>
-                  <span>Sign In</span>
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </>
-              )}
+              <span>Sign In</span>
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </button>
           </form>
         </div>
@@ -132,19 +127,5 @@ function LoginForm() {
         </p>
       </div>
     </div>
-  );
-}
-
-export default function AdminLoginPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center bg-[#05060A]">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-violet-500 border-t-transparent" />
-        </div>
-      }
-    >
-      <LoginForm />
-    </Suspense>
   );
 }
