@@ -27,13 +27,13 @@ export async function POST(req: Request) {
         },
       });
 
+      // Token is only written to private server logs (no email provider configured for admins).
       console.log(`[Password Reset] Link generated for ${cleanEmail}: /admin/login/reset-password?token=${token}`);
     }
 
     return NextResponse.json({ message: "Password reset link sent if email exists." });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal Server Error";
     console.error("Forgot password error:", error);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }

@@ -10,8 +10,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Token and password are required" }, { status: 400 });
     }
 
-    if (password.length < 8) {
-      return NextResponse.json({ error: "Password must be at least 8 characters long" }, { status: 400 });
+    if (password.length < 12) {
+      return NextResponse.json({ error: "Password must be at least 12 characters long" }, { status: 400 });
     }
 
     const resetToken = await prisma.passwordResetToken.findUnique({
@@ -35,8 +35,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ message: "Password has been reset successfully." });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal Server Error";
     console.error("Reset password error:", error);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: "Something went wrong." }, { status: 500 });
   }
 }

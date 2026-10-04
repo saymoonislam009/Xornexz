@@ -47,8 +47,7 @@ export default async function AuthenticatedAdminLayout({ children }: { children:
     redirect(
       "/admin/login?error=" +
         encodeURIComponent(
-          "Session could not be verified. Please sign in again. " +
-            "If this keeps happening, visit /api/admin-gate/setup?key=FaltuXornexz to recreate your account."
+          "Session could not be verified. Please sign in again."
         )
     );
   }

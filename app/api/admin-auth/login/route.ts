@@ -2,15 +2,43 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import bcrypt from "bcryptjs"
 import { signAdminToken, COOKIE_NAME } from "@/lib/admin-jwt"
+import { GATE_COOKIE, GATE_COOKIE_OPTS, signGateCookie, getClientIp } from "@/lib/admin-gate"
 
-const ADMIN_GATE_TOKEN = "FaltuXornexz"
 
 const COOKIE_OPTS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: "lax" as const,
-  maxAge: 60 * 60 * 24 * 30, // 30 days
+  maxAge: 60 * 60 * 24 * 7, // 7 days
   path: "/",
+}
+
+const WINDOW_MS = 15 * 60 * 1000
+
+async function recordAttempt(ip: string, identifier: string, success: boolean) {
+  try {
+    await prisma.loginAttempt.create({
+      data: { email: identifier.toLowerCase().slice(0, 200), ip, success },
+    })
+  } catch {
+    /* table may be missing — never block login on logging */
+  }
+}
+
+/** Lock out after 5 failures per account or 10 per IP within 15 minutes. */
+async function tooManyAttempts(ip: string, identifier: string): Promise<boolean> {
+  try {
+    const since = new Date(Date.now() - WINDOW_MS)
+    const [byAccount, byIp] = await Promise.all([
+      prisma.loginAttempt.count({
+        where: { email: identifier.toLowerCase().slice(0, 200), success: false, createdAt: { gt: since } },
+      }),
+      prisma.loginAttempt.count({ where: { ip, success: false, createdAt: { gt: since } } }),
+    ])
+    return byAccount >= 5 || byIp >= 10
+  } catch {
+    return false
+  }
 }
 
 /** Redirect back to login with an error message in the URL */
@@ -46,11 +74,13 @@ export async function POST(req: NextRequest) {
       callbackUrl = params.get("callbackUrl") || "/admin/dashboard"
     }
 
-    console.log("[admin-login] identifier:", email ? email.substring(0, 3) + "***" : "(empty)")
-    console.log("[admin-login] password length:", password.length)
-
     if (!email || !password) {
       return loginError(req, "Please enter both email/username and password.")
+    }
+
+    const ip = getClientIp(req)
+    if (await tooManyAttempts(ip, email)) {
+      return loginError(req, "Too many failed attempts. Please wait 15 minutes and try again.")
     }
 
     // ── DB lookup (by email OR username/name) ─────────────────────────────
@@ -87,29 +117,33 @@ export async function POST(req: NextRequest) {
       }
     } catch (dbErr) {
       console.error("[admin-login] prisma error:", dbErr)
-      return loginError(req, "Database connection error. Check DATABASE_URL in Vercel environment variables.")
+      return loginError(req, "Service temporarily unavailable. Please try again.")
     }
 
     console.log("[admin-login] user found:", !!user)
 
     if (!user) {
-      return loginError(req, `No account found for "${email}". Visit /api/admin-gate/setup?key=FaltuXornexz to configure one.`)
+      await recordAttempt(ip, email, false)
+      return loginError(req, "Invalid credentials.")
     }
 
     if (user.isActive === false) {
-      return loginError(req, "This account has been disabled.")
+      return loginError(req, "Invalid credentials.")
     }
 
     if (!user.password) {
-      return loginError(req, "No password set. Visit /api/admin-gate/setup?key=FaltuXornexz to reset credentials.")
+      return loginError(req, "Invalid credentials.")
     }
 
     const valid = await bcrypt.compare(password, user.password).catch(() => false)
     console.log("[admin-login] password valid:", valid)
 
     if (!valid) {
-      return loginError(req, "Incorrect password. Please try again.")
+      await recordAttempt(ip, email, false)
+      return loginError(req, "Invalid credentials.")
     }
+
+    await recordAttempt(ip, email, true)
 
     // ── Sign JWT ──────────────────────────────────────────────────────────
     const token = await signAdminToken({
@@ -128,7 +162,7 @@ export async function POST(req: NextRequest) {
     console.log("[admin-login] success → redirecting to:", dest)
 
     const res = NextResponse.redirect(new URL(dest, req.url), 303)
-    res.cookies.set("admin_gate", ADMIN_GATE_TOKEN, COOKIE_OPTS)
+    res.cookies.set(GATE_COOKIE, await signGateCookie(), GATE_COOKIE_OPTS)
     res.cookies.set(COOKIE_NAME, token, COOKIE_OPTS)
     return res
   } catch (err) {

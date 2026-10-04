@@ -3,33 +3,45 @@ import { prisma } from "@/lib/db"
 import bcrypt from "bcryptjs"
 import { signAdminToken, COOKIE_NAME } from "@/lib/admin-jwt"
 
-const ADMIN_GATE_TOKEN = "FaltuXornexz"
-const ADMIN_GATE_COOKIE = "admin_gate"
+import {
+  GATE_COOKIE,
+  GATE_COOKIE_OPTS,
+  verifyGateCookie,
+  signGateCookie,
+} from "@/lib/admin-gate"
+import { getAdminSession } from "@/lib/admin-jwt"
 
-const GATE_COOKIE_OPTS = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax" as const,
-  maxAge: 60 * 60 * 24 * 7, // 7 days
-  path: "/",
+export const dynamic = "force-dynamic"
+
+const notFound = () => new NextResponse(null, { status: 404 })
+
+/**
+ * Setup / password-reset is the most dangerous endpoint in the app (it can
+ * overwrite the super-admin password), so it requires ALL of:
+ *   1. a valid signed gate cookie (you unlocked the gate with the private key), and
+ *   2. ONE of:
+ *      - no admin account exists yet (first-time setup), or
+ *      - you are already signed in as SUPER_ADMIN, or
+ *      - ADMIN_SETUP_ENABLED=true is set in the environment (emergency reset).
+ */
+async function setupAllowed(req: NextRequest): Promise<boolean> {
+  if (!(await verifyGateCookie(req.cookies.get(GATE_COOKIE)?.value))) return false
+  if (process.env.ADMIN_SETUP_ENABLED === "true") return true
+  const session = await getAdminSession()
+  if (session?.role === "SUPER_ADMIN") return true
+  try {
+    const admins = await prisma.user.count({
+      where: { role: { in: ["SUPER_ADMIN", "ADMIN"] }, password: { not: null } },
+    })
+    return admins === 0
+  } catch {
+    return false
+  }
 }
 
 // GET: displays setup form or handles direct query param setup
 export async function GET(req: NextRequest) {
-  const { searchParams } = req.nextUrl
-  const key = searchParams.get("key")
-
-  if (key !== ADMIN_GATE_TOKEN) {
-    return new NextResponse(null, { status: 404 })
-  }
-
-  const emailParam = searchParams.get("email")
-  const passwordParam = searchParams.get("password")
-
-  // If email and password provided in query, configure directly
-  if (emailParam && passwordParam) {
-    return await handleSetup(emailParam, passwordParam, req)
-  }
+  if (!(await setupAllowed(req))) return notFound()
 
   // Otherwise, render an interactive setup UI
   const html = `<!DOCTYPE html>
@@ -62,7 +74,6 @@ export async function GET(req: NextRequest) {
     <h1>Configure Super Admin</h1>
     <p class="sub">Set up or reset your admin credentials directly</p>
     <form id="setupForm" method="POST" action="/api/admin-gate/setup">
-      <input type="hidden" name="key" value="${ADMIN_GATE_TOKEN}">
       <div class="field">
         <label for="email">Admin Email</label>
         <input type="email" id="email" name="email" placeholder="admin@xornexz.com" required autocomplete="email">
@@ -94,7 +105,6 @@ export async function GET(req: NextRequest) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            key: '${ADMIN_GATE_TOKEN}',
             email: document.getElementById('email').value.trim(),
             password: document.getElementById('password').value,
           })
@@ -134,7 +144,8 @@ export async function GET(req: NextRequest) {
 
 // POST: handles form submission from setup page or API call
 export async function POST(req: NextRequest) {
-  let key = ""
+  if (!(await setupAllowed(req))) return notFound()
+
   let email = ""
   let password = ""
 
@@ -143,24 +154,21 @@ export async function POST(req: NextRequest) {
 
   if (isJson) {
     const body = await req.json().catch(() => ({}))
-    key = body.key || ""
     email = body.email || ""
     password = body.password || ""
   } else {
     const formData = await req.formData().catch(() => null)
     if (formData) {
-      key = String(formData.get("key") || "")
       email = String(formData.get("email") || "")
       password = String(formData.get("password") || "")
     }
   }
 
-  if (key !== ADMIN_GATE_TOKEN) {
-    return new NextResponse(null, { status: 404 })
-  }
-
   if (!email || !password) {
     return NextResponse.json({ error: "Missing email or password" }, { status: 400 })
+  }
+  if (password.length < 12) {
+    return NextResponse.json({ error: "Password must be at least 12 characters." }, { status: 400 })
   }
 
   return await handleSetup(email, password, req, isJson)
@@ -201,7 +209,7 @@ async function handleSetup(email: string, password: string, req: NextRequest, is
     // If client requested via JSON, return JSON with cookies attached
     if (isJson) {
       const res = NextResponse.json({ ok: true, redirect: "/admin/dashboard" })
-      res.cookies.set(ADMIN_GATE_COOKIE, ADMIN_GATE_TOKEN, GATE_COOKIE_OPTS)
+      res.cookies.set(GATE_COOKIE, await signGateCookie(), GATE_COOKIE_OPTS)
       res.cookies.set(COOKIE_NAME, token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
@@ -215,7 +223,7 @@ async function handleSetup(email: string, password: string, req: NextRequest, is
     // Standard redirect: MUST use 303 (See Other) so POST converts to GET!
     // Next.js default is 307 which causes browsers to POST to the page route, resulting in an empty white screen.
     const res = NextResponse.redirect(new URL("/admin/dashboard", req.url), 303)
-    res.cookies.set(ADMIN_GATE_COOKIE, ADMIN_GATE_TOKEN, GATE_COOKIE_OPTS)
+    res.cookies.set(GATE_COOKIE, await signGateCookie(), GATE_COOKIE_OPTS)
     res.cookies.set(COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

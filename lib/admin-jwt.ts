@@ -1,11 +1,12 @@
 import { SignJWT, jwtVerify } from "jose"
 import { cookies } from "next/headers"
+import { getServerSecret } from "@/lib/admin-gate"
 
 export const COOKIE_NAME = "admin_session"
 
 function getSecret() {
-  const secretKey = process.env.AUTH_SECRET || "fallback-secret-xornexz-production-key-2025"
-  return new TextEncoder().encode(secretKey)
+  // No hardcoded fallback: a secret committed to git would let anyone forge admin sessions.
+  return new TextEncoder().encode(getServerSecret())
 }
 
 export interface AdminSession {
@@ -24,7 +25,7 @@ export async function signAdminToken(session: AdminSession): Promise<string> {
   })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("30d")
+    .setExpirationTime("7d")
     .sign(getSecret())
 }
 
@@ -53,13 +54,16 @@ export async function getAdminSession(): Promise<AdminSession | null> {
     const cookieStore = await cookies()
     const token = cookieStore.get(COOKIE_NAME)?.value
     if (!token) {
-      console.log("[admin-jwt] no admin_session cookie present")
       return null
     }
-    console.log("[admin-jwt] found admin_session cookie, length:", token.length)
     return await verifyAdminToken(token)
   } catch (err) {
     console.error("[admin-jwt] getAdminSession error:", err instanceof Error ? err.message : err)
     return null
   }
+}
+
+/** Edge-safe verification used by middleware (no next/headers). */
+export async function verifyAdminTokenEdge(token: string): Promise<boolean> {
+  return (await verifyAdminToken(token)) !== null
 }
