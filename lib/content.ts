@@ -13,6 +13,7 @@ import { PROJECTS_DATA as staticProjects } from "@/lib/data/projects";
 import { SERVICES_DATA as staticServices } from "@/lib/data/services";
 import { team as staticTeam } from "@/lib/data/team";
 import { jobs as staticJobs } from "@/lib/data/jobs";
+import { DEFAULT_FAQS, DEFAULT_TESTIMONIALS, DEFAULT_PRICING, DEFAULT_FEATURED } from "@/lib/data/home";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -29,12 +30,15 @@ export function ensureContentSeeded(): Promise<void> {
 }
 
 async function runSeed() {
-  const [services, projects, posts, team, jobs] = await Promise.all([
+  const [services, projects, posts, team, jobs, faqCount, testiCount, planCount] = await Promise.all([
     prisma.service.count(),
     prisma.project.count(),
     prisma.blogPost.count(),
     prisma.teamMember.count(),
     prisma.job.count(),
+    prisma.fAQ.count(),
+    prisma.testimonial.count(),
+    prisma.pricingPlan.count(),
   ]);
 
   if (services === 0) {
@@ -123,6 +127,47 @@ async function runSeed() {
           bio: m.bio ?? null,
           avatarUrl: m.image ?? null,
           isActive: true,
+          order: i,
+        },
+      });
+    }
+  }
+
+  if (faqCount === 0) {
+    for (const [i, f] of DEFAULT_FAQS.entries()) {
+      await prisma.fAQ.create({
+        data: { question: f.question, answer: f.answer, order: i, isActive: true },
+      });
+    }
+  }
+
+  if (testiCount === 0) {
+    for (const [i, t] of DEFAULT_TESTIMONIALS.entries()) {
+      await prisma.testimonial.create({
+        data: {
+          name: t.name,
+          title: t.title,
+          company: t.title.includes(",") ? t.title.split(",").slice(1).join(",").trim() : "Xornexz Client",
+          avatarUrl: t.avatar,
+          content: t.quote,
+          rating: t.rating,
+          featured: true,
+          isActive: true,
+          order: i,
+        },
+      });
+    }
+  }
+
+  if (planCount === 0) {
+    for (const [i, p] of DEFAULT_PRICING.entries()) {
+      await prisma.pricingPlan.create({
+        data: {
+          name: p.name,
+          tagline: p.description,
+          price: "Custom quote",
+          features: p.features,
+          highlighted: p.highlighted,
           order: i,
         },
       });
@@ -271,5 +316,86 @@ export async function getPublicTeam() {
   } catch (e) {
     console.error("[content] team fallback:", e);
     return staticTeam as any[];
+  }
+}
+
+export async function getHomeFaqs() {
+  try {
+    await ensureContentSeeded();
+    const rows = await prisma.fAQ.findMany({ where: { isActive: true }, orderBy: { order: "asc" } });
+    return rows.map((f) => ({ question: f.question, answer: f.answer }));
+  } catch (e) {
+    console.error("[content] faq fallback:", e);
+    return DEFAULT_FAQS;
+  }
+}
+
+export async function getHomeTestimonials() {
+  try {
+    await ensureContentSeeded();
+    const rows = await prisma.testimonial.findMany({
+      where: { isActive: true },
+      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+    });
+    return rows.map((t) => ({
+      id: t.id,
+      name: t.name,
+      title: t.company ? `${t.title}, ${t.company}` : t.title,
+      avatar: t.avatarUrl || DEFAULT_TESTIMONIALS[0].avatar,
+      quote: t.content,
+      rating: t.rating,
+    }));
+  } catch (e) {
+    console.error("[content] testimonials fallback:", e);
+    return DEFAULT_TESTIMONIALS;
+  }
+}
+
+export async function getHomePricing() {
+  try {
+    await ensureContentSeeded();
+    const rows = await prisma.pricingPlan.findMany({ orderBy: { order: "asc" } });
+    return rows.map((p) => ({
+      name: p.name,
+      description: p.tagline,
+      features: Array.isArray(p.features) ? (p.features as string[]) : [],
+      highlighted: p.highlighted,
+    }));
+  } catch (e) {
+    console.error("[content] pricing fallback:", e);
+    return DEFAULT_PRICING;
+  }
+}
+
+export async function getHomeFeaturedProjects() {
+  try {
+    await ensureContentSeeded();
+    let rows = await prisma.project.findMany({
+      where: { status: "PUBLISHED", featured: true },
+      orderBy: { order: "asc" },
+      take: 4,
+    });
+    if (rows.length === 0) {
+      rows = await prisma.project.findMany({
+        where: { status: "PUBLISHED" },
+        orderBy: { order: "asc" },
+        take: 4,
+      });
+    }
+    return rows.map((p, i) => ({
+      id: p.id,
+      title: p.title,
+      client: p.client || "",
+      category: p.category,
+      image:
+        p.coverImage && /^https?:\/\//.test(p.coverImage)
+          ? p.coverImage
+          : DEFAULT_FEATURED[i % DEFAULT_FEATURED.length].image,
+      slug: p.slug,
+      year: String((p.publishedAt ?? p.createdAt).getFullYear()),
+    }));
+  } catch (e) {
+    console.error("[content] featured fallback:", e);
+    return DEFAULT_FEATURED;
   }
 }

@@ -19,6 +19,10 @@ import AvailabilityBanner from "@/components/home/AvailabilityBanner";
 import PricingSection from "@/components/home/PricingSection";
 import FAQSection from "@/components/home/FAQSection";
 import CTASection from "@/components/home/CTASection";
+import { getHomeFaqs, getHomeTestimonials, getHomePricing, getHomeFeaturedProjects } from "@/lib/content";
+
+// Re-fetch admin-managed content at most every 30s so edits appear on the homepage quickly.
+export const revalidate = 30;
 
 export const metadata: Metadata = {
   title: "Xornexz | We build what's next.",
@@ -26,7 +30,13 @@ export const metadata: Metadata = {
     "Xornexz designs and builds websites, web apps, SaaS platforms, and AI-powered systems that make your competitors sweat.",
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [faqs, testimonials, pricing, featured] = await Promise.all([
+    getHomeFaqs(),
+    getHomeTestimonials(),
+    getHomePricing(),
+    getHomeFeaturedProjects(),
+  ]);
   return (
     <>
       <PreloaderWrapper />
@@ -36,18 +46,18 @@ export default function HomePage() {
       <ServicesSection />
       <KineticMarquee />
       <FeaturedCaseStudy />
-      <FeaturedProjects />
+      <FeaturedProjects projects={featured} />
       <WhyUs />
       <ProcessSection />
       <CodeShowcase />
       <TechStack />
       <LiveMetrics />
       <ComparisonTable />
-      <Testimonials />
+      <Testimonials testimonials={testimonials} />
       <Recognition />
       <AvailabilityBanner />
-      <PricingSection />
-      <FAQSection />
+      <PricingSection models={pricing} />
+      <FAQSection faqs={faqs} />
       <CTASection />
     </>
   );

@@ -4,40 +4,6 @@ import * as Accordion from "@radix-ui/react-accordion";
 import { ChevronDown } from "lucide-react";
 import React from "react";
 
-const faqs = [
-  {
-    question: "What is your typical project timeline?",
-    answer: "Project timelines vary depending on scope and complexity. A typical marketing website takes 4-6 weeks, while complex web applications or SaaS platforms can take 3-6 months. We'll provide a detailed timeline during the discovery phase."
-  },
-  {
-    question: "Do you offer post-launch support?",
-    answer: "Absolutely. We offer various monthly retainer packages for maintenance, security updates, and continued feature development to ensure your product scales smoothly."
-  },
-  {
-    question: "Who owns the intellectual property (IP)?",
-    answer: "You do. Upon full payment for the project, all source code, design files, and intellectual property rights are completely transferred to you."
-  },
-  {
-    question: "What technologies do you use?",
-    answer: "We specialize in modern JavaScript/TypeScript ecosystems. Our primary stack includes Next.js, React, Node.js, and PostgreSQL. We also utilize Python for AI/ML features and AWS/Vercel for robust hosting."
-  },
-  {
-    question: "How do you handle revisions during design?",
-    answer: "Our process includes structured feedback loops. We provide multiple concepts initially, followed by 2-3 rounds of revisions on the chosen direction to ensure we hit the mark before development begins."
-  },
-  {
-    question: "Can you work with our existing backend or APIs?",
-    answer: "Yes, we frequently build modern frontend interfaces that integrate seamlessly with existing legacy backends, third-party APIs, or headless CMS platforms."
-  },
-  {
-    question: "How much do your services cost?",
-    answer: "Since every project is unique, we custom quote based on your specific requirements. We offer fixed-scope pricing for defined projects and dedicated team models for ongoing work. Contact us for a precise estimate."
-  },
-  {
-    question: "How do we get started?",
-    answer: "It starts with a conversation. Reach out via our contact form, and we'll schedule a discovery call to understand your goals, discuss feasibility, and outline the next steps."
-  }
-];
 
 // AccordionItem MUST be defined outside FAQSection — defining it inside causes
 // React to see a new component type on every render, forcing Radix to
@@ -66,7 +32,8 @@ function AccordionItem({ value, question, answer }: { value: string; question: s
   );
 }
 
-export default function FAQSection() {
+export default function FAQSection({ faqs }: { faqs: { question: string; answer: string }[] }) {
+  if (!faqs.length) return null;
   const midpoint = Math.ceil(faqs.length / 2);
   const leftColumn = faqs.slice(0, midpoint);
   const rightColumn = faqs.slice(midpoint);

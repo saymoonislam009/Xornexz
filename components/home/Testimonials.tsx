@@ -5,35 +5,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Star, Quote } from "lucide-react";
 import Image from "next/image";
 
-const testimonials = [
-  {
-    id: 1,
-    name: "Sarah Jenkins",
-    title: "CTO, NexScale",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150&h=150",
-    quote: "Xornexz didn't just build our platform; they completely reimagined how we handle data scaling. The result is 10x faster and absolutely beautiful. Truly an Awwwards-level team.",
-    rating: 5,
-  },
-  {
-    id: 2,
-    name: "Michael Chen",
-    title: "Founder, FinFlow",
-    avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150&h=150",
-    quote: "Their attention to detail is unmatched. The mobile app they built for us has over 4.9 stars on the App Store, and the seamless UX is a big reason why.",
-    rating: 5,
-  },
-  {
-    id: 3,
-    name: "Elena Rodriguez",
-    title: "Director of Product, Aura",
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=150&h=150",
-    quote: "Working with them was the best decision we made this year. They took our complex requirements and delivered a streamlined, intuitive solution ahead of schedule.",
-    rating: 5,
-  }
-];
+type TestimonialItem = { id: string | number; name: string; title: string; avatar: string; quote: string; rating: number };
 
-export default function Testimonials() {
-  const [currentIndex, setCurrentIndex] = useState(0);
+export default function Testimonials({ testimonials }: { testimonials: TestimonialItem[] }) {
+  const [rawIndex, setCurrentIndex] = useState(0);
+  const currentIndex = testimonials.length ? rawIndex % testimonials.length : 0;
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -58,6 +34,8 @@ export default function Testimonials() {
 
   const handleMouseEnter = () => setIsAutoPlaying(false);
   const handleMouseLeave = () => setIsAutoPlaying(true);
+
+  if (!testimonials.length) return null;
 
   return (
     <section className="py-32 bg-[#05060A] relative overflow-hidden" id="testimonials">

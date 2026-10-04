@@ -3,46 +3,10 @@
 import { Check, Zap, Target, Users } from "lucide-react";
 import Link from "next/link";
 
-const models = [
-  {
-    name: "Fixed-Scope Project",
-    icon: Target,
-    description: "Perfect for well-defined projects with clear deliverables and timelines.",
-    features: [
-      "Fixed timeline and budget",
-      "Dedicated project manager",
-      "Defined milestones & deliverables",
-      "Best for MVPs & V1 launches"
-    ],
-    highlighted: false,
-  },
-  {
-    name: "Dedicated Team",
-    icon: Users,
-    description: "Scale your capacity instantly with our senior engineers and designers.",
-    features: [
-      "Full-time dedicated resources",
-      "Direct communication channel",
-      "Flexible priority management",
-      "Ideal for ongoing development"
-    ],
-    highlighted: true,
-  },
-  {
-    name: "Monthly Retainer",
-    icon: Zap,
-    description: "Ongoing support, maintenance, and incremental feature updates.",
-    features: [
-      "Guaranteed monthly hours",
-      "Priority response times",
-      "Regular technical audits",
-      "Continuous optimization"
-    ],
-    highlighted: false,
-  }
-];
+const ICONS = [Target, Users, Zap];
+type Model = { name: string; description: string; features: string[]; highlighted: boolean };
 
-export default function PricingSection() {
+export default function PricingSection({ models }: { models: Model[] }) {
   return (
     <section className="py-20 sm:py-32 bg-[#05060A] relative overflow-hidden" id="pricing">
       <div className="container mx-auto px-4 md:px-6">
@@ -74,7 +38,7 @@ export default function PricingSection() {
               <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${
                 model.highlighted ? "bg-violet-500/20 text-violet-400" : "bg-white/5 text-gray-400"
               }`}>
-                <model.icon className="w-7 h-7" />
+                {(() => { const Icon = ICONS[idx % ICONS.length]; return <Icon className="w-7 h-7" />; })()}
               </div>
               
               <h3 className="text-2xl font-bold text-white mb-3 font-display">{model.name}</h3>

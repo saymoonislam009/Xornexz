@@ -6,46 +6,10 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
 
-const projects = [
-  {
-    id: 1,
-    title: "Nexus Commerce",
-    client: "Nexus Retail Group",
-    category: "Web Development",
-    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2070",
-    slug: "nexus-commerce",
-    year: "2024",
-  },
-  {
-    id: 2,
-    title: "PulseHealth",
-    client: "PulseHealth Inc.",
-    category: "Mobile App",
-    image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=1470",
-    slug: "pulsehealth",
-    year: "2024",
-  },
-  {
-    id: 3,
-    title: "VaultAI",
-    client: "VaultAI (YC W24)",
-    category: "SaaS Platform",
-    image: "https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&q=80&w=2070",
-    slug: "vaultai",
-    year: "2023",
-  },
-  {
-    id: 4,
-    title: "FlowSync",
-    client: "FlowSync Logistics",
-    category: "API Integration",
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=2015",
-    slug: "flowsync",
-    year: "2023",
-  },
-];
+type FeaturedProject = { id: string | number; title: string; client: string; category: string; image: string; slug: string; year: string };
 
-export default function FeaturedProjects() {
+export default function FeaturedProjects({ projects }: { projects: FeaturedProject[] }) {
+  if (!projects.length) return null;
   return (
     <section className="py-24 bg-[#0B0D14] relative overflow-hidden" id="work">
       <div className="container mx-auto px-4 md:px-6 mb-12">
