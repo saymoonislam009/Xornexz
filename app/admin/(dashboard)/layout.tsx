@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/admin-jwt";
 import AdminShell from "@/components/admin/layout/AdminShell";
+import { ensureContentSeeded } from "@/lib/content";
 
 // ── CRITICAL: force dynamic rendering ────────────────────────────────────────
 // Without this, Next.js tries to pre-render admin pages as static HTML during
@@ -13,6 +14,10 @@ import AdminShell from "@/components/admin/layout/AdminShell";
 export const dynamic = "force-dynamic";
 
 export default async function AuthenticatedAdminLayout({ children }: { children: ReactNode }) {
+  // Make sure empty content tables are populated with the starter content so
+  // the admin panel always mirrors what the public site shows.
+  await ensureContentSeeded();
+
   // ── 1. Verify custom JWT session ─────────────────────────────────────────
   let user = null;
 

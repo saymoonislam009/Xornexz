@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, Calendar, Clock, Share2, Twitter, Linkedin, Facebook } from 'lucide-react';
 import { blogPosts } from '@/lib/data/blog';
+import { getPublicBlogPosts, ensureContentSeeded } from '@/lib/content';
 import IncrementViews from './IncrementViews'; // We'll create this client component
 
 export const metadata = {
@@ -11,9 +12,11 @@ export const metadata = {
 import { prisma } from '@/lib/db';
 
 export const dynamicParams = true;
+export const dynamic = 'force-dynamic';
 
 async function getPost(slug: string) {
   try {
+    await ensureContentSeeded();
     const dbPost = await prisma.blogPost.findUnique({
       where: { slug },
       include: { author: true },
@@ -53,7 +56,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   }
 
   // Get related posts (just pick 2 other posts)
-  const relatedPosts = blogPosts.filter((p) => p.slug !== post.slug).slice(0, 2);
+  const allPosts = await getPublicBlogPosts();
+  const relatedPosts = allPosts.filter((p) => p.slug !== post.slug).slice(0, 2);
 
   return (
     <div className="min-h-screen bg-[#05060A] text-slate-300 font-sans selection:bg-violet-500/30 pb-32">

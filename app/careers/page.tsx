@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { jobs as staticJobs } from '@/lib/data/jobs';
 import { prisma } from '@/lib/db';
+import { ensureContentSeeded } from '@/lib/content';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Careers | Xornexz',
@@ -10,11 +13,12 @@ export const metadata = {
 export default async function CareersPage() {
   let jobsList = staticJobs;
   try {
+    await ensureContentSeeded();
     const dbJobs = await prisma.job.findMany({
       where: { status: 'OPEN' },
       orderBy: { order: 'asc' },
     });
-    if (dbJobs && dbJobs.length > 0) {
+    if (dbJobs) {
       jobsList = dbJobs.map((j) => ({
         id: j.id,
         slug: j.slug,

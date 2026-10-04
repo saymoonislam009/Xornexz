@@ -525,3 +525,30 @@ html {
 
 /* Ensure horizontal scroll doesn't leak */
 body { overflow-x: hidden; }
+
+/* ── Touch / small-screen performance ────────────────────────────────────── */
+/* Heavy GPU effects (backdrop blur, giant blurred blobs, endless spinners)
+   are what make phones stutter while scrolling. Tone them down on touch. */
+@media (hover: none) and (pointer: coarse), (max-width: 767px) {
+  .backdrop-blur-sm,
+  .backdrop-blur-md,
+  .backdrop-blur-lg,
+  .backdrop-blur-xl {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  .blur-3xl,
+  .blur-\[120px\] {
+    filter: blur(40px) !important;
+  }
+  .animate-ping,
+  .animate-spin {
+    animation-duration: 3s;
+  }
+}
+
+/* `clip` avoids creating a scroll container (fixes iOS rubber-band/drag jank
+   that `overflow-x: hidden` on body causes) while still preventing overflow. */
+@supports (overflow-x: clip) {
+  html, body { overflow-x: clip; }
+}

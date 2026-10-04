@@ -6,16 +6,19 @@ import { ArrowLeft, ExternalLink, ArrowRight } from 'lucide-react';
 import type { Metadata } from 'next';
 
 import { prisma } from '@/lib/db';
+import { ensureContentSeeded } from '@/lib/content';
 
 export const dynamicParams = true;
+export const dynamic = 'force-dynamic';
 
 async function getProject(slug: string) {
   try {
+    await ensureContentSeeded();
     const dbProject = await prisma.project.findUnique({
       where: { slug },
       include: { testimonial: true },
     });
-    if (dbProject) {
+    if (dbProject && dbProject.status === 'PUBLISHED') {
       return {
         id: dbProject.id,
         slug: dbProject.slug,
@@ -49,12 +52,6 @@ async function getProject(slug: string) {
   }
 
   return projects.find((p) => p.slug === slug) || null;
-}
-
-export function generateStaticParams() {
-  return projects.map((project) => ({
-    slug: project.slug,
-  }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {

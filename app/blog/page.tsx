@@ -1,17 +1,20 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Calendar, Clock, ChevronRight } from 'lucide-react';
-import { blogPosts } from '@/lib/data/blog';
+import { getPublicBlogPosts } from '@/lib/content';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'Blog | Xornexz',
   description: 'Insights, tutorials, and updates from the Xornexz team.',
 };
 
-export default function BlogPage() {
+export default async function BlogPage() {
+  const blogPosts = await getPublicBlogPosts();
   const featuredPost = blogPosts[0];
   const gridPosts = blogPosts.slice(1);
-  const categories = ['All', 'Engineering', 'Design', 'Architecture', 'Performance'];
+  const categories = ['All', ...Array.from(new Set(blogPosts.map((p) => p.category)))];
 
   return (
     <div className="min-h-screen bg-[#05060A] text-slate-300 font-sans selection:bg-violet-500/30">
@@ -49,6 +52,10 @@ export default function BlogPage() {
       </section>
 
       {/* Featured Post */}
+      {!featuredPost && (
+        <p className="text-center text-slate-500 pb-32">No articles published yet. Check back soon.</p>
+      )}
+      {featuredPost && (
       <section className="max-w-7xl mx-auto px-6 lg:px-8 mb-24">
         <Link href={`/blog/${featuredPost.slug}`} className="group block">
           <div className="relative rounded-3xl overflow-hidden bg-white/5 border border-white/10 flex flex-col lg:flex-row transition-transform duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-violet-900/20">
@@ -99,6 +106,7 @@ export default function BlogPage() {
           </div>
         </Link>
       </section>
+      )}
 
       {/* Post Grid */}
       <section className="max-w-7xl mx-auto px-6 lg:px-8 mb-32">

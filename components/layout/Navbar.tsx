@@ -38,7 +38,8 @@ export function Navbar() {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20)
     }
-    window.addEventListener("scroll", handleScroll)
+    handleScroll()
+    window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
@@ -49,12 +50,28 @@ export function Navbar() {
     setMegaMenuOpen(false)
   }, [pathname])
 
+  // Lock page scroll while the mobile menu is open; close on Escape
+  useEffect(() => {
+    if (!mobileMenuOpen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMobileMenuOpen(false)
+    window.addEventListener("keydown", onKey)
+    return () => {
+      document.body.style.overflow = prev
+      window.removeEventListener("keydown", onKey)
+    }
+  }, [mobileMenuOpen])
+
   if (pathname?.startsWith("/admin")) return null
 
   return (
+    <>
     <header
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-        isScrolled
+      className={`fixed top-0 left-0 right-0 z-50 transition-[background-color,padding] duration-300 ${
+        mobileMenuOpen
+          ? "bg-[#05060A] border-b border-white/5 py-4"
+          : isScrolled
           ? "bg-[#05060A]/80 backdrop-blur-md border-b border-white/5 py-4"
           : "bg-transparent py-6"
       }`}
@@ -150,16 +167,22 @@ export function Navbar() {
 
           {/* Mobile Menu Toggle */}
           <button
-            className="p-2 text-gray-300 md:hidden"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            type="button"
+            className="relative z-50 -mr-2 flex h-11 w-11 items-center justify-center text-gray-300 md:hidden touch-manipulation"
+            onClick={() => setMobileMenuOpen((o) => !o)}
             aria-label="Toggle mobile menu"
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu Overlay */}
+      </header>
+
+      {/* Mobile Menu Overlay — rendered OUTSIDE <header>: the header's backdrop-filter
+          makes it the containing block for fixed children, which collapsed the overlay
+          to the header's height once the page was scrolled. */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
@@ -167,7 +190,7 @@ export function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-x-0 top-[64px] bottom-0 z-40 bg-[#05060A]/95 backdrop-blur-xl md:hidden flex flex-col border-t border-white/5"
+            className="fixed inset-0 z-40 bg-[#05060A] md:hidden flex flex-col pt-[72px]"
           >
             <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
               <nav className="flex flex-col gap-4 text-lg font-display font-medium">
@@ -275,6 +298,6 @@ export function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
-    </header>
+    </>
   )
 }
