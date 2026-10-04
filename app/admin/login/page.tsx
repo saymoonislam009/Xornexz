@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { Lock, Mail, ArrowRight, ShieldCheck, AlertCircle } from "lucide-react";
+import { redirect } from "next/navigation";
+import { Lock, User, ArrowRight, ShieldCheck, AlertCircle } from "lucide-react";
+import { getAdminSession } from "@/lib/admin-jwt";
 
-// Pure Server Component — zero JavaScript, zero React hooks.
-// The form posts natively (HTML spec) to the API route which sets cookies
-// and responds with a 303 redirect. No client-side navigation involved.
+export const dynamic = "force-dynamic";
 
 interface Props {
   searchParams: Promise<{
@@ -14,10 +14,18 @@ interface Props {
 }
 
 export default async function AdminLoginPage({ searchParams }: Props) {
+  // If user already has an active verified session, take them straight to dashboard
+  const session = await getAdminSession();
+  if (session?.id) {
+    redirect("/admin/dashboard");
+  }
+
   const params = await searchParams;
   const urlError = params.error ? decodeURIComponent(params.error) : null;
   const resetSuccess = params.reset === "success";
-  const callbackUrl = params.callbackUrl || "/admin/dashboard";
+  const callbackUrl = params.callbackUrl && params.callbackUrl !== "/admin/login" 
+    ? params.callbackUrl 
+    : "/admin/dashboard";
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#05060A] px-4 py-12 text-white">
@@ -50,12 +58,12 @@ export default async function AdminLoginPage({ searchParams }: Props) {
           )}
 
           {/*
-            IMPORTANT: This is a pure HTML form. No JavaScript. No onSubmit handler.
-            The browser sends a native POST to /api/admin-auth/login.
-            The server validates, sets httpOnly cookies, and responds with 303 redirect.
-            Works in every browser, every password manager, every autofill engine.
+            Reliable HTML form with type="text" for identifier.
+            Accepts email OR username so autofill and manual typing both work.
+            Submits natively to /api/admin-auth/login which redirects to dashboard with 303.
           */}
           <form
+            id="loginForm"
             method="POST"
             action="/api/admin-auth/login"
             className="space-y-5"
@@ -64,20 +72,23 @@ export default async function AdminLoginPage({ searchParams }: Props) {
 
             <div>
               <label
-                htmlFor="email"
+                htmlFor="identifier"
                 className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2"
               >
-                Email Address
+                Email Address or Username
               </label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500 pointer-events-none" />
                 <input
-                  id="email"
-                  type="email"
-                  name="email"
+                  id="identifier"
+                  type="text"
+                  name="identifier"
                   required
-                  placeholder="admin@xornexz.com"
+                  placeholder="admin@xornexz.com or username"
                   autoComplete="username email"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
                   className="w-full rounded-xl border border-white/10 bg-white/5 py-3 pl-10 pr-4 text-sm text-white placeholder:text-slate-600 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500 transition-all"
                 />
               </div>
@@ -113,13 +124,37 @@ export default async function AdminLoginPage({ searchParams }: Props) {
             </div>
 
             <button
+              id="submitBtn"
               type="submit"
-              className="group flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-500 py-3.5 text-sm font-semibold text-white shadow-lg transition-all hover:from-violet-500 hover:to-cyan-400 hover:shadow-[0_0_25px_rgba(124,58,237,0.35)]"
+              className="group flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-500 py-3.5 text-sm font-semibold text-white shadow-lg transition-all hover:from-violet-500 hover:to-cyan-400 hover:shadow-[0_0_25px_rgba(124,58,237,0.35)] active:scale-[0.99]"
             >
-              <span>Sign In</span>
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              <span id="btnText">Sign In</span>
+              <ArrowRight id="btnIcon" className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </button>
           </form>
+
+          {/* Client-side immediate visual feedback so user sees the click registered */}
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                (function() {
+                  var form = document.getElementById('loginForm');
+                  var btn = document.getElementById('submitBtn');
+                  var text = document.getElementById('btnText');
+                  var icon = document.getElementById('btnIcon');
+                  if (form && btn && text) {
+                    form.addEventListener('submit', function() {
+                      btn.disabled = true;
+                      btn.style.opacity = '0.75';
+                      btn.style.cursor = 'wait';
+                      text.textContent = 'Signing in...';
+                      if (icon) icon.style.display = 'none';
+                    });
+                  }
+                })();
+              `,
+            }}
+          />
         </div>
 
         <p className="mt-8 text-center text-xs text-slate-600">

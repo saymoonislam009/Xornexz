@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     estimateMin += validatedData.features.length * 1000;
     estimateMax += validatedData.features.length * 2000;
 
-    // Save to database
+    // Save to database as Estimate
     const estimate = await prisma.estimate.create({
       data: {
         name: validatedData.name,
@@ -49,6 +49,29 @@ export async function POST(req: Request) {
         ipAddress,
       },
     });
+
+    // Also create Lead record for the CRM board and dashboard KPIs
+    try {
+      const featureList = validatedData.features.length > 0 ? `\nFeatures: ${validatedData.features.join(", ")}` : "";
+      const estimateText = `\nEstimate: $${estimateMin.toLocaleString()} - $${estimateMax.toLocaleString()}`;
+      await prisma.lead.create({
+        data: {
+          name: validatedData.name,
+          email: validatedData.email,
+          phone: validatedData.phone,
+          company: validatedData.company,
+          message: `${validatedData.description || "Project estimate inquiry"}${featureList}${estimateText}`,
+          budget: validatedData.budget,
+          timeline: validatedData.timeline,
+          projectType: validatedData.projectType,
+          source: "ESTIMATOR",
+          status: "NEW",
+          ipAddress,
+        },
+      });
+    } catch (leadErr) {
+      console.warn("[estimator] Could not create lead record:", leadErr);
+    }
 
     // Send email notification
     if (process.env.RESEND_API_KEY) {

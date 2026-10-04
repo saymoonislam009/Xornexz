@@ -80,9 +80,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Navbar />
 
             {/* Page content */}
-            <div id="main-content">
+            <main id="main-content" className="w-full max-w-full overflow-x-hidden relative">
               {children}
-            </div>
+            </main>
 
             {/* Global footer */}
             <Footer />

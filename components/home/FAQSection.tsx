@@ -72,7 +72,7 @@ export default function FAQSection() {
   const rightColumn = faqs.slice(midpoint);
 
   return (
-    <section className="py-32 bg-[#05060A]" id="faq">
+    <section className="py-32 bg-[#05060A] relative overflow-hidden" id="faq">
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold font-display text-white mb-4">

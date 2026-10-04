@@ -44,7 +44,7 @@ const models = [
 
 export default function PricingSection() {
   return (
-    <section className="py-20 sm:py-32 bg-[#05060A] relative" id="pricing">
+    <section className="py-20 sm:py-32 bg-[#05060A] relative overflow-hidden" id="pricing">
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center mb-12 sm:mb-16">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-display text-white mb-3 sm:mb-4">

@@ -47,7 +47,7 @@ const projects = [
 
 export default function FeaturedProjects() {
   return (
-    <section className="py-24 bg-[#0B0D14] relative" id="work">
+    <section className="py-24 bg-[#0B0D14] relative overflow-hidden" id="work">
       <div className="container mx-auto px-4 md:px-6 mb-12">
         <div className="flex items-end justify-between">
           <div>

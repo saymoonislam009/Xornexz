@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true }) // silently discard
     }
 
-    // Save to DB with whitelisted fields only
+    // Save to DB: contactSubmission AND lead so it appears on the dashboard board and leads list
     await prisma.contactSubmission.create({
       data: { 
         name, 
@@ -64,6 +64,25 @@ export async function POST(req: NextRequest) {
         message: timeline ? `[Timeline: ${timeline}]\n\n${message}` : message 
       },
     })
+
+    // Also create Lead record for the CRM board & dashboard stats
+    try {
+      await prisma.lead.create({
+        data: {
+          name,
+          email,
+          company,
+          message: timeline ? `[Timeline: ${timeline}]\n\n${message}` : message,
+          budget,
+          timeline,
+          projectType: service || 'General Inquiry',
+          source: 'WEBSITE',
+          status: 'NEW',
+        },
+      })
+    } catch (leadErr) {
+      console.warn('[contact] Could not create lead record:', leadErr)
+    }
 
     // Send email via Resend — all user input HTML-escaped
     if (process.env.RESEND_API_KEY) {

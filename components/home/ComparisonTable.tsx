@@ -25,7 +25,7 @@ function Cell({ value }: { value: ComparisonValue }) {
 
 export default function ComparisonTable() {
   return (
-    <section className="py-20 sm:py-32 bg-[#05060A]">
+    <section className="py-20 sm:py-32 bg-[#05060A] relative overflow-hidden">
       <div className="container mx-auto px-5 sm:px-6">
         <div className="text-center mb-10 sm:mb-16">
           <motion.p
@@ -68,7 +68,7 @@ export default function ComparisonTable() {
           transition={{ duration: 0.6 }}
           className="max-w-3xl mx-auto"
         >
-          <div className="overflow-x-auto -mx-5 px-5 sm:mx-0 sm:px-0">
+          <div className="overflow-x-auto w-full">
             <div className="min-w-[520px]">
               {/* Header */}
               <div className="grid grid-cols-4 mb-3">

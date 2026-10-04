@@ -87,7 +87,7 @@ export default function CodeShowcase() {
   };
 
   return (
-    <section className="py-20 sm:py-32 bg-[#05060A]">
+    <section className="py-20 sm:py-32 bg-[#05060A] relative overflow-hidden">
       <div className="container mx-auto px-5 sm:px-6">
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
 

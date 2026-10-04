@@ -11,8 +11,9 @@ function isSafari() {
 
 export function LenisProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    // Skip on Safari (conflicts with native momentum scroll) and touch/reduced-motion
+    // Skip on Safari, touch devices (native 120Hz momentum scroll is much smoother), and reduced-motion
     if (isSafari()) return
+    if (typeof navigator !== "undefined" && navigator.maxTouchPoints > 0) return
     if (!window.matchMedia("(pointer: fine)").matches) return
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
 

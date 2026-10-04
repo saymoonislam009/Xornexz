@@ -12,7 +12,7 @@ const slots = [
 
 export default function AvailabilityBanner() {
   return (
-    <section className="py-16 sm:py-20 bg-[#0B0D14] border-t border-white/5">
+    <section className="py-16 sm:py-20 bg-[#0B0D14] border-t border-white/5 relative overflow-hidden">
       <div className="container mx-auto px-5 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 24 }}

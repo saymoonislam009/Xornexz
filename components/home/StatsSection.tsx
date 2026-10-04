@@ -56,7 +56,7 @@ function StatItem({ end, suffix = "", label, duration = 2000 }: StatItemProps) {
 
 export default function StatsSection() {
   return (
-    <section className="py-16 sm:py-24 bg-[#05060A] relative border-t border-white/5">
+    <section className="py-16 sm:py-24 bg-[#05060A] relative overflow-hidden border-t border-white/5">
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
           <StatItem end={120} suffix="+" label="Projects Delivered" />

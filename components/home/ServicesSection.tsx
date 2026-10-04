@@ -97,7 +97,7 @@ export default function ServicesSection() {
   const [active, setActive] = useState(0);
 
   return (
-    <section className="py-32 bg-[#05060A] relative" id="services">
+    <section className="py-32 bg-[#05060A] relative overflow-hidden" id="services">
       <div className="container mx-auto px-4 md:px-6">
         <div className="mb-16">
           <p className="text-xs font-semibold tracking-[0.2em] text-violet-400 uppercase mb-4">What We Do</p>

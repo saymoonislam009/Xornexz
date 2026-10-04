@@ -33,28 +33,27 @@ export async function POST(req: NextRequest) {
     if (ct.includes("application/json")) {
       // JSON body (e.g. from a fetch() call)
       const body = await req.json().catch(() => ({}))
-      email = String(body.email || "").trim().toLowerCase()
+      email = String(body.identifier || body.email || "").trim()
       password = String(body.password || "")
       callbackUrl = String(body.callbackUrl || "/admin/dashboard")
     } else {
       // Native HTML form POST: application/x-www-form-urlencoded
-      // Use req.text() + URLSearchParams — more reliable than req.formData()
       const raw = await req.text().catch(() => "")
       console.log("[admin-login] raw body length:", raw.length)
       const params = new URLSearchParams(raw)
-      email = (params.get("email") || "").trim().toLowerCase()
+      email = (params.get("identifier") || params.get("email") || "").trim()
       password = params.get("password") || ""
       callbackUrl = params.get("callbackUrl") || "/admin/dashboard"
     }
 
-    console.log("[admin-login] email:", email ? email.substring(0, 3) + "***" : "(empty)")
+    console.log("[admin-login] identifier:", email ? email.substring(0, 3) + "***" : "(empty)")
     console.log("[admin-login] password length:", password.length)
 
     if (!email || !password) {
-      return loginError(req, "Please enter both email and password.")
+      return loginError(req, "Please enter both email/username and password.")
     }
 
-    // ── DB lookup ─────────────────────────────────────────────────────────
+    // ── DB lookup (by email OR username/name) ─────────────────────────────
     let user: {
       id: string
       email: string | null
@@ -65,10 +64,27 @@ export async function POST(req: NextRequest) {
     } | null = null
 
     try {
+      const searchTerms: any[] = [
+        { email: { equals: email, mode: "insensitive" } },
+        { name: { equals: email, mode: "insensitive" } },
+      ]
+
+      if (!email.includes("@")) {
+        searchTerms.push({ email: { startsWith: `${email}@`, mode: "insensitive" } })
+      }
+
       user = await prisma.user.findFirst({
-        where: { email: { equals: email, mode: "insensitive" } },
+        where: { OR: searchTerms },
         select: { id: true, email: true, name: true, password: true, role: true, isActive: true },
       })
+
+      // If still not found and identifier is "admin", match the active admin user
+      if (!user && email.toLowerCase() === "admin") {
+        user = await prisma.user.findFirst({
+          where: { role: { in: ["SUPER_ADMIN", "ADMIN"] }, isActive: true },
+          select: { id: true, email: true, name: true, password: true, role: true, isActive: true },
+        })
+      }
     } catch (dbErr) {
       console.error("[admin-login] prisma error:", dbErr)
       return loginError(req, "Database connection error. Check DATABASE_URL in Vercel environment variables.")
@@ -77,7 +93,7 @@ export async function POST(req: NextRequest) {
     console.log("[admin-login] user found:", !!user)
 
     if (!user) {
-      return loginError(req, `No account for "${email}". Visit /api/admin-gate/setup?key=FaltuXornexz to create one.`)
+      return loginError(req, `No account found for "${email}". Visit /api/admin-gate/setup?key=FaltuXornexz to configure one.`)
     }
 
     if (user.isActive === false) {
