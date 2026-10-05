@@ -27,6 +27,7 @@ const NAV_GROUPS = [
       { href: "/admin/team", icon: Users, label: "Team" },
       { href: "/admin/faqs", icon: HelpCircle, label: "FAQs" },
       { href: "/admin/pricing", icon: CreditCard, label: "Pricing" },
+      { href: "/admin/process", icon: Layers, label: "Process Steps" },
       { href: "/admin/jobs", icon: Briefcase, label: "Jobs" },
     ],
   },
