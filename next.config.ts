@@ -13,19 +13,14 @@ const nextConfig: NextConfig = {
   },
 
   images: {
-    // Vercel Image Optimization not used for R2 (already WebP/sized client-side)
     remotePatterns: [
       {
         protocol: "https" as const,
-        hostname: mediaHostname,
+        hostname: "**",
       },
       {
-        protocol: "https" as const,
-        hostname: "images.unsplash.com",
-      },
-      {
-        protocol: "https" as const,
-        hostname: "*.r2.cloudflarestorage.com",
+        protocol: "http" as const,
+        hostname: "**",
       },
     ],
     formats: ["image/avif", "image/webp"],
@@ -35,8 +30,8 @@ const nextConfig: NextConfig = {
   async headers() {
     const cspDirectives = [
       "default-src 'self'",
-      `img-src 'self' data: blob: https://${mediaHostname} https://images.unsplash.com`,
-      `media-src 'self' https://${mediaHostname}`,
+      "img-src 'self' data: blob: https: http:",
+      "media-src 'self' https: blob: data:",
       "font-src 'self' https://fonts.gstatic.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       // Three.js needs unsafe-eval in dev; in prod use strict-dynamic

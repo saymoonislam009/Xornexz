@@ -1,4 +1,34 @@
-export const PROJECTS_DATA = [
+export interface ProjectData {
+  id: string;
+  slug: string;
+  title: string;
+  tagline: string;
+  client: string;
+  category: string;
+  tags: string[];
+  coverGradient: string;
+  coverImage?: string | null;
+  gallery?: string[];
+  liveUrl?: string | null;
+  year: string;
+  description: string;
+  challenge: string;
+  solution: string;
+  results: Record<string, { before?: string; after?: string; improvement?: string; value?: string; note?: string }>;
+  techStack: string[];
+  testimonial?: {
+    name: string;
+    title: string;
+    company: string;
+    content: string;
+    rating: number;
+    avatar?: string;
+  };
+  featured: boolean;
+  order: number;
+}
+
+export const PROJECTS_DATA: ProjectData[] = [
   {
     id: '1',
     slug: 'nexus-commerce',
@@ -8,7 +38,12 @@ export const PROJECTS_DATA = [
     category: 'Web Development',
     tags: ['E-Commerce', 'Next.js', 'Stripe', 'PostgreSQL'],
     coverGradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    coverImage: null,
+    coverImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2070',
+    gallery: [
+      'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&q=80&w=1600',
+    ],
     year: '2024',
     description:
       'Nexus Retail Group needed to replace their aging Magento setup with something that could handle 50,000+ SKUs, flash sales with 10,000 concurrent users, and a 3x YoY growth trajectory. We built them a custom Next.js commerce platform with Stripe Connect for multi-vendor payments.',
@@ -42,7 +77,12 @@ export const PROJECTS_DATA = [
     category: 'Mobile App Development',
     tags: ['Mobile', 'React Native', 'HIPAA', 'Healthcare'],
     coverGradient: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
-    coverImage: null,
+    coverImage: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=1470',
+    gallery: [
+      'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=1600',
+    ],
     year: '2024',
     description:
       'PulseHealth needed a patient-facing mobile app to replace their PDF intake forms and phone-tag follow-up system. The app needed to handle PHI (Protected Health Information) while being beautiful enough that patients actually wanted to use it.',
@@ -76,7 +116,12 @@ export const PROJECTS_DATA = [
     category: 'SaaS & Custom Software',
     tags: ['SaaS', 'AI', 'OpenAI', 'Next.js', 'Python'],
     coverGradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    coverImage: null,
+    coverImage: 'https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&q=80&w=2070',
+    gallery: [
+      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1600',
+    ],
     year: '2024',
     description:
       'VaultAI is a Y Combinator-backed startup that lets law firms, accounting firms, and enterprise legal teams upload thousands of documents and ask natural language questions about them. We built the entire product from scratch in 10 weeks.',
@@ -110,7 +155,12 @@ export const PROJECTS_DATA = [
     category: 'API & Integrations',
     tags: ['API', 'Node.js', 'Salesforce', 'HubSpot', 'Zapier'],
     coverGradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-    coverImage: null,
+    coverImage: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=2015',
+    gallery: [
+      'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&q=80&w=1600',
+    ],
     year: '2023',
     description:
       'A mid-market B2B SaaS company was managing customer data across Salesforce, HubSpot, Chargebee, Intercom, and their own product database — manually syncing them with spreadsheets and a part-time contractor. We built an integration platform that eliminated 22 hours of manual work per week.',
@@ -144,7 +194,12 @@ export const PROJECTS_DATA = [
     category: 'UI/UX Design',
     tags: ['Design System', 'Figma', 'Storybook', 'React'],
     coverGradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-    coverImage: null,
+    coverImage: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&q=80&w=2070',
+    gallery: [
+      'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1558655146-d09347e92766?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1600',
+    ],
     year: '2023',
     description:
       'Aura Digital is a digital agency with 14 product teams. Every team was building their own component library from scratch, resulting in inconsistent UIs and massive duplicated effort. We designed and built a unified design system used by all 14 teams.',
@@ -178,7 +233,12 @@ export const PROJECTS_DATA = [
     category: 'AI & Automation',
     tags: ['AI', 'Analytics', 'Python', 'Recharts', 'Automation'],
     coverGradient: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)',
-    coverImage: null,
+    coverImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2070',
+    gallery: [
+      'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&q=80&w=1200',
+      'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&q=80&w=1600',
+    ],
     year: '2024',
     description:
       'Meridian Logistics was drowning in data from their 12 logistics platforms but couldn\'t extract actionable insights without a dedicated data analyst. We built an AI-powered BI dashboard that not only visualizes data but explains anomalies and suggests actions in plain English.',

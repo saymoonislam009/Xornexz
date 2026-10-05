@@ -13,12 +13,14 @@ export interface BlogPost {
   category: string;
   tags: string[];
   coverGradient: string;
+  coverImage?: string | null;
 }
 
 export const blogPosts: BlogPost[] = [
   {
     slug: 'why-most-saas-products-fail-before-they-launch',
     title: 'Why Most SaaS Products Fail Before They Launch',
+    coverImage: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=2015',
     excerpt:
       'Most SaaS products never see a real user. Not because the idea was wrong, but because of decisions made — or avoided — during the build phase. Here is what we have learned from shipping over 30 SaaS platforms.',
     content: [
@@ -53,6 +55,7 @@ export const blogPosts: BlogPost[] = [
   {
     slug: 'hidden-cost-of-bad-api-design',
     title: 'The Hidden Cost of Bad API Design',
+    coverImage: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&q=80&w=2034',
     excerpt:
       'A poorly designed API does not just slow down your developers — it becomes a permanent tax on every product decision your company makes. Here is how to think about API design before you build.',
     content: [
@@ -67,7 +70,7 @@ export const blogPosts: BlogPost[] = [
       '<h2>What Good API Design Looks Like</h2>',
       '<p>The teams that get this right share a few habits. First, they write the API documentation before they write the API. Working from docs-first forces you to think about the consumer experience, not the implementation convenience.</p>',
       '<p>Second, they version from day one. /api/v1/ costs almost nothing to add early. It buys you the ability to iterate later without breaking existing integrations.</p>',
-      '<p>Third, they design for the 80% case. The most common operations should be simple. The advanced cases can be harder. Not the other way around.</p>',
+      'Third, they design for the 80% case. The most common operations should be simple. The advanced cases can be harder. Not the other way around.</p>',
       '<h2>Our Approach to API Projects</h2>',
       '<p>Every API integration project we take starts with an API Design Review — a structured session where we document every endpoint, its request and response shapes, its error states, and its consumer expectations before writing a single line of code. This session typically saves 3-5 weeks of development time downstream.</p>',
     ].join('\n'),
@@ -85,6 +88,7 @@ export const blogPosts: BlogPost[] = [
   {
     slug: 'designing-for-dark-mode-systematic-approach',
     title: 'Designing for Dark Mode: A Systematic Approach',
+    coverImage: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&q=80&w=2055',
     excerpt:
       'Dark mode is not about flipping colors. Done wrong, it makes your product look broken. Done right, it becomes a signature. Here is the systematic approach we use across every design system we build.',
     content: [
@@ -119,6 +123,7 @@ export const blogPosts: BlogPost[] = [
   {
     slug: 'how-we-cut-load-time-78-percent',
     title: 'How We Cut Our Client\'s Load Time by 78%',
+    coverImage: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2070',
     excerpt:
       'A step-by-step account of how we took a Next.js e-commerce site from an 8.2s LCP to under 1.8s — without rewriting the application.',
     content: [

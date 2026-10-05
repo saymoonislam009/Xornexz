@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, Calendar, Clock, Share2, Twitter, Linkedin, Facebook } from 'lucide-react';
 import { blogPosts } from '@/lib/data/blog';
@@ -34,6 +35,7 @@ async function getPost(slug: string) {
         category: dbPost.category,
         tags: dbPost.tags,
         coverGradient: 'from-violet-600 to-cyan-500',
+        coverImage: dbPost.coverImage || null,
       };
     }
   } catch {
@@ -87,7 +89,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               slug: post.slug,
               publishedAt: post.publishedAt || new Date().toISOString(),
               authorName: post.author?.name || 'Xornexz',
-              coverImage: undefined,
+              coverImage: post.coverImage || undefined,
             }),
             buildBreadcrumbSchema([
               { name: 'Home', url: 'https://xornexz.com' },
@@ -153,13 +155,27 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </div>
       </div>
       
-      {/* Cover Image Placeholder */}
+      {/* Cover Image */}
       <div className="max-w-5xl mx-auto px-6 lg:px-8 mb-16">
         <div className={`w-full aspect-[21/9] rounded-3xl bg-gradient-to-br ${post.coverGradient} shadow-2xl overflow-hidden relative`}>
-          <div className="absolute inset-0 bg-black/20" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-32 h-32 rounded-full border-4 border-white/20 border-t-white/80 animate-[spin_10s_linear_infinite]" />
-          </div>
+          {post.coverImage ? (
+            <Image
+              src={post.coverImage}
+              alt={post.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 1200px"
+              priority
+              unoptimized={post.coverImage.startsWith("data:") || post.coverImage.startsWith("blob:")}
+            />
+          ) : (
+            <>
+              <div className="absolute inset-0 bg-black/20" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-32 h-32 rounded-full border-4 border-white/20 border-t-white/80 animate-[spin_10s_linear_infinite]" />
+              </div>
+            </>
+          )}
         </div>
       </div>
       

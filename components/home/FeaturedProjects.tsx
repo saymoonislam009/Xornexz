@@ -50,6 +50,7 @@ export default function FeaturedProjects({ projects }: { projects: FeaturedProje
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, 50vw"
+                    unoptimized={project.image?.startsWith("data:") || project.image?.startsWith("blob:")}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                   <div className="absolute inset-0 bg-violet-600/0 group-hover:bg-violet-600/10 transition-colors duration-500" />

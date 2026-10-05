@@ -52,6 +52,7 @@ export default function FeaturedCaseStudy() {
               fill
               className="object-cover"
               sizes="(max-width: 1024px) 100vw, 50vw"
+              unoptimized
             />
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#0B0D14] hidden lg:block" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#05060A] via-transparent to-transparent lg:hidden" />

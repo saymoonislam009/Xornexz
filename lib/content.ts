@@ -76,6 +76,7 @@ async function runSeed() {
           content: p.solution ?? null,
           client: p.client ?? null,
           coverImage: p.coverImage ?? "",
+          gallery: p.gallery ?? [],
           category: p.category,
           tags: p.tags ?? [],
           techStack: p.techStack ?? [],
@@ -100,12 +101,15 @@ async function runSeed() {
         const minutes = parseInt(String(b.readingTime ?? "5"), 10) || 5;
         await prisma.blogPost.upsert({
           where: { slug: b.slug },
-          update: {},
+          update: {
+            coverImage: b.coverImage ?? null,
+          },
           create: {
             slug: b.slug,
             title: b.title,
             excerpt: b.excerpt,
             content: b.content,
+            coverImage: b.coverImage ?? null,
             authorId: author.id,
             category: b.category,
             tags: b.tags ?? [],
@@ -248,19 +252,33 @@ export async function getPublicProjects() {
       where: { status: "PUBLISHED" },
       orderBy: [{ order: "asc" }, { createdAt: "desc" }],
     });
-    return rows.map((p, i) => ({
-      id: p.id,
-      slug: p.slug,
-      title: p.title,
-      tagline: p.tagline,
-      client: p.client || "",
-      category: p.category,
-      tags: p.tags,
-      coverGradient: GRADIENTS[i % GRADIENTS.length],
-      coverImage: p.coverImage || null,
-      year: String((p.publishedAt ?? p.createdAt).getFullYear()),
-      featured: p.featured,
-    }));
+    return rows.map((p, i) => {
+      const staticMatch = (staticProjects as any[]).find((s) => s.slug === p.slug);
+      const defaultImg =
+        staticMatch?.coverImage ||
+        DEFAULT_FEATURED.find((d) => d.slug === p.slug)?.image ||
+        DEFAULT_FEATURED[i % DEFAULT_FEATURED.length]?.image;
+
+      const hasRealCover =
+        p.coverImage &&
+        p.coverImage.trim() !== "" &&
+        !p.coverImage.startsWith("linear-gradient");
+
+      return {
+        id: p.id,
+        slug: p.slug,
+        title: p.title,
+        tagline: p.tagline,
+        client: p.client || "",
+        category: p.category,
+        tags: p.tags && p.tags.length > 0 ? p.tags : (staticMatch?.tags || ["Engineering"]),
+        coverGradient: GRADIENTS[i % GRADIENTS.length],
+        coverImage: hasRealCover ? p.coverImage : defaultImg,
+        gallery: p.gallery && p.gallery.length > 0 ? p.gallery : (staticMatch?.gallery || []),
+        year: String((p.publishedAt ?? p.createdAt).getFullYear()),
+        featured: p.featured,
+      };
+    });
   } catch (e) {
     console.error("[content] projects fallback:", e);
     return (staticProjects as any[]).map((p) => ({ ...p }));
@@ -292,6 +310,7 @@ export async function getPublicBlogPosts() {
         category: p.category,
         tags: p.tags,
         coverGradient: BLOG_GRADIENTS[i % BLOG_GRADIENTS.length],
+        coverImage: p.coverImage || null,
       };
     });
   } catch (e) {
@@ -382,18 +401,27 @@ export async function getHomeFeaturedProjects() {
         take: 4,
       });
     }
-    return rows.map((p, i) => ({
-      id: p.id,
-      title: p.title,
-      client: p.client || "",
-      category: p.category,
-      image:
-        p.coverImage && /^https?:\/\//.test(p.coverImage)
-          ? p.coverImage
-          : DEFAULT_FEATURED[i % DEFAULT_FEATURED.length].image,
-      slug: p.slug,
-      year: String((p.publishedAt ?? p.createdAt).getFullYear()),
-    }));
+    return rows.map((p, i) => {
+      const defaultImg =
+        DEFAULT_FEATURED.find((d) => d.slug === p.slug)?.image ||
+        (staticProjects as any[]).find((s) => s.slug === p.slug)?.coverImage ||
+        DEFAULT_FEATURED[i % DEFAULT_FEATURED.length].image;
+
+      const hasRealCover =
+        p.coverImage &&
+        p.coverImage.trim() !== "" &&
+        !p.coverImage.startsWith("linear-gradient");
+
+      return {
+        id: p.id,
+        title: p.title,
+        client: p.client || "",
+        category: p.category,
+        image: hasRealCover ? p.coverImage : defaultImg,
+        slug: p.slug,
+        year: String((p.publishedAt ?? p.createdAt).getFullYear()),
+      };
+    });
   } catch (e) {
     console.error("[content] featured fallback:", e);
     return DEFAULT_FEATURED;

@@ -65,9 +65,20 @@ export default async function BlogPage() {
       <section className="max-w-7xl mx-auto px-6 lg:px-8 mb-24">
         <Link href={`/blog/${featuredPost.slug}`} className="group block">
           <div className="relative rounded-3xl overflow-hidden bg-white/5 border border-white/10 flex flex-col lg:flex-row transition-transform duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-violet-900/20">
-            <div className={`w-full lg:w-1/2 h-64 lg:h-auto bg-gradient-to-br ${featuredPost.coverGradient} opacity-90 group-hover:opacity-100 transition-opacity flex items-center justify-center`}>
-              {/* Abstract decorative element representing the image */}
-              <div className="w-32 h-32 rounded-full border-4 border-white/20 border-t-white/80 animate-[spin_10s_linear_infinite]" />
+            <div className={`w-full lg:w-1/2 min-h-[300px] lg:h-auto bg-gradient-to-br ${featuredPost.coverGradient} opacity-90 group-hover:opacity-100 transition-opacity flex items-center justify-center relative overflow-hidden`}>
+              {featuredPost.coverImage ? (
+                <Image
+                  src={featuredPost.coverImage}
+                  alt={featuredPost.title}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  priority
+                  unoptimized={featuredPost.coverImage.startsWith("data:") || featuredPost.coverImage.startsWith("blob:")}
+                />
+              ) : (
+                <div className="w-32 h-32 rounded-full border-4 border-white/20 border-t-white/80 animate-[spin_10s_linear_infinite]" />
+              )}
             </div>
             
             <div className="w-full lg:w-1/2 p-8 lg:p-12 flex flex-col justify-center">
@@ -119,7 +130,18 @@ export default async function BlogPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {gridPosts.map((post) => (
             <Link key={post.slug} href={`/blog/${post.slug}`} className="group flex flex-col h-full bg-white/[0.02] border border-white/5 rounded-2xl overflow-hidden hover:bg-white/[0.04] hover:border-white/10 transition-all duration-300">
-              <div className={`h-48 w-full bg-gradient-to-br ${post.coverGradient} opacity-80 group-hover:opacity-100 transition-opacity`} />
+              <div className={`h-48 w-full bg-gradient-to-br ${post.coverGradient} opacity-90 group-hover:opacity-100 transition-opacity relative overflow-hidden`}>
+                {post.coverImage && (
+                  <Image
+                    src={post.coverImage}
+                    alt={post.title}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    unoptimized={post.coverImage.startsWith("data:") || post.coverImage.startsWith("blob:")}
+                  />
+                )}
+              </div>
               
               <div className="p-6 flex flex-col flex-grow">
                 <div className="flex items-center justify-between mb-4">
