@@ -1,3 +1,22 @@
+import { buildMetadata, buildFAQSchema, buildLocalBusinessSchema, BASE_URL } from '@/lib/seo';
+
+export const metadata = buildMetadata({
+  title: "Xornexz — We Build What's Next",
+  description:
+    'Xornexz is a premium technology studio building websites, web apps, mobile apps, SaaS platforms, and AI-powered systems for ambitious founders and enterprises worldwide.',
+  path: '/',
+  keywords: [
+    'web development agency',
+    'software development company',
+    'SaaS development agency',
+    'mobile app development studio',
+    'AI development company',
+    'custom software development',
+    'Next.js React agency',
+    'technology studio',
+  ],
+});
+
 import { Metadata } from "next";
 import PreloaderWrapper from "@/components/home/PreloaderWrapper";
 import Hero from "@/components/home/Hero";
@@ -24,11 +43,7 @@ import { getHomeFaqs, getHomeTestimonials, getHomePricing, getHomeFeaturedProjec
 // Re-fetch admin-managed content at most every 30s so edits appear on the homepage quickly.
 export const revalidate = 30;
 
-export const metadata: Metadata = {
-  title: "Xornexz | We build what's next.",
-  description:
-    "Xornexz designs and builds websites, web apps, SaaS platforms, and AI-powered systems that make your competitors sweat.",
-};
+
 
 export default async function HomePage() {
   const [faqs, testimonials, pricing, featured] = await Promise.all([
@@ -39,7 +54,17 @@ export default async function HomePage() {
   ]);
   return (
     <>
-      <PreloaderWrapper />
+      
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([
+            buildLocalBusinessSchema(),
+            buildFAQSchema(faqs.map((f: any) => ({ question: f.question, answer: f.answer }))),
+          ]),
+        }}
+      />
+<PreloaderWrapper />
       <Hero />
       <ClientLogos />
       <StatsSection />

@@ -1,3 +1,13 @@
+import { buildMetadata } from '@/lib/seo';
+
+export const metadata = buildMetadata({
+  title: 'Careers — Join the Xornexz Team | Xornexz',
+  description:
+    'Join a world-class technology studio. Xornexz is hiring engineers, designers, and product specialists. See open roles and apply today.',
+  path: '/careers',
+  keywords: ['software engineering jobs', 'tech startup careers', 'developer jobs remote', 'design jobs tech studio'],
+});
+
 import Link from 'next/link';
 import { jobs as staticJobs } from '@/lib/data/jobs';
 import { prisma } from '@/lib/db';
@@ -5,10 +15,6 @@ import { ensureContentSeeded } from '@/lib/content';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = {
-  title: 'Careers | Xornexz',
-  description: 'Join our team and help us build the future.',
-};
 
 export default async function CareersPage() {
   let jobsList = staticJobs;

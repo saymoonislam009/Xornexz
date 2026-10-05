@@ -1,3 +1,4 @@
+import { buildMetadata, buildBreadcrumbSchema } from '@/lib/seo';
 // 
 import { PROJECTS_DATA as projects } from '@/lib/data/projects';
 import { notFound } from 'next/navigation';
@@ -54,15 +55,26 @@ async function getProject(slug: string) {
   return projects.find((p) => p.slug === slug) || null;
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+export async function generateMetadata(
+  { params }: { params: Promise<{ slug: string }> }
+): Promise<Metadata> {
   const { slug } = await params;
   const project = await getProject(slug);
-  if (!project) return { title: 'Project Not Found' };
-  
-  return {
-    title: `${project.title} | Case Study`,
-    description: project.description,
-  };
+  if (!project) return { title: 'Project Not Found | Xornexz' };
+  return buildMetadata({
+    title: `${project.title} | Xornexz Portfolio`,
+    description:
+      project.tagline ||
+      project.description ||
+      `See how Xornexz built ${project.title} — a case study.`,
+    path: `/portfolio/${slug}`,
+    keywords: [
+      project.title.toLowerCase(),
+      project.category?.toLowerCase() || 'software',
+      'case study',
+      'xornexz portfolio',
+    ],
+  });
 }
 
 export default async function CaseStudyPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -166,7 +178,20 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
                     : (resultVal as Record<string, string>).improvement || (resultVal as Record<string, string>).value || (resultVal as Record<string, string>).after || '';
                   return (
                     <div key={key}>
-                      <div className="text-4xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400 mb-1">
+                      
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            buildBreadcrumbSchema([
+              { name: 'Home', url: 'https://xornexz.com' },
+              { name: 'Portfolio', url: 'https://xornexz.com/portfolio' },
+              { name: project.title, url: `https://xornexz.com/portfolio/${project.slug}` },
+            ])
+          ),
+        }}
+      />
+<div className="text-4xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400 mb-1">
                         {display}
                       </div>
                       <div className="text-slate-400 text-sm uppercase tracking-wider">{key}</div>

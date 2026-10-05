@@ -1,16 +1,31 @@
 import type { MetadataRoute } from 'next';
 
-export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://xornexz.com';
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://xornexz.com';
 
+export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/admin/', '/api/', '/_next/'],
+        disallow: [
+          '/admin/',
+          '/admin-blocked',
+          '/api/',
+          '/_next/',
+          '/estimator/thank-you',
+        ],
+      },
+      {
+        userAgent: 'GPTBot',
+        disallow: '/',
+      },
+      {
+        userAgent: 'CCBot',
+        disallow: '/',
       },
     ],
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: `${BASE_URL}/sitemap.xml`,
+    host: BASE_URL,
   };
 }

@@ -1,3 +1,13 @@
+import { buildMetadata } from '@/lib/seo';
+
+export const metadata = buildMetadata({
+  title: 'Blog — Engineering Insights & Tech Articles | Xornexz',
+  description:
+    'Read Xornexz engineering blog — articles on web development, SaaS architecture, AI systems, React, Next.js, TypeScript, and product design.',
+  path: '/blog',
+  keywords: ['web development blog', 'software engineering blog', 'Next.js articles', 'React blog', 'SaaS engineering'],
+});
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, Calendar, Clock, ChevronRight } from 'lucide-react';
@@ -5,10 +15,6 @@ import { getPublicBlogPosts } from '@/lib/content';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = {
-  title: 'Blog | Xornexz',
-  description: 'Insights, tutorials, and updates from the Xornexz team.',
-};
 
 export default async function BlogPage() {
   const blogPosts = await getPublicBlogPosts();

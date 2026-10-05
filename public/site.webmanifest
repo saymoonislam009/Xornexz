@@ -1,0 +1,28 @@
+{
+  "name": "Xornexz",
+  "short_name": "Xornexz",
+  "description": "A premium technology studio building what's next.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#05060A",
+  "theme_color": "#7C3AED",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ]
+}

@@ -5,9 +5,6 @@ import { blogPosts } from '@/lib/data/blog';
 import { getPublicBlogPosts, ensureContentSeeded } from '@/lib/content';
 import IncrementViews from './IncrementViews'; // We'll create this client component
 
-export const metadata = {
-  title: 'Blog Post | Xornexz',
-};
 
 import { prisma } from '@/lib/db';
 
@@ -46,6 +43,24 @@ async function getPost(slug: string) {
   return blogPosts.find((p) => p.slug === slug) || null;
 }
 
+
+import { buildMetadata, buildArticleSchema, buildBreadcrumbSchema } from '@/lib/seo';
+import type { Metadata } from 'next';
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ slug: string }> }
+): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await getPost(slug);
+  if (!post) return { title: 'Post Not Found | Xornexz' };
+  return buildMetadata({
+    title: post.title,
+    description: post.excerpt || `Read ${post.title} on the Xornexz engineering blog.`,
+    path: `/blog/${slug}`,
+    keywords: Array.isArray(post.tags) ? post.tags as string[] : [],
+  });
+}
+
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   
@@ -61,7 +76,28 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   return (
     <div className="min-h-screen bg-[#05060A] text-slate-300 font-sans selection:bg-violet-500/30 pb-32">
-      <IncrementViews slug={post.slug} />
+      
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([
+            buildArticleSchema({
+              title: post.title,
+              description: post.excerpt || undefined,
+              slug: post.slug,
+              publishedAt: post.publishedAt || new Date().toISOString(),
+              authorName: post.author?.name || 'Xornexz',
+              coverImage: undefined,
+            }),
+            buildBreadcrumbSchema([
+              { name: 'Home', url: 'https://xornexz.com' },
+              { name: 'Blog', url: 'https://xornexz.com/blog' },
+              { name: post.title, url: `https://xornexz.com/blog/${post.slug}` },
+            ]),
+          ]),
+        }}
+      />
+<IncrementViews slug={post.slug} />
       
       {/* Article Header */}
       <div className="relative pt-32 pb-16 overflow-hidden">

@@ -1,4 +1,5 @@
 import "./globals.css"
+import { buildOrganizationSchema, buildWebsiteSchema } from "@/lib/seo"
 import type { Metadata, Viewport } from "next"
 import { Space_Grotesk, Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/providers/ThemeProvider"
@@ -30,39 +31,104 @@ const inter = Inter({
   display: "swap",
 })
 
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://xornexz.com';
+
 export const metadata: Metadata = {
+  metadataBase: new URL(BASE_URL),
   title: {
-    template: "%s | Xornexz",
-    default: "Xornexz — We build what's next.",
+    template: '%s | Xornexz',
+    default: 'Xornexz — We Build What\'s Next',
   },
   description:
-    "Xornexz is a technology studio that designs and builds websites, web apps, mobile apps, SaaS platforms, and AI-powered systems.",
-  keywords: ["web development", "mobile apps", "SaaS", "software agency", "UI/UX design", "AI integration"],
-  authors: [{ name: "Xornexz" }],
-  creator: "Xornexz",
+    'Xornexz is a premium technology studio building websites, web apps, mobile apps, SaaS platforms, and AI-powered systems for ambitious founders and enterprises.',
+  keywords: [
+    'web development agency',
+    'software development studio',
+    'SaaS development',
+    'mobile app development',
+    'React Next.js development',
+    'UI UX design agency',
+    'AI automation development',
+    'custom software development',
+    'web application development',
+    'startup tech studio',
+    'enterprise software development',
+    'TypeScript React agency',
+  ],
+  authors: [{ name: 'Xornexz', url: BASE_URL }],
+  creator: 'Xornexz',
+  publisher: 'Xornexz',
+  category: 'Technology',
+  classification: 'Business',
+  alternates: {
+    canonical: BASE_URL,
+  },
   openGraph: {
-    type: "website",
-    locale: "en_US",
-    url: "https://xornexz.com",
-    siteName: "Xornexz",
-    title: "Xornexz — We build what's next.",
-    description: "A premium software studio building futuristic digital experiences.",
+    type: 'website',
+    locale: 'en_US',
+    url: BASE_URL,
+    siteName: 'Xornexz',
+    title: 'Xornexz — We Build What\'s Next',
+    description:
+      'A premium technology studio building world-class websites, SaaS platforms, mobile apps, and AI systems.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Xornexz — We Build What\'s Next',
+      },
+    ],
   },
   twitter: {
-    card: "summary_large_image",
-    title: "Xornexz — We build what's next.",
-    description: "A premium software studio building futuristic digital experiences.",
+    card: 'summary_large_image',
+    site: '@xornexz',
+    creator: '@xornexz',
+    title: 'Xornexz — We Build What\'s Next',
+    description:
+      'A premium technology studio building world-class websites, SaaS platforms, mobile apps, and AI systems.',
+    images: ['/og-image.png'],
   },
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
-}
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
+  manifest: '/site.webmanifest',
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION || '',
+  },
+};
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning className={`${spaceGrotesk.variable} ${inter.variable}`}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      </head>
       <body className="font-sans bg-[#05060A] text-white antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+        {/* JSON-LD: Organization + WebSite structured data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([
+              buildOrganizationSchema(),
+              buildWebsiteSchema(),
+            ]),
+          }}
+        />
         <ScrollProgress />
         {/* Skip to content — accessibility */}
         <a
