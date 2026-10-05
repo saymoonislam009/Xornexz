@@ -70,24 +70,27 @@ export function Navbar() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-[background-color,padding] duration-300 ${
         mobileMenuOpen
-          ? "bg-[#05060A] border-b border-white/5 py-4"
+          ? "bg-white/95 dark:bg-[#05060A]/95 border-b border-slate-200 dark:border-white/5 py-4"
           : isScrolled
-          ? "bg-[#05060A]/80 backdrop-blur-md border-b border-white/5 py-4"
-          : "bg-transparent py-6"
+          ? "bg-white/85 dark:bg-[#05060A]/85 backdrop-blur-md border-b border-slate-200/80 dark:border-white/5 py-4 shadow-sm dark:shadow-none"
+          : "bg-transparent py-5"
       }`}
     >
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="group flex items-center gap-2">
-            <span className="font-display text-2xl font-bold tracking-tighter text-white dark:text-white [html:not(.dark)_&]:text-gray-900 transition-all group-hover:bg-gradient-to-r group-hover:from-violet-500 group-hover:to-cyan-400 group-hover:bg-clip-text group-hover:text-transparent">
-              Xornexz
+          <Link href="/" className="group flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-600 via-purple-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-violet-500/25 group-hover:scale-105 transition-transform duration-200">
+              <span className="text-white font-black text-sm font-display tracking-wider">X</span>
+            </div>
+            <span className="font-display text-2xl font-black tracking-tight text-slate-950 dark:text-white transition-colors">
+              X<span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-500 to-cyan-400">ornexz</span>
             </span>
           </Link>
 
           {/* Desktop Nav */}
           <nav className="hidden items-center gap-8 md:flex">
-            <Link href="/" className={`text-sm font-medium transition-colors hover:text-cyan-400 ${pathname === "/" ? "text-cyan-400" : "text-gray-300 [html:not(.dark)_&]:text-gray-700"}`}>
+            <Link href="/" className={`text-sm font-medium transition-colors hover:text-cyan-500 dark:hover:text-cyan-400 ${pathname === "/" ? "text-cyan-500 dark:text-cyan-400 font-semibold" : "text-slate-700 dark:text-gray-300"}`}>
               Home
             </Link>
             
@@ -97,7 +100,7 @@ export function Navbar() {
               onMouseEnter={() => setMegaMenuOpen(true)}
               onMouseLeave={() => setMegaMenuOpen(false)}
             >
-              <button className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-cyan-400 ${pathname.startsWith("/services") ? "text-cyan-400" : "text-gray-300 [html:not(.dark)_&]:text-gray-700"}`}>
+              <button className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-cyan-500 dark:hover:text-cyan-400 ${pathname.startsWith("/services") ? "text-cyan-500 dark:text-cyan-400 font-semibold" : "text-slate-700 dark:text-gray-300"}`}>
                 Services <ChevronDown className="h-4 w-4" />
               </button>
               
@@ -108,21 +111,21 @@ export function Navbar() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute left-1/2 top-full mt-4 w-[600px] -translate-x-1/2 rounded-xl border border-white/10 bg-[#0B0D14] p-6 shadow-2xl"
+                    className="absolute left-1/2 top-full mt-4 w-[600px] -translate-x-1/2 rounded-xl border border-slate-200 dark:border-white/10 bg-white/95 dark:bg-[#0B0D14] p-6 shadow-2xl backdrop-blur-md"
                   >
                     <div className="grid grid-cols-2 gap-4">
                       {services.map((s) => (
                         <Link 
                           key={s.name} 
                           href={`/services/${s.slug}`}
-                          className="group flex items-start gap-4 rounded-lg p-3 transition-colors hover:bg-white/5"
+                          className="group flex items-start gap-4 rounded-lg p-3 transition-colors hover:bg-slate-100 dark:hover:bg-white/5"
                         >
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-400 transition-colors group-hover:bg-cyan-500/10 group-hover:text-cyan-400">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-violet-500/10 text-violet-500 dark:text-violet-400 transition-colors group-hover:bg-cyan-500/10 group-hover:text-cyan-500 dark:group-hover:text-cyan-400">
                             <s.icon className="h-5 w-5" />
                           </div>
                           <div>
-                            <h4 className="text-sm font-semibold text-white group-hover:text-cyan-300">{s.name}</h4>
-                            <p className="text-xs text-gray-400">{s.tag}</p>
+                            <h4 className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-cyan-500 dark:group-hover:text-cyan-300">{s.name}</h4>
+                            <p className="text-xs text-slate-500 dark:text-gray-400">{s.tag}</p>
                           </div>
                         </Link>
                       ))}
@@ -132,26 +135,26 @@ export function Navbar() {
               </AnimatePresence>
             </div>
 
-            <Link href="/portfolio" className={`text-sm font-medium transition-colors hover:text-cyan-400 ${pathname === "/portfolio" ? "text-cyan-400" : "text-gray-300 [html:not(.dark)_&]:text-gray-700"}`}>Portfolio</Link>
-            <Link href="/about" className={`text-sm font-medium transition-colors hover:text-cyan-400 ${pathname === "/about" ? "text-cyan-400" : "text-gray-300 [html:not(.dark)_&]:text-gray-700"}`}>About</Link>
-            <Link href="/process" className={`text-sm font-medium transition-colors hover:text-cyan-400 ${pathname === "/process" ? "text-cyan-400" : "text-gray-300 [html:not(.dark)_&]:text-gray-700"}`}>Process</Link>
-            <Link href="/pricing" className={`text-sm font-medium transition-colors hover:text-cyan-400 ${pathname === "/pricing" ? "text-cyan-400" : "text-gray-300 [html:not(.dark)_&]:text-gray-700"}`}>Pricing</Link>
-            <Link href="/blog" className={`text-sm font-medium transition-colors hover:text-cyan-400 ${pathname === "/blog" ? "text-cyan-400" : "text-gray-300 [html:not(.dark)_&]:text-gray-700"}`}>Blog</Link>
+            <Link href="/portfolio" className={`text-sm font-medium transition-colors hover:text-cyan-500 dark:hover:text-cyan-400 ${pathname === "/portfolio" ? "text-cyan-500 dark:text-cyan-400 font-semibold" : "text-slate-700 dark:text-gray-300"}`}>Portfolio</Link>
+            <Link href="/about" className={`text-sm font-medium transition-colors hover:text-cyan-500 dark:hover:text-cyan-400 ${pathname === "/about" ? "text-cyan-500 dark:text-cyan-400 font-semibold" : "text-slate-700 dark:text-gray-300"}`}>About</Link>
+            <Link href="/process" className={`text-sm font-medium transition-colors hover:text-cyan-500 dark:hover:text-cyan-400 ${pathname === "/process" ? "text-cyan-500 dark:text-cyan-400 font-semibold" : "text-slate-700 dark:text-gray-300"}`}>Process</Link>
+            <Link href="/pricing" className={`text-sm font-medium transition-colors hover:text-cyan-500 dark:hover:text-cyan-400 ${pathname === "/pricing" ? "text-cyan-500 dark:text-cyan-400 font-semibold" : "text-slate-700 dark:text-gray-300"}`}>Pricing</Link>
+            <Link href="/blog" className={`text-sm font-medium transition-colors hover:text-cyan-500 dark:hover:text-cyan-400 ${pathname === "/blog" ? "text-cyan-500 dark:text-cyan-400 font-semibold" : "text-slate-700 dark:text-gray-300"}`}>Blog</Link>
           </nav>
 
           {/* Desktop Right */}
           <div className="hidden items-center gap-4 md:flex">
             <button
               onClick={toggleTheme}
-              className="rounded-full p-2 text-gray-300 transition-colors hover:bg-white/10 hover:text-white"
+              className="rounded-full p-2 text-slate-700 dark:text-gray-300 transition-colors hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-950 dark:hover:text-white"
               aria-label="Toggle theme"
               type="button"
             >
               {mounted ? (
                 resolvedTheme === "dark" ? (
-                  <Sun className="h-5 w-5 text-amber-300 transition-transform duration-200 hover:rotate-45" />
+                  <Sun className="h-5 w-5 text-amber-500 dark:text-amber-300 transition-transform duration-200 hover:rotate-45" />
                 ) : (
-                  <Moon className="h-5 w-5 text-cyan-400 transition-transform duration-200 hover:-rotate-12" />
+                  <Moon className="h-5 w-5 text-cyan-600 dark:text-cyan-400 transition-transform duration-200 hover:-rotate-12" />
                 )
               ) : (
                 <div className="h-5 w-5" />
@@ -168,7 +171,7 @@ export function Navbar() {
           {/* Mobile Menu Toggle */}
           <button
             type="button"
-            className="relative z-50 -mr-2 flex h-11 w-11 items-center justify-center text-gray-300 md:hidden touch-manipulation"
+            className="relative z-50 -mr-2 flex h-11 w-11 items-center justify-center text-slate-900 dark:text-gray-100 md:hidden touch-manipulation hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg"
             onClick={() => setMobileMenuOpen((o) => !o)}
             aria-label="Toggle mobile menu"
             aria-expanded={mobileMenuOpen}
@@ -180,9 +183,7 @@ export function Navbar() {
 
       </header>
 
-      {/* Mobile Menu Overlay — rendered OUTSIDE <header>: the header's backdrop-filter
-          makes it the containing block for fixed children, which collapsed the overlay
-          to the header's height once the page was scrolled. */}
+      {/* Mobile Menu Overlay */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
@@ -190,31 +191,31 @@ export function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-[#05060A] md:hidden flex flex-col pt-[72px] mobile-menu-overlay"
+            className="fixed inset-0 z-40 bg-white/98 dark:bg-[#05060A] md:hidden flex flex-col pt-[72px] mobile-menu-overlay"
           >
             <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
               <nav className="flex flex-col gap-4 text-lg font-display font-medium">
                 <Link
                   href="/"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`py-2 transition-colors ${pathname === "/" ? "text-cyan-400" : "text-white [html:not(.dark)_&]:text-gray-800"}`}
+                  className={`py-2 transition-colors ${pathname === "/" ? "text-cyan-500 dark:text-cyan-400 font-semibold" : "text-slate-900 dark:text-white"}`}
                 >
                   Home
                 </Link>
 
                 <div className="flex flex-col gap-2 py-1">
-                  <span className="text-xs uppercase font-semibold tracking-wider text-gray-500">
+                  <span className="text-xs uppercase font-semibold tracking-wider text-slate-500 dark:text-gray-500">
                     Services
                   </span>
-                  <div className="grid grid-cols-1 gap-2 pl-2 border-l border-white/10">
+                  <div className="grid grid-cols-1 gap-2 pl-2 border-l border-slate-200 dark:border-white/10">
                     {services.map((s) => (
                       <Link
                         key={s.name}
                         href={`/services/${s.slug}`}
                         onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-3 py-1.5 text-sm text-gray-300 hover:text-cyan-400 transition-colors"
+                        className="flex items-center gap-3 py-1.5 text-sm text-slate-700 dark:text-gray-300 hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors"
                       >
-                        <s.icon className="h-4 w-4 text-cyan-400 shrink-0" />
+                        <s.icon className="h-4 w-4 text-cyan-500 dark:text-cyan-400 shrink-0" />
                         <span>{s.name}</span>
                       </Link>
                     ))}
@@ -224,42 +225,42 @@ export function Navbar() {
                 <Link
                   href="/portfolio"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`py-2 transition-colors ${pathname === "/portfolio" ? "text-cyan-400" : "text-white [html:not(.dark)_&]:text-gray-800"}`}
+                  className={`py-2 transition-colors ${pathname === "/portfolio" ? "text-cyan-500 dark:text-cyan-400 font-semibold" : "text-slate-900 dark:text-white"}`}
                 >
                   Portfolio
                 </Link>
                 <Link
                   href="/about"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`py-2 transition-colors ${pathname === "/about" ? "text-cyan-400" : "text-white [html:not(.dark)_&]:text-gray-800"}`}
+                  className={`py-2 transition-colors ${pathname === "/about" ? "text-cyan-500 dark:text-cyan-400 font-semibold" : "text-slate-900 dark:text-white"}`}
                 >
                   About
                 </Link>
                 <Link
                   href="/process"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`py-2 transition-colors ${pathname === "/process" ? "text-cyan-400" : "text-white [html:not(.dark)_&]:text-gray-800"}`}
+                  className={`py-2 transition-colors ${pathname === "/process" ? "text-cyan-500 dark:text-cyan-400 font-semibold" : "text-slate-900 dark:text-white"}`}
                 >
                   Process
                 </Link>
                 <Link
                   href="/pricing"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`py-2 transition-colors ${pathname === "/pricing" ? "text-cyan-400" : "text-white [html:not(.dark)_&]:text-gray-800"}`}
+                  className={`py-2 transition-colors ${pathname === "/pricing" ? "text-cyan-500 dark:text-cyan-400 font-semibold" : "text-slate-900 dark:text-white"}`}
                 >
                   Pricing
                 </Link>
                 <Link
                   href="/blog"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`py-2 transition-colors ${pathname === "/blog" ? "text-cyan-400" : "text-white [html:not(.dark)_&]:text-gray-800"}`}
+                  className={`py-2 transition-colors ${pathname === "/blog" ? "text-cyan-500 dark:text-cyan-400 font-semibold" : "text-slate-900 dark:text-white"}`}
                 >
                   Blog
                 </Link>
                 <Link
                   href="/contact"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`py-2 transition-colors ${pathname === "/contact" ? "text-cyan-400" : "text-white [html:not(.dark)_&]:text-gray-800"}`}
+                  className={`py-2 transition-colors ${pathname === "/contact" ? "text-cyan-500 dark:text-cyan-400 font-semibold" : "text-slate-900 dark:text-white"}`}
                 >
                   Contact
                 </Link>
@@ -269,23 +270,23 @@ export function Navbar() {
                 <Link
                   href="/contact"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block w-full text-center rounded-xl bg-gradient-to-r from-violet-600 to-cyan-500 py-3 text-sm font-semibold text-white shadow-lg"
+                  className="block w-full text-center rounded-xl bg-gradient-to-r from-violet-600 to-cyan-500 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-500/25"
                 >
                   Start a Project
                 </Link>
 
-                <div className="flex items-center justify-between pt-2 border-t border-white/10 text-xs text-gray-400">
+                <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-white/10 text-xs text-slate-600 dark:text-gray-400">
                   <span>Theme</span>
                   <button
                     onClick={toggleTheme}
                     type="button"
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white transition-colors hover:bg-white/10"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white transition-colors hover:bg-slate-200 dark:hover:bg-white/10"
                   >
                     {mounted ? (
                       resolvedTheme === "dark" ? (
-                        <Sun className="h-4 w-4 text-amber-300" />
+                        <Sun className="h-4 w-4 text-amber-500 dark:text-amber-300" />
                       ) : (
-                        <Moon className="h-4 w-4 text-cyan-400" />
+                        <Moon className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
                       )
                     ) : (
                       <div className="h-4 w-4" />

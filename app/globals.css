@@ -510,25 +510,17 @@ html {
   scroll-behavior: auto;
 }
 
-/* ── Mobile bare layout improvements ─────────────────────────────────────── */
+/* ── Mobile layout improvements ─────────────────────────────────────────── */
 @media (max-width: 639px) {
-  /* Prevent any horizontal overflow on mobile */
   .overflow-hidden { overflow: hidden; }
-  
-  /* Kinetic marquee: smaller text so it doesn't cause layout shifts */
   .animate-marquee-fast { will-change: transform; }
-  
-  /* Section padding tightening */
   section { padding-left: 1.25rem; padding-right: 1.25rem; }
   section .container { padding-left: 0; padding-right: 0; }
 }
 
-/* Ensure horizontal scroll doesn't leak */
 body { overflow-x: hidden; }
 
 /* ── Touch / small-screen performance ────────────────────────────────────── */
-/* Heavy GPU effects (backdrop blur, giant blurred blobs, endless spinners)
-   are what make phones stutter while scrolling. Tone them down on touch. */
 @media (hover: none) and (pointer: coarse), (max-width: 767px) {
   .backdrop-blur-sm,
   .backdrop-blur-md,
@@ -547,105 +539,201 @@ body { overflow-x: hidden; }
   }
 }
 
-/* `clip` avoids creating a scroll container (fixes iOS rubber-band/drag jank
-   that `overflow-x: hidden` on body causes) while still preventing overflow. */
 @supports (overflow-x: clip) {
   html, body { overflow-x: clip; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   LIGHT MODE OVERRIDES — dark-first site, light mode mapped via CSS
+   PREMIUM LUXURY LIGHT THEME (Stripe / Linear Caliber)
    ═══════════════════════════════════════════════════════════════════════════ */
+html.light,
 html:not(.dark) {
-  --bg-page:  #F4F4F7;
-  --bg-card:  #FFFFFF;
-  --bg-card2: #EEEEF3;
-  --border-col: rgba(0,0,0,0.09);
-  --txt-primary:   #0D0D12;
-  --txt-secondary: #4A4A5C;
-  --txt-muted:     #74748A;
-  background-color: var(--bg-page);
-  color: var(--txt-primary);
   color-scheme: light;
+  --bg-page: #F8FAFC;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #F8FAFC;
+  --border-light: rgba(15, 23, 42, 0.08);
+  --border-light-hover: rgba(124, 58, 237, 0.28);
+  --text-main: #090D1A;
+  --text-body: #334155;
+  --text-muted: #64748B;
+  --card-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 1px 4px -1px rgba(15, 23, 42, 0.02);
+  --card-shadow-hover: 0 12px 30px -4px rgba(124, 58, 237, 0.1), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
+  background-color: var(--bg-page);
+  color: var(--text-main);
 }
 html.dark { color-scheme: dark; }
 
 /* Backgrounds */
+html.light body,
+html:not(.dark) body {
+  background-color: var(--bg-page) !important;
+  color: var(--text-main) !important;
+}
+
+html.light section,
 html:not(.dark) section {
   background-color: var(--bg-page) !important;
 }
-html:not(.dark) [class*="bg-\[\#05060"] {
+
+html.light [class*="bg-[#05060A]"],
+html:not(.dark) [class*="bg-[#05060A]"],
+html.light [class*="bg-[#05060a]"],
+html:not(.dark) [class*="bg-[#05060a]"] {
   background-color: var(--bg-page) !important;
 }
-html:not(.dark) [class*="bg-\[\#0B0D"],
-html:not(.dark) [class*="bg-\[\#0E10"] {
+
+html.light [class*="bg-[#0B0D14]"],
+html:not(.dark) [class*="bg-[#0B0D14]"],
+html.light [class*="bg-[#0E1018]"],
+html:not(.dark) [class*="bg-[#0E1018]"],
+html.light [class*="bg-[#0A0D14]"],
+html:not(.dark) [class*="bg-[#0A0D14]"] {
   background-color: var(--bg-card) !important;
-}
-html:not(.dark) [class*="bg-white/5"],
-html:not(.dark) [class*="bg-white/10"],
-html:not(.dark) [class*="bg-white/\[0.0"] {
-  background-color: rgba(0,0,0,0.04) !important;
+  box-shadow: var(--card-shadow);
 }
 
-/* Text */
-html:not(.dark) .text-white { color: var(--txt-primary) !important; }
-html:not(.dark) .text-gray-300 { color: var(--txt-secondary) !important; }
-html:not(.dark) .text-gray-400 { color: var(--txt-secondary) !important; }
-html:not(.dark) .text-gray-500 { color: var(--txt-muted) !important; }
-html:not(.dark) .text-gray-600 { color: var(--txt-muted) !important; }
-html:not(.dark) .text-gray-700 { color: var(--txt-muted) !important; }
-/* Keep gradient text working */
-html:not(.dark) [class*="bg-clip-text"] { -webkit-text-fill-color: transparent !important; }
+/* Card surfaces */
+html.light [class*="bg-white/[0.02]"],
+html:not(.dark) [class*="bg-white/[0.02]"],
+html.light [class*="bg-white/[0.03]"],
+html:not(.dark) [class*="bg-white/[0.03]"],
+html.light [class*="bg-white/[0.04]"],
+html:not(.dark) [class*="bg-white/[0.04]"] {
+  background-color: var(--bg-card) !important;
+  box-shadow: var(--card-shadow);
+}
+
+html.light [class*="bg-white/5"],
+html:not(.dark) [class*="bg-white/5"] {
+  background-color: rgba(15, 23, 42, 0.03) !important;
+}
+
+html.light [class*="bg-white/10"],
+html:not(.dark) [class*="bg-white/10"] {
+  background-color: rgba(15, 23, 42, 0.05) !important;
+}
 
 /* Borders */
-html:not(.dark) [class*="border-white/"] { border-color: var(--border-col) !important; }
-html:not(.dark) [class*="divide-white/"] > * + * { border-color: var(--border-col) !important; }
-
-/* Navbar */
-html:not(.dark) header {
-  background-color: rgba(244,244,247,0.93) !important;
-  border-bottom: 1px solid var(--border-col) !important;
-  backdrop-filter: blur(14px) !important;
-  -webkit-backdrop-filter: blur(14px) !important;
+html.light [class*="border-white/5"],
+html:not(.dark) [class*="border-white/5"],
+html.light [class*="border-white/10"],
+html:not(.dark) [class*="border-white/10"],
+html.light [class*="border-white/15"],
+html:not(.dark) [class*="border-white/15"],
+html.light [class*="border-white/20"],
+html:not(.dark) [class*="border-white/20"],
+html.light [class*="border-white/[0.0"],
+html:not(.dark) [class*="border-white/[0.0"] {
+  border-color: var(--border-light) !important;
 }
 
-/* Mobile menu overlay */
-html:not(.dark) .mobile-menu-overlay {
-  background-color: rgba(244,244,247,0.98) !important;
+/* Headings & Text */
+html.light h1:not([class*="bg-clip-text"]),
+html:not(.dark) h1:not([class*="bg-clip-text"]),
+html.light h2:not([class*="bg-clip-text"]),
+html:not(.dark) h2:not([class*="bg-clip-text"]),
+html.light h3:not([class*="bg-clip-text"]),
+html:not(.dark) h3:not([class*="bg-clip-text"]),
+html.light h4:not([class*="bg-clip-text"]),
+html:not(.dark) h4:not([class*="bg-clip-text"]) {
+  color: var(--text-main) !important;
 }
 
-/* Cards */
-html:not(.dark) [class*="rounded"][class*="border"] {
-  border-color: var(--border-col) !important;
+html.light p,
+html:not(.dark) p {
+  color: var(--text-body);
 }
 
-/* Code blocks — keep dark for readability */
-html:not(.dark) pre,
-html:not(.dark) code,
-html:not(.dark) [class*="font-mono"] {
-  background-color: #1e1e2e !important;
-  color: #cdd6f4 !important;
+html.light .text-gray-400,
+html:not(.dark) .text-gray-400,
+html.light .text-gray-500,
+html:not(.dark) .text-gray-500,
+html.light .text-gray-600,
+html:not(.dark) .text-gray-600 {
+  color: var(--text-muted) !important;
 }
 
-/* Footer */
+html.light .text-gray-300,
+html:not(.dark) .text-gray-300 {
+  color: var(--text-body) !important;
+}
+
+/* Gradient text remains vivid and translucent */
+html.light [class*="bg-clip-text"],
+html:not(.dark) [class*="bg-clip-text"] {
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* Gradient buttons and badges MUST retain white text */
+html.light [class*="bg-gradient-to-"] .text-white,
+html:not(.dark) [class*="bg-gradient-to-"] .text-white,
+html.light [class*="bg-gradient-to-"] [class*="text-white"],
+html:not(.dark) [class*="bg-gradient-to-"] [class*="text-white"],
+html.light [class*="from-violet-"] [class*="text-white"],
+html:not(.dark) [class*="from-violet-"] [class*="text-white"],
+html.light a[class*="bg-gradient-"],
+html:not(.dark) a[class*="bg-gradient-"],
+html.light button[class*="bg-gradient-"],
+html:not(.dark) button[class*="bg-gradient-"],
+html.light .btn-gradient,
+html:not(.dark) .btn-gradient {
+  color: #FFFFFF !important;
+}
+
+/* Featured projects dark image cards: text must remain white */
+html.light [class*="from-black"] ~ div h3,
+html:not(.dark) [class*="from-black"] ~ div h3,
+html.light [class*="from-black"] ~ div span,
+html:not(.dark) [class*="from-black"] ~ div span {
+  color: #FFFFFF !important;
+}
+html.light [class*="from-black"] ~ div p,
+html:not(.dark) [class*="from-black"] ~ div p {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Footer in light mode */
+html.light footer,
 html:not(.dark) footer {
-  background-color: #EAEAEF !important;
-  border-top: 1px solid var(--border-col) !important;
+  background-color: #EDF2F7 !important;
+  border-top: 1px solid var(--border-light) !important;
 }
 
-/* FAQ accordion items */
-html:not(.dark) [data-radix-accordion-item],
-html:not(.dark) [data-state] {
-  border-color: var(--border-col) !important;
+html.light footer .text-gray-400,
+html:not(.dark) footer .text-gray-400,
+html.light footer .text-gray-500,
+html:not(.dark) footer .text-gray-500 {
+  color: var(--text-muted) !important;
+}
+
+html.light footer .text-white,
+html:not(.dark) footer .text-white {
+  color: var(--text-main) !important;
+}
+
+/* Code blocks stay dark for high-contrast syntax highlighting */
+html.light pre,
+html:not(.dark) pre,
+html.light code,
+html:not(.dark) code,
+html.light [class*="font-mono"],
+html:not(.dark) [class*="font-mono"] {
+  background-color: #0F172A !important;
+  color: #E2E8F0 !important;
+}
+
+/* Accordion in light mode */
+html.light [data-state="open"],
+html:not(.dark) [data-state="open"],
+html.light [data-state="closed"],
+html:not(.dark) [data-state="closed"] {
   background-color: var(--bg-card) !important;
+  border-color: var(--border-light) !important;
 }
 
-/* Accent colours in light mode */
-html:not(.dark) [class*="text-violet-4"],
-html:not(.dark) [class*="text-violet-5"] { color: #6d28d9 !important; }
-html:not(.dark) [class*="text-cyan-4"],
-html:not(.dark) [class*="text-cyan-5"]   { color: #0e7490 !important; }
-
-/* Decorative glows — tone down on light */
-html:not(.dark) [class*="blur-\["] { opacity: 0.25 !important; }
-html:not(.dark) [class*="blur-3xl"]  { opacity: 0.2 !important; }
+/* Hover effects on cards in light mode */
+html.light [class*="rounded-2xl"]:hover,
+html:not(.dark) [class*="rounded-2xl"]:hover {
+  box-shadow: var(--card-shadow-hover);
+}
