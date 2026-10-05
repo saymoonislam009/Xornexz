@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { UploadCloud, X } from "lucide-react";
-import Image from "next/image";
+import { UploadCloud, X, Link as LinkIcon, Check } from "lucide-react";
 
 interface MediaPickerProps {
   value?: string;
@@ -10,6 +9,7 @@ interface MediaPickerProps {
   onRemove: () => void;
   label?: string;
   maxSizeMB?: number;
+  folder?: "uploads" | "blog" | "projects" | "team" | "services" | "logos" | "testimonials" | (string & {});
 }
 
 export default function MediaPicker({
@@ -17,15 +17,23 @@ export default function MediaPicker({
   onChange,
   onRemove,
   label = "Upload Media",
-  maxSizeMB = 5,
+  maxSizeMB = 4,
+  folder = "uploads",
 }: MediaPickerProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [urlMode, setUrlMode] = useState(false);
+  const [urlInput, setUrlInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const convertToWebP = (file: File): Promise<File> => {
+    // If already webp or svg/gif, don't re-compress
+    if (file.type === "image/svg+xml" || file.type === "image/gif") {
+      return Promise.resolve(file);
+    }
+
     return new Promise((resolve, reject) => {
       const img = document.createElement("img");
       const url = URL.createObjectURL(file);
@@ -36,9 +44,9 @@ export default function MediaPicker({
         const ctx = canvas.getContext("2d");
         if (!ctx) return reject(new Error("Failed to get canvas context"));
 
-        // Resize if too large (max 1920x1920)
+        // Resize down if too large (max 1600px dimension)
         let { width, height } = img;
-        const MAX_DIM = 1920;
+        const MAX_DIM = 1600;
         if (width > MAX_DIM || height > MAX_DIM) {
           const ratio = Math.min(MAX_DIM / width, MAX_DIM / height);
           width = Math.round(width * ratio);
@@ -60,13 +68,14 @@ export default function MediaPicker({
             resolve(webpFile);
           },
           "image/webp",
-          0.85
+          0.82
         );
       };
 
       img.onerror = () => {
         URL.revokeObjectURL(url);
-        reject(new Error("Failed to load image for conversion"));
+        // Fallback: upload original file directly if canvas fails
+        resolve(file);
       };
 
       img.src = url;
@@ -89,59 +98,33 @@ export default function MediaPicker({
         throw new Error(`File is too large (max ${maxSizeMB}MB)`);
       }
 
-      const presignRes = await fetch("/api/admin/media/presign", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          filename: fileToUpload.name,
-          contentType: fileToUpload.type,
-          size: fileToUpload.size,
-        }),
-      });
+      const fd = new FormData();
+      fd.append("file", fileToUpload);
+      fd.append("folder", folder);
 
-      if (!presignRes.ok) {
-        const errData = await presignRes.json();
-        throw new Error(errData.error || "Failed to get upload URL");
-      }
-
-      const { url, key } = await presignRes.json();
-
-      await new Promise<void>((resolve, reject) => {
+      const media = await new Promise<{ url: string }>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        xhr.open("PUT", url, true);
-        xhr.setRequestHeader("Content-Type", fileToUpload.type);
-
+        xhr.open("POST", "/api/admin/media/upload", true);
         xhr.upload.onprogress = (e) => {
-          if (e.lengthComputable) {
-            const percentComplete = Math.round((e.loaded / e.total) * 100);
-            setProgress(percentComplete);
-          }
+          if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100));
         };
-
         xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve();
+          let data: { media?: { url?: string }; error?: string } = {};
+          try {
+            data = JSON.parse(xhr.responseText);
+          } catch {}
+          if (xhr.status >= 200 && xhr.status < 300 && data.media?.url) {
+            resolve({ url: data.media.url });
+          } else if (xhr.status === 401 || xhr.status === 404) {
+            reject(new Error("Your session expired. Please sign in again."));
           } else {
-            reject(new Error(`Upload failed with status ${xhr.status}`));
+            reject(new Error(data.error || `Upload failed (${xhr.status})`));
           }
         };
-
         xhr.onerror = () => reject(new Error("Network error during upload"));
-        xhr.send(fileToUpload);
+        xhr.send(fd);
       });
 
-      const completeRes = await fetch("/api/admin/media/complete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key }),
-      });
-
-      if (!completeRes.ok) {
-        const errData = await completeRes.json();
-        throw new Error(errData.error || "Failed to confirm upload");
-      }
-
-      const { media } = await completeRes.json();
       onChange(media.url);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "An unexpected error occurred";
@@ -151,6 +134,15 @@ export default function MediaPicker({
       setIsUploading(false);
       setProgress(0);
     }
+  };
+
+  const handleApplyUrl = () => {
+    const trimmed = urlInput.trim();
+    if (!trimmed) return;
+    onChange(trimmed);
+    setUrlInput("");
+    setUrlMode(false);
+    setError(null);
   };
 
   const onDragOver = (e: React.DragEvent) => {
@@ -172,30 +164,71 @@ export default function MediaPicker({
   };
 
   return (
-    <div className="w-full">
-      {label && <label className="block text-sm font-medium text-white/80 mb-2">{label}</label>}
+    <div className="w-full space-y-2">
+      <div className="flex items-center justify-between">
+        {label && <label className="block text-sm font-medium text-white/80">{label}</label>}
+        {!value && (
+          <button
+            type="button"
+            onClick={() => setUrlMode(!urlMode)}
+            className="text-xs text-cyan-400 hover:text-cyan-300 transition-colors inline-flex items-center gap-1"
+          >
+            <LinkIcon size={12} />
+            {urlMode ? "Upload File" : "Paste Image URL"}
+          </button>
+        )}
+      </div>
 
       {error && (
-        <div className="mb-3 p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg flex justify-between items-start">
+        <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-sm rounded-lg flex justify-between items-start">
           <span>{error}</span>
-          <button onClick={() => setError(null)} className="text-red-400 hover:text-red-300">
+          <button type="button" onClick={() => setError(null)} className="text-red-400 hover:text-red-300">
             <X size={16} />
           </button>
         </div>
       )}
 
       {value ? (
-        <div className="relative w-full h-48 rounded-xl border border-white/10 overflow-hidden bg-[#0E1018] group">
-          <Image src={value} alt="Uploaded preview" fill className="object-cover" />
-          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+        <div className="relative w-full h-52 rounded-xl border border-white/10 overflow-hidden bg-[#0E1018] group">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={value} alt="Uploaded preview" className="absolute inset-0 w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
             <button
               type="button"
               onClick={onRemove}
-              className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              className="px-3 py-1.5 bg-red-500/90 text-white rounded-lg hover:bg-red-600 transition-colors text-xs font-medium inline-flex items-center gap-1 shadow-md"
             >
-              <X size={20} />
+              <X size={14} /> Remove Image
             </button>
           </div>
+        </div>
+      ) : urlMode ? (
+        <div className="p-4 rounded-xl border border-white/10 bg-[#0E1018] space-y-3">
+          <div className="flex gap-2">
+            <input
+              type="url"
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              placeholder="https://images.unsplash.com/... or any image URL"
+              className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleApplyUrl();
+                }
+              }}
+            />
+            <button
+              type="button"
+              onClick={handleApplyUrl}
+              className="px-4 py-2 bg-gradient-to-r from-violet-600 to-cyan-500 text-white text-xs font-semibold rounded-lg hover:opacity-90 transition-opacity inline-flex items-center gap-1.5"
+            >
+              <Check size={14} /> Apply
+            </button>
+          </div>
+          <p className="text-xs text-gray-500">
+            Paste any direct image link (Unsplash, Cloudinary, AWS S3, etc.)
+          </p>
         </div>
       ) : (
         <div

@@ -40,7 +40,7 @@ export async function DELETE(req: NextRequest) {
 
     // Try to delete from Cloudflare R2
     try {
-      if (process.env.R2_ACCOUNT_ID) {
+      if (process.env.R2_ACCOUNT_ID && !mediaItem.key.startsWith('inline-')) {
         await r2.send(
           new DeleteObjectCommand({
             Bucket: R2_BUCKET,

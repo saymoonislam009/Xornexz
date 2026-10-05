@@ -17,9 +17,10 @@ import {
 
 const PresignSchema = z.object({
   filename: z.string().min(1).max(255),
-  mimeType: z.string().min(1).max(100),
+  mimeType: z.string().min(1).max(100).optional(),
+  contentType: z.string().min(1).max(100).optional(),
   size: z.number().int().positive(),
-  folder: z.enum(["uploads", "blog", "projects", "team", "services", "resumes", "logos"]),
+  folder: z.string().optional().default("uploads"),
   // Client-computed metadata (trusted only for UI, server re-verifies on /complete)
   width: z.number().int().positive().optional(),
   height: z.number().int().positive().optional(),
@@ -62,7 +63,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { filename, mimeType, size, folder } = parsed.data;
+    const { filename, size } = parsed.data;
+    const mimeType = parsed.data.mimeType || parsed.data.contentType || "image/jpeg";
+    const allowedFolders = ["uploads", "blog", "projects", "team", "services", "resumes", "logos"];
+    const folder = allowedFolders.includes(parsed.data.folder) ? parsed.data.folder : "uploads";
 
     // Validate MIME type for folder
     const allowed = getAllowedMimes(folder);

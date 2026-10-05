@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Star, Plus, Trash2, Edit2, Check, X, Loader2 } from "lucide-react";
 import Image from "next/image";
+import MediaPicker from "@/components/admin/MediaPicker";
 
 interface Testimonial {
   id: string;
@@ -307,14 +308,14 @@ export default function AdminTestimonialsPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-300 mb-1">
-                    Avatar URL
+                    Client Avatar / Photo
                   </label>
-                  <input
-                    type="url"
-                    placeholder="https://..."
+                  <MediaPicker
                     value={formData.avatarUrl}
-                    onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
-                    className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500"
+                    onChange={(url) => setFormData({ ...formData, avatarUrl: url })}
+                    onRemove={() => setFormData({ ...formData, avatarUrl: "" })}
+                    folder="testimonials"
+                    label="Upload Client Avatar"
                   />
                 </div>
               </div>

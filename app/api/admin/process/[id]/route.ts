@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { getAdminSession } from '@/lib/admin-jwt';
+import { requireRole, isAuthError } from '@/lib/requireRole';
 import { revalidateTag } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getAdminSession();
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const auth = await requireRole('EDITOR');
+  if (isAuthError(auth)) return auth;
+
   try {
     const { id } = await params;
     const body = await req.json();
@@ -17,7 +18,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         icon: body.icon,
         title: body.title,
         description: body.description,
-        order: body.order,
+        order: body.order !== undefined ? parseInt(body.order) : 0,
       },
     });
     revalidateTag('process');
@@ -27,9 +28,12 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   }
 }
 
+export const PATCH = PUT;
+
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getAdminSession();
-  if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const auth = await requireRole('EDITOR');
+  if (isAuthError(auth)) return auth;
+
   try {
     const { id } = await params;
     await prisma.processStep.delete({ where: { id } });

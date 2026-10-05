@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Plus, Trash2, Edit2, Loader2, X, Linkedin, Twitter, Github, Globe } from "lucide-react";
 import Image from "next/image";
+import MediaPicker from "@/components/admin/MediaPicker";
 
 interface TeamMember {
   id: string;
@@ -355,14 +356,14 @@ export default function AdminTeamPage() {
 
               <div>
                 <label className="block text-xs font-medium text-gray-300 mb-1">
-                  Avatar Photo URL
+                  Avatar Photo
                 </label>
-                <input
-                  type="url"
-                  placeholder="https://images.unsplash.com/..."
+                <MediaPicker
                   value={formData.avatarUrl}
-                  onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:border-violet-500"
+                  onChange={(url) => setFormData({ ...formData, avatarUrl: url })}
+                  onRemove={() => setFormData({ ...formData, avatarUrl: "" })}
+                  folder="team"
+                  label="Upload Team Member Photo"
                 />
               </div>
 

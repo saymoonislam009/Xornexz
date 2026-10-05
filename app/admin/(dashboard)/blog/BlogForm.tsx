@@ -220,7 +220,8 @@ export default function BlogForm({ initialData }: BlogFormProps) {
                 value={field.value}
                 onChange={field.onChange}
                 onRemove={() => field.onChange("")}
-                label="Cover Image (Auto-WebP, Direct R2)"
+                folder="blog"
+                label="Cover Image"
               />
             )}
           />

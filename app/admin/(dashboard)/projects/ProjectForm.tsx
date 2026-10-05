@@ -260,7 +260,8 @@ export default function ProjectForm({ initialData }: ProjectFormProps) {
                 value={field.value}
                 onChange={field.onChange}
                 onRemove={() => field.onChange("")}
-                label="Cover Image (Auto-WebP, Direct R2 CDN)"
+                folder="projects"
+                label="Cover Image"
               />
             )}
           />
@@ -297,6 +298,7 @@ export default function ProjectForm({ initialData }: ProjectFormProps) {
         <MediaPicker
           onChange={addGalleryImage}
           onRemove={() => {}}
+          folder="projects"
           label="Add Image to Gallery"
         />
       </div>

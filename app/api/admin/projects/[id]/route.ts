@@ -34,6 +34,8 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
 }
 
+export const PUT = PATCH;
+
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireRole('EDITOR')
   if (isAuthError(auth)) return auth

@@ -8,7 +8,7 @@ import { revalidateTag } from "next/cache";
 
 const CompleteSchema = z.object({
   key: z.string().min(1).max(500),
-  folder: z.enum(["uploads", "blog", "projects", "team", "services", "resumes", "logos"]),
+  folder: z.string().optional().default("uploads"),
   alt: z.string().max(500).default(""),
   caption: z.string().max(1000).default(""),
   // Client-computed (before upload) — used for UX only; server re-verifies real values
