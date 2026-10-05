@@ -65,6 +65,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     });
 
     revalidateTag("pricing");
+    revalidateTag('pricing');
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to delete pricing plan";

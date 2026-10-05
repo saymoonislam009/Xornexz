@@ -44,6 +44,7 @@ export async function POST(req: Request) {
     });
 
     revalidateTag("testimonials");
+    revalidateTag('testimonials');
     return NextResponse.json(testimonial);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to create testimonial";

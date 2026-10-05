@@ -40,6 +40,7 @@ export async function POST(req: Request) {
     });
 
     revalidateTag("faqs");
+    revalidateTag('faqs');
     return NextResponse.json(faq);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to create FAQ";

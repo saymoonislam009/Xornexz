@@ -80,14 +80,14 @@ export function Navbar() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="group flex items-center gap-2">
-            <span className="font-display text-2xl font-bold tracking-tighter text-white transition-all group-hover:bg-gradient-to-r group-hover:from-violet-500 group-hover:to-cyan-400 group-hover:bg-clip-text group-hover:text-transparent">
+            <span className="font-display text-2xl font-bold tracking-tighter text-white dark:text-white [html:not(.dark)_&]:text-gray-900 transition-all group-hover:bg-gradient-to-r group-hover:from-violet-500 group-hover:to-cyan-400 group-hover:bg-clip-text group-hover:text-transparent">
               Xornexz
             </span>
           </Link>
 
           {/* Desktop Nav */}
           <nav className="hidden items-center gap-8 md:flex">
-            <Link href="/" className={`text-sm font-medium transition-colors hover:text-cyan-400 ${pathname === "/" ? "text-cyan-400" : "text-gray-300"}`}>
+            <Link href="/" className={`text-sm font-medium transition-colors hover:text-cyan-400 ${pathname === "/" ? "text-cyan-400" : "text-gray-300 [html:not(.dark)_&]:text-gray-700"}`}>
               Home
             </Link>
             
@@ -97,7 +97,7 @@ export function Navbar() {
               onMouseEnter={() => setMegaMenuOpen(true)}
               onMouseLeave={() => setMegaMenuOpen(false)}
             >
-              <button className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-cyan-400 ${pathname.startsWith("/services") ? "text-cyan-400" : "text-gray-300"}`}>
+              <button className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-cyan-400 ${pathname.startsWith("/services") ? "text-cyan-400" : "text-gray-300 [html:not(.dark)_&]:text-gray-700"}`}>
                 Services <ChevronDown className="h-4 w-4" />
               </button>
               
@@ -132,11 +132,11 @@ export function Navbar() {
               </AnimatePresence>
             </div>
 
-            <Link href="/portfolio" className={`text-sm font-medium transition-colors hover:text-cyan-400 ${pathname === "/portfolio" ? "text-cyan-400" : "text-gray-300"}`}>Portfolio</Link>
-            <Link href="/about" className={`text-sm font-medium transition-colors hover:text-cyan-400 ${pathname === "/about" ? "text-cyan-400" : "text-gray-300"}`}>About</Link>
-            <Link href="/process" className={`text-sm font-medium transition-colors hover:text-cyan-400 ${pathname === "/process" ? "text-cyan-400" : "text-gray-300"}`}>Process</Link>
-            <Link href="/pricing" className={`text-sm font-medium transition-colors hover:text-cyan-400 ${pathname === "/pricing" ? "text-cyan-400" : "text-gray-300"}`}>Pricing</Link>
-            <Link href="/blog" className={`text-sm font-medium transition-colors hover:text-cyan-400 ${pathname === "/blog" ? "text-cyan-400" : "text-gray-300"}`}>Blog</Link>
+            <Link href="/portfolio" className={`text-sm font-medium transition-colors hover:text-cyan-400 ${pathname === "/portfolio" ? "text-cyan-400" : "text-gray-300 [html:not(.dark)_&]:text-gray-700"}`}>Portfolio</Link>
+            <Link href="/about" className={`text-sm font-medium transition-colors hover:text-cyan-400 ${pathname === "/about" ? "text-cyan-400" : "text-gray-300 [html:not(.dark)_&]:text-gray-700"}`}>About</Link>
+            <Link href="/process" className={`text-sm font-medium transition-colors hover:text-cyan-400 ${pathname === "/process" ? "text-cyan-400" : "text-gray-300 [html:not(.dark)_&]:text-gray-700"}`}>Process</Link>
+            <Link href="/pricing" className={`text-sm font-medium transition-colors hover:text-cyan-400 ${pathname === "/pricing" ? "text-cyan-400" : "text-gray-300 [html:not(.dark)_&]:text-gray-700"}`}>Pricing</Link>
+            <Link href="/blog" className={`text-sm font-medium transition-colors hover:text-cyan-400 ${pathname === "/blog" ? "text-cyan-400" : "text-gray-300 [html:not(.dark)_&]:text-gray-700"}`}>Blog</Link>
           </nav>
 
           {/* Desktop Right */}
@@ -190,14 +190,14 @@ export function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-[#05060A] md:hidden flex flex-col pt-[72px]"
+            className="fixed inset-0 z-40 bg-[#05060A] md:hidden flex flex-col pt-[72px] mobile-menu-overlay"
           >
             <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
               <nav className="flex flex-col gap-4 text-lg font-display font-medium">
                 <Link
                   href="/"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`py-2 transition-colors ${pathname === "/" ? "text-cyan-400" : "text-white"}`}
+                  className={`py-2 transition-colors ${pathname === "/" ? "text-cyan-400" : "text-white [html:not(.dark)_&]:text-gray-800"}`}
                 >
                   Home
                 </Link>
@@ -224,42 +224,42 @@ export function Navbar() {
                 <Link
                   href="/portfolio"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`py-2 transition-colors ${pathname === "/portfolio" ? "text-cyan-400" : "text-white"}`}
+                  className={`py-2 transition-colors ${pathname === "/portfolio" ? "text-cyan-400" : "text-white [html:not(.dark)_&]:text-gray-800"}`}
                 >
                   Portfolio
                 </Link>
                 <Link
                   href="/about"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`py-2 transition-colors ${pathname === "/about" ? "text-cyan-400" : "text-white"}`}
+                  className={`py-2 transition-colors ${pathname === "/about" ? "text-cyan-400" : "text-white [html:not(.dark)_&]:text-gray-800"}`}
                 >
                   About
                 </Link>
                 <Link
                   href="/process"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`py-2 transition-colors ${pathname === "/process" ? "text-cyan-400" : "text-white"}`}
+                  className={`py-2 transition-colors ${pathname === "/process" ? "text-cyan-400" : "text-white [html:not(.dark)_&]:text-gray-800"}`}
                 >
                   Process
                 </Link>
                 <Link
                   href="/pricing"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`py-2 transition-colors ${pathname === "/pricing" ? "text-cyan-400" : "text-white"}`}
+                  className={`py-2 transition-colors ${pathname === "/pricing" ? "text-cyan-400" : "text-white [html:not(.dark)_&]:text-gray-800"}`}
                 >
                   Pricing
                 </Link>
                 <Link
                   href="/blog"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`py-2 transition-colors ${pathname === "/blog" ? "text-cyan-400" : "text-white"}`}
+                  className={`py-2 transition-colors ${pathname === "/blog" ? "text-cyan-400" : "text-white [html:not(.dark)_&]:text-gray-800"}`}
                 >
                   Blog
                 </Link>
                 <Link
                   href="/contact"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`py-2 transition-colors ${pathname === "/contact" ? "text-cyan-400" : "text-white"}`}
+                  className={`py-2 transition-colors ${pathname === "/contact" ? "text-cyan-400" : "text-white [html:not(.dark)_&]:text-gray-800"}`}
                 >
                   Contact
                 </Link>

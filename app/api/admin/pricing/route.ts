@@ -44,6 +44,7 @@ export async function POST(req: Request) {
     });
 
     revalidateTag("pricing");
+    revalidateTag('pricing');
     return NextResponse.json(plan);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to create pricing plan";

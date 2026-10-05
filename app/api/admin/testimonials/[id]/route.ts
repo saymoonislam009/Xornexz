@@ -65,6 +65,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     });
 
     revalidateTag("testimonials");
+    revalidateTag('testimonials');
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to delete testimonial";

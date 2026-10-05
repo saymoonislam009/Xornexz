@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight, Code2, Smartphone, Zap } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -14,6 +14,19 @@ const rotatingWords = [
   "Mobile Apps",
   "AI Systems",
   "Design Systems",
+];
+
+const STATS = [
+  { value: "120+", label: "Projects" },
+  { value: "7 yrs", label: "Experience" },
+  { value: "98%", label: "Satisfied" },
+  { value: "24h", label: "Response" },
+];
+
+const PILLS = [
+  { icon: Code2, label: "Next.js" },
+  { icon: Smartphone, label: "React Native" },
+  { icon: Zap, label: "AI / LLMs" },
 ];
 
 export default function Hero() {
@@ -41,67 +54,58 @@ export default function Hero() {
     return () => clearTimeout(timeout);
   }, [displayed, deleting, wordIndex, mounted]);
 
-  const container = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.1 } },
-  };
-  const child = {
-    visible: { opacity: 1, y: 0, transition: { type: "spring" as const, damping: 12, stiffness: 100 } },
-    hidden: { opacity: 0, y: 40 },
-  };
-
   return (
-    <section className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#05060A] pt-20">
+    <section className="relative min-h-[100svh] w-full flex flex-col items-center justify-center overflow-hidden bg-[#05060A] pt-20 pb-16">
+      {/* 3-D canvas — skipped on touch/low-power by HeroScene itself */}
       <HeroScene />
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808010_1px,transparent_1px),linear-gradient(to_bottom,#80808010_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(124,58,237,0.1),transparent)] pointer-events-none" />
 
-      <div className="container relative z-10 mx-auto px-5 sm:px-6 flex flex-col items-center text-center">
-        {/* Status badge */}
+      {/* Dot grid */}
+      <div className="hero-grid-bg absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+      {/* Violet radial glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(124,58,237,0.13),transparent)] pointer-events-none" />
+
+      <div className="container relative z-10 mx-auto px-5 sm:px-6 flex flex-col items-center text-center max-w-5xl">
+
+        {/* Live badge */}
         <motion.div
-          initial={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-          className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-gray-400"
+          transition={{ delay: 0.2, duration: 0.5 }}
+          className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[11px] text-gray-400"
         >
           <span className="relative flex h-1.5 w-1.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
           </span>
-          Accepting new projects
+          Accepting new projects for Q4 2025
         </motion.div>
 
         {/* Headline */}
-        <motion.div
-          className="mb-4 flex flex-wrap justify-center"
-          variants={container}
-          initial="hidden"
-          animate="visible"
+        <motion.h1
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94] }}
+          className="text-[2.6rem] leading-[1.06] sm:text-6xl md:text-7xl lg:text-[5.5rem] font-black tracking-tight font-display text-white mb-4"
         >
-          {["We", "Build", "What's", "Next."].map((word, i) => (
-            <motion.span
-              key={i}
-              variants={child}
-              className="mr-2 sm:mr-3 text-[2.8rem] sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight font-display text-white pb-1"
-            >
-              {word}
-            </motion.span>
-          ))}
-        </motion.div>
+          We Build{" "}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-purple-400 to-cyan-400">
+            What&rsquo;s Next.
+          </span>
+        </motion.h1>
 
-        {/* Typewriter — sm+ only */}
+        {/* Typewriter */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.9, duration: 0.5 }}
-          className="mb-5 hidden sm:flex items-center justify-center h-9"
+          transition={{ delay: 0.7, duration: 0.5 }}
+          className="mb-4 flex items-center justify-center h-8"
         >
-          <span className="text-base sm:text-xl text-gray-500 font-light">
+          <span className="text-sm sm:text-lg text-gray-500 font-light">
             We build{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400 font-medium">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400 font-semibold">
               {mounted ? displayed : rotatingWords[0]}
             </span>
-            <span className="inline-block w-0.5 h-5 bg-cyan-400 ml-0.5 animate-pulse align-middle" />
+            <span className="inline-block w-0.5 h-4 sm:h-5 bg-cyan-400 ml-0.5 animate-pulse align-middle" />
           </span>
         </motion.div>
 
@@ -109,58 +113,77 @@ export default function Hero() {
         <motion.p
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.0, duration: 0.7 }}
-          className="max-w-md sm:max-w-xl text-sm sm:text-base text-gray-500 mb-8 leading-relaxed"
+          transition={{ delay: 0.9, duration: 0.6 }}
+          className="max-w-sm sm:max-w-2xl text-sm sm:text-base text-gray-500 mb-8 leading-relaxed"
         >
-          A technology studio that partners with ambitious founders and enterprises to engineer world-class digital products.
+          A technology studio that partners with ambitious founders and enterprises to engineer world-class digital products — from MVPs to enterprise platforms.
         </motion.p>
 
         {/* CTAs */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.2, duration: 0.7 }}
-          className="flex flex-col sm:flex-row gap-3 w-full max-w-[280px] sm:max-w-none"
+          transition={{ delay: 1.05, duration: 0.6 }}
+          className="flex flex-col sm:flex-row gap-3 w-full max-w-xs sm:max-w-none sm:justify-center mb-10"
         >
           <Link
             href="/contact"
-            className="group inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-cyan-500 px-7 py-3.5 text-sm font-semibold text-white shadow-lg hover:shadow-[0_0_24px_rgba(124,58,237,0.4)] transition-all"
+            className="group inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-cyan-500 px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-violet-500/20 hover:shadow-[0_0_28px_rgba(124,58,237,0.45)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
           >
             Start a Project
             <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </Link>
           <Link
             href="/portfolio"
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-7 py-3.5 text-sm font-semibold text-gray-300 hover:bg-white/[0.08] transition-all"
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-7 py-3.5 text-sm font-semibold text-gray-300 hover:bg-white/[0.1] active:scale-[0.98] transition-all duration-200"
           >
             See Our Work
           </Link>
         </motion.div>
 
-        {/* Trust strip — 2×2 on mobile, row on sm */}
+        {/* Tech pills */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.5, duration: 0.8 }}
-          className="mt-12 grid grid-cols-2 sm:flex sm:flex-row items-center gap-3 sm:gap-x-7 text-[10px] sm:text-[11px] text-gray-700 uppercase tracking-widest"
+          transition={{ delay: 1.2, duration: 0.6 }}
+          className="flex flex-wrap justify-center gap-2 mb-10"
         >
-          <span>120+ Projects</span>
-          <span>7 Years</span>
-          <span>98% Satisfaction</span>
-          <span>24h Response</span>
+          {PILLS.map(({ icon: Icon, label }) => (
+            <span key={label} className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-medium text-gray-400">
+              <Icon className="h-3 w-3" />
+              {label}
+            </span>
+          ))}
+        </motion.div>
+
+        {/* Stats */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.4, duration: 0.7 }}
+          className="grid grid-cols-4 gap-3 w-full max-w-xs sm:max-w-sm border border-white/[0.08] rounded-2xl bg-white/[0.03] px-3 py-4"
+        >
+          {STATS.map(({ value, label }) => (
+            <div key={label} className="flex flex-col items-center">
+              <span className="text-sm sm:text-base font-bold text-white font-display">{value}</span>
+              <span className="text-[9px] sm:text-[10px] uppercase tracking-widest text-gray-600 mt-0.5">{label}</span>
+            </div>
+          ))}
         </motion.div>
       </div>
 
-      {/* Scroll indicator — sm+ */}
+      {/* Scroll hint — lg+ only */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 2, duration: 1 }}
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 hidden sm:flex flex-col items-center gap-1.5 text-gray-700"
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 hidden lg:flex flex-col items-center gap-1 text-gray-700 pointer-events-none"
       >
         <span className="text-[9px] uppercase tracking-[0.2em]">Scroll</span>
-        <motion.div animate={{ y: [0, 6, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
-          <ChevronDown className="h-4 w-4" />
+        <motion.div animate={{ y: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1.6 }}>
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
         </motion.div>
       </motion.div>
     </section>

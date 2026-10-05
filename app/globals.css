@@ -552,3 +552,100 @@ body { overflow-x: hidden; }
 @supports (overflow-x: clip) {
   html, body { overflow-x: clip; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LIGHT MODE OVERRIDES — dark-first site, light mode mapped via CSS
+   ═══════════════════════════════════════════════════════════════════════════ */
+html:not(.dark) {
+  --bg-page:  #F4F4F7;
+  --bg-card:  #FFFFFF;
+  --bg-card2: #EEEEF3;
+  --border-col: rgba(0,0,0,0.09);
+  --txt-primary:   #0D0D12;
+  --txt-secondary: #4A4A5C;
+  --txt-muted:     #74748A;
+  background-color: var(--bg-page);
+  color: var(--txt-primary);
+  color-scheme: light;
+}
+html.dark { color-scheme: dark; }
+
+/* Backgrounds */
+html:not(.dark) section {
+  background-color: var(--bg-page) !important;
+}
+html:not(.dark) [class*="bg-\[\#05060"] {
+  background-color: var(--bg-page) !important;
+}
+html:not(.dark) [class*="bg-\[\#0B0D"],
+html:not(.dark) [class*="bg-\[\#0E10"] {
+  background-color: var(--bg-card) !important;
+}
+html:not(.dark) [class*="bg-white/5"],
+html:not(.dark) [class*="bg-white/10"],
+html:not(.dark) [class*="bg-white/\[0.0"] {
+  background-color: rgba(0,0,0,0.04) !important;
+}
+
+/* Text */
+html:not(.dark) .text-white { color: var(--txt-primary) !important; }
+html:not(.dark) .text-gray-300 { color: var(--txt-secondary) !important; }
+html:not(.dark) .text-gray-400 { color: var(--txt-secondary) !important; }
+html:not(.dark) .text-gray-500 { color: var(--txt-muted) !important; }
+html:not(.dark) .text-gray-600 { color: var(--txt-muted) !important; }
+html:not(.dark) .text-gray-700 { color: var(--txt-muted) !important; }
+/* Keep gradient text working */
+html:not(.dark) [class*="bg-clip-text"] { -webkit-text-fill-color: transparent !important; }
+
+/* Borders */
+html:not(.dark) [class*="border-white/"] { border-color: var(--border-col) !important; }
+html:not(.dark) [class*="divide-white/"] > * + * { border-color: var(--border-col) !important; }
+
+/* Navbar */
+html:not(.dark) header {
+  background-color: rgba(244,244,247,0.93) !important;
+  border-bottom: 1px solid var(--border-col) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+}
+
+/* Mobile menu overlay */
+html:not(.dark) .mobile-menu-overlay {
+  background-color: rgba(244,244,247,0.98) !important;
+}
+
+/* Cards */
+html:not(.dark) [class*="rounded"][class*="border"] {
+  border-color: var(--border-col) !important;
+}
+
+/* Code blocks — keep dark for readability */
+html:not(.dark) pre,
+html:not(.dark) code,
+html:not(.dark) [class*="font-mono"] {
+  background-color: #1e1e2e !important;
+  color: #cdd6f4 !important;
+}
+
+/* Footer */
+html:not(.dark) footer {
+  background-color: #EAEAEF !important;
+  border-top: 1px solid var(--border-col) !important;
+}
+
+/* FAQ accordion items */
+html:not(.dark) [data-radix-accordion-item],
+html:not(.dark) [data-state] {
+  border-color: var(--border-col) !important;
+  background-color: var(--bg-card) !important;
+}
+
+/* Accent colours in light mode */
+html:not(.dark) [class*="text-violet-4"],
+html:not(.dark) [class*="text-violet-5"] { color: #6d28d9 !important; }
+html:not(.dark) [class*="text-cyan-4"],
+html:not(.dark) [class*="text-cyan-5"]   { color: #0e7490 !important; }
+
+/* Decorative glows — tone down on light */
+html:not(.dark) [class*="blur-\["] { opacity: 0.25 !important; }
+html:not(.dark) [class*="blur-3xl"]  { opacity: 0.2 !important; }

@@ -46,6 +46,7 @@ export async function POST(req: Request) {
     });
 
     revalidateTag("team");
+    revalidateTag('team');
     return NextResponse.json(member);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to create team member";
