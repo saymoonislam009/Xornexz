@@ -8,17 +8,17 @@ interface PreloaderProps {
 
 export default function Preloader({ onDone }: PreloaderProps) {
   useEffect(() => {
-    // Total time: ~1.2s — does not lock scroll
-    const t = setTimeout(onDone, 1200);
+    // Total time: ~0.9s — snappy and never blocks interactions
+    const t = setTimeout(onDone, 900);
     return () => clearTimeout(t);
   }, [onDone]);
 
   return (
     <motion.div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#05060A]"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#05060A] pointer-events-none select-none"
       initial={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.35, ease: "easeInOut" }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
     >
       <motion.div
         initial={{ opacity: 0, scale: 0.85 }}

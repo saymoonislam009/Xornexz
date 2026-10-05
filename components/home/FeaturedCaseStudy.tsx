@@ -12,7 +12,27 @@ const metrics = [
   { icon: Code2, label: "Lines of code", value: "180K" },
 ];
 
-export default function FeaturedCaseStudy() {
+interface FeaturedCaseStudyProps {
+  project?: {
+    id: string;
+    title: string;
+    tagline?: string;
+    description: string;
+    client: string;
+    coverImage: string;
+    slug: string;
+    metrics?: Record<string, any>;
+  } | null;
+}
+
+export default function FeaturedCaseStudy({ project }: FeaturedCaseStudyProps) {
+  const title = project?.title || "From MVP to 2.4M Users in 11 Weeks";
+  const client = project?.client || "VaultAI — YC W24";
+  const description = project?.description || "VaultAI needed a production-grade AI document intelligence platform built fast. We assembled a cross-functional team of 6, designed the architecture from scratch, and shipped a platform that scaled from zero to enterprise contracts under budget and ahead of schedule.";
+  const coverImage = project?.coverImage || "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1470";
+  const slug = project?.slug || "vaultai";
+  const letter = (project?.client || project?.title || "V").charAt(0).toUpperCase();
+
   return (
     <section className="py-32 bg-[#05060A] relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_50%,rgba(124,58,237,0.05),transparent)] pointer-events-none" />
@@ -45,19 +65,19 @@ export default function FeaturedCaseStudy() {
           transition={{ duration: 0.8 }}
           className="grid lg:grid-cols-2 gap-0 rounded-3xl overflow-hidden border border-white/10"
         >
-          <div className="relative h-[220px] sm:h-[340px] lg:h-auto lg:min-h-[400px]">
+          <div className="relative h-[240px] sm:h-[360px] lg:h-auto lg:min-h-[420px] bg-slate-900 overflow-hidden">
             <Image
-              src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1470"
-              alt="VaultAI Dashboard"
+              src={coverImage}
+              alt={title}
               fill
               className="object-cover"
               sizes="(max-width: 1024px) 100vw, 50vw"
-              unoptimized
+              unoptimized={coverImage.startsWith("data:") || coverImage.startsWith("blob:")}
             />
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#0B0D14] hidden lg:block" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#05060A] via-transparent to-transparent lg:hidden" />
-            <div className="absolute top-6 left-6">
-              <span className="px-3 py-1.5 text-xs font-bold uppercase tracking-widest bg-violet-600 text-white rounded-full">
+            <div className="absolute top-6 left-6 z-10">
+              <span className="px-3 py-1.5 text-xs font-bold uppercase tracking-widest bg-violet-600 text-white rounded-full shadow-lg">
                 Featured Project
               </span>
             </div>
@@ -66,20 +86,20 @@ export default function FeaturedCaseStudy() {
           <div className="bg-[#0B0D14] p-6 sm:p-10 lg:p-14 flex flex-col justify-center">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center">
-                <span className="text-white font-black text-xs">V</span>
+                <span className="text-white font-black text-xs">{letter}</span>
               </div>
               <div>
                 <p className="text-xs text-gray-500 uppercase tracking-wider">Client</p>
-                <p className="text-sm font-semibold text-white">VaultAI — YC W24</p>
+                <p className="text-sm font-semibold text-white">{client}</p>
               </div>
             </div>
 
             <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold font-display text-white mb-4 leading-tight">
-              From MVP to 2.4M Users in 11 Weeks
+              {title}
             </h3>
 
-            <p className="text-gray-400 mb-8 leading-relaxed">
-              VaultAI needed a production-grade AI document intelligence platform built fast. We assembled a cross-functional team of 6, designed the architecture from scratch, and shipped a platform that scaled from zero to enterprise contracts under budget and ahead of schedule.
+            <p className="text-gray-400 mb-8 leading-relaxed line-clamp-4">
+              {description}
             </p>
 
             <div className="grid grid-cols-2 gap-3 mb-8">
@@ -95,7 +115,7 @@ export default function FeaturedCaseStudy() {
             </div>
 
             <Link
-              href="/portfolio/vaultai"
+              href={`/portfolio/${slug}`}
               className="group inline-flex items-center gap-2 text-sm font-semibold text-white hover:text-cyan-400 transition-colors"
             >
               Read the full case study

@@ -38,19 +38,19 @@ import AvailabilityBanner from "@/components/home/AvailabilityBanner";
 import PricingSection from "@/components/home/PricingSection";
 import FAQSection from "@/components/home/FAQSection";
 import CTASection from "@/components/home/CTASection";
-import { getHomeFaqs, getHomeTestimonials, getHomePricing, getHomeFeaturedProjects } from "@/lib/content";
+import { getHomeFaqs, getHomeTestimonials, getHomePricing, getHomeFeaturedProjects, getHomeFeaturedCaseStudy } from "@/lib/content";
 
-// Re-fetch admin-managed content at most every 30s so edits appear on the homepage quickly.
-export const revalidate = 30;
+export const dynamic = 'force-dynamic';
 
 
 
 export default async function HomePage() {
-  const [faqs, testimonials, pricing, featured] = await Promise.all([
+  const [faqs, testimonials, pricing, featured, caseStudy] = await Promise.all([
     getHomeFaqs(),
     getHomeTestimonials(),
     getHomePricing(),
     getHomeFeaturedProjects(),
+    getHomeFeaturedCaseStudy(),
   ]);
   return (
     <>
@@ -70,7 +70,7 @@ export default async function HomePage() {
       <StatsSection />
       <ServicesSection />
       <KineticMarquee />
-      <FeaturedCaseStudy />
+      <FeaturedCaseStudy project={caseStudy} />
       <FeaturedProjects projects={featured} />
       <WhyUs />
       <ProcessSection />

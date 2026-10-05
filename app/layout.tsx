@@ -10,7 +10,6 @@ import { Toaster } from "sonner"
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { ScrollProgress } from "@/components/ui/ScrollProgress"
-import PreloaderWrapper from "@/components/home/PreloaderWrapper"
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -140,7 +139,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           <LenisProvider>
-            <PreloaderWrapper />
             {/* Cmd+K command palette */}
             <CommandPalette />
 

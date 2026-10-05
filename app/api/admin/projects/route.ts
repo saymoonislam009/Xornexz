@@ -1,7 +1,7 @@
 import { requireRole, isAuthError } from '@/lib/requireRole'
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 
 
 export async function POST(req: Request) {
@@ -34,7 +34,12 @@ export async function POST(req: Request) {
       },
     });
 
-    revalidateTag('projects');
+    try {
+      revalidatePath('/', 'page');
+      revalidatePath('/portfolio', 'page');
+      revalidateTag('projects');
+    } catch {}
+
     return NextResponse.json(project);
   } catch (error: any) {
     console.error("Error creating project:", error);

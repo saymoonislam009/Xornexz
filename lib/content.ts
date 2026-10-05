@@ -389,23 +389,27 @@ export async function getHomePricing() {
 export async function getHomeFeaturedProjects() {
   try {
     await ensureContentSeeded();
-    let rows = await prisma.project.findMany({
-      where: { status: "PUBLISHED", featured: true },
-      orderBy: { order: "asc" },
-      take: 4,
+    // Fetch published projects: prioritize featured, then recently updated, then order
+    const rows = await prisma.project.findMany({
+      where: { status: "PUBLISHED" },
+      orderBy: [
+        { featured: "desc" },
+        { updatedAt: "desc" },
+        { order: "asc" },
+      ],
+      take: 6,
     });
+
     if (rows.length === 0) {
-      rows = await prisma.project.findMany({
-        where: { status: "PUBLISHED" },
-        orderBy: { order: "asc" },
-        take: 4,
-      });
+      return DEFAULT_FEATURED;
     }
+
     return rows.map((p, i) => {
       const defaultImg =
         DEFAULT_FEATURED.find((d) => d.slug === p.slug)?.image ||
         (staticProjects as any[]).find((s) => s.slug === p.slug)?.coverImage ||
-        DEFAULT_FEATURED[i % DEFAULT_FEATURED.length].image;
+        DEFAULT_FEATURED[i % DEFAULT_FEATURED.length]?.image ||
+        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2070";
 
       const hasRealCover =
         p.coverImage &&
@@ -425,5 +429,46 @@ export async function getHomeFeaturedProjects() {
   } catch (e) {
     console.error("[content] featured fallback:", e);
     return DEFAULT_FEATURED;
+  }
+}
+
+export async function getHomeFeaturedCaseStudy() {
+  try {
+    await ensureContentSeeded();
+    // Prioritize the most recently updated featured project or primary project
+    let project = await prisma.project.findFirst({
+      where: { status: "PUBLISHED", featured: true },
+      orderBy: [{ updatedAt: "desc" }, { order: "asc" }],
+    });
+    if (!project) {
+      project = await prisma.project.findFirst({
+        where: { status: "PUBLISHED" },
+        orderBy: [{ updatedAt: "desc" }, { order: "asc" }],
+      });
+    }
+    if (!project) return null;
+
+    const defaultImg =
+      (staticProjects as any[]).find((s) => s.slug === project.slug)?.coverImage ||
+      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1470";
+
+    const hasRealCover =
+      project.coverImage &&
+      project.coverImage.trim() !== "" &&
+      !project.coverImage.startsWith("linear-gradient");
+
+    return {
+      id: project.id,
+      title: project.title,
+      tagline: project.tagline,
+      description: project.description,
+      client: project.client || "Featured Client",
+      coverImage: hasRealCover ? project.coverImage : defaultImg,
+      slug: project.slug,
+      metrics: (project.metrics as any) || null,
+    };
+  } catch (e) {
+    console.error("[content] case study fallback:", e);
+    return null;
   }
 }
