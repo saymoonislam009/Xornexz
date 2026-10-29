@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireRole, isAuthError } from '@/lib/requireRole';
-import { revalidateTag } from 'next/cache';
+import { revalidatePublicSite } from '@/lib/revalidate';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
         order: body.order !== undefined ? parseInt(body.order) : 0,
       },
     });
-    revalidateTag('process');
+    revalidatePublicSite(['process'], ['/process']);
     return NextResponse.json(step, { status: 201 });
   } catch {
     return NextResponse.json({ error: 'Failed to create process step' }, { status: 500 });

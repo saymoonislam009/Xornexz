@@ -3,8 +3,12 @@ import { unstable_cache } from 'next/cache'
 
 export const getFAQs = unstable_cache(
   async () => {
-    return await prisma.fAQ.findMany({ orderBy: { order: 'asc' } })
+    try {
+      return await prisma.fAQ.findMany({ orderBy: { order: 'asc' } })
+    } catch {
+      return []
+    }
   },
   ['faqs'],
-  { tags: ['faqs'], revalidate: 300 }
+  { tags: ['faqs'], revalidate: 60 }
 )

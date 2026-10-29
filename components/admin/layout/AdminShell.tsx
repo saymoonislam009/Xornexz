@@ -7,7 +7,7 @@ import {
   LayoutDashboard, FileText, Briefcase, Users, Settings,
   Image, MessageSquare, Star, HelpCircle, CreditCard,
   BarChart3, Mail, Layers, Cpu, Play, ChevronLeft,
-  ChevronRight, LogOut, ExternalLink, Menu, X, User, Calculator,
+  ChevronRight, LogOut, ExternalLink, Menu, X, User, Calculator, Sliders,
 } from "lucide-react";
 
 const NAV_GROUPS = [
@@ -49,6 +49,7 @@ const NAV_GROUPS = [
   {
     label: "Site",
     items: [
+      { href: "/admin/project-options", icon: Sliders, label: "Project & Form Options" },
       { href: "/admin/homepage", icon: Play, label: "Homepage Editor" },
       { href: "/admin/settings", icon: Settings, label: "Settings" },
       { href: "/admin/users", icon: Users, label: "Users" },
@@ -185,7 +186,7 @@ export default function AdminShell({ children, session }: Props) {
   const pageTitle = currentItem?.label ?? "Admin";
 
   return (
-    <div className="min-h-screen bg-[#05060A] text-white flex">
+    <div data-admin-root="true" className="dark min-h-screen bg-[#05060A] text-white flex">
       {/* Desktop Sidebar */}
       <aside
         className={`hidden md:flex flex-col flex-shrink-0 bg-[#0B0D14] border-r border-white/5 transition-all duration-200 ${

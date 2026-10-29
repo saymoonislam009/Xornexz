@@ -3,8 +3,12 @@ import { unstable_cache } from 'next/cache'
 
 export const getPricingPlans = unstable_cache(
   async () => {
-    return await prisma.pricingPlan.findMany({ orderBy: { order: 'asc' } })
+    try {
+      return await prisma.pricingPlan.findMany({ orderBy: { order: 'asc' } })
+    } catch {
+      return []
+    }
   },
   ['pricing'],
-  { tags: ['pricing'], revalidate: 300 }
+  { tags: ['pricing'], revalidate: 60 }
 )

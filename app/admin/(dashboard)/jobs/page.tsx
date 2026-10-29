@@ -1,7 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Edit2, Loader2, X, Briefcase, MapPin, Users } from "lucide-react";
+import { Plus, Trash2, Edit2, Loader2, X, Briefcase, MapPin, Users, FileText, ExternalLink, Mail } from "lucide-react";
+
+interface JobApplication {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  resumeUrl: string | null;
+  coverLetter: string | null;
+  portfolioUrl: string | null;
+  linkedinUrl: string | null;
+  expectedSalary: string | null;
+  status: "PENDING" | "REVIEWING" | "INTERVIEW" | "OFFER" | "REJECTED";
+  createdAt: string;
+}
 
 interface Job {
   id: string;
@@ -51,6 +65,57 @@ export default function AdminJobsPage() {
     order: 0,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Applicants Drawer State
+  const [viewingJob, setViewingJob] = useState<Job | null>(null);
+  const [applications, setApplications] = useState<JobApplication[]>([]);
+  const [loadingApps, setLoadingApps] = useState(false);
+
+  const openApplicantsModal = async (job: Job) => {
+    setViewingJob(job);
+    setLoadingApps(true);
+    try {
+      const res = await fetch(`/api/admin/jobs/${job.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setApplications(Array.isArray(data.applications) ? data.applications : []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch applications", err);
+    } finally {
+      setLoadingApps(false);
+    }
+  };
+
+  const updateAppStatus = async (appId: string, status: JobApplication["status"]) => {
+    try {
+      const res = await fetch(`/api/admin/applications/${appId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (res.ok) {
+        setApplications((prev) =>
+          prev.map((a) => (a.id === appId ? { ...a, status } : a))
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const deleteApp = async (appId: string) => {
+    if (!confirm("Delete this application?")) return;
+    try {
+      const res = await fetch(`/api/admin/applications/${appId}`, { method: "DELETE" });
+      if (res.ok) {
+        setApplications((prev) => prev.filter((a) => a.id !== appId));
+        fetchJobs();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchJobs = async () => {
     setIsLoading(true);
@@ -273,10 +338,14 @@ export default function AdminJobsPage() {
               </div>
 
               <div className="flex items-center gap-4 shrink-0">
-                <div className="flex items-center gap-1.5 text-xs text-gray-400 bg-white/5 px-3 py-1.5 rounded-xl border border-white/5">
+                <button
+                  type="button"
+                  onClick={() => openApplicantsModal(job)}
+                  className="flex items-center gap-1.5 text-xs text-gray-300 hover:text-white bg-white/5 hover:bg-violet-600/20 px-3 py-1.5 rounded-xl border border-white/10 hover:border-violet-500/40 transition-all"
+                >
                   <Users className="h-3.5 w-3.5 text-cyan-400" />
                   <span>{job._count?.applications ?? 0} applicants</span>
-                </div>
+                </button>
 
                 <div className="flex items-center gap-1">
                   <button
@@ -527,6 +596,128 @@ export default function AdminJobsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Applicants Modal */}
+      {viewingJob && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+          <div className="w-full max-w-3xl rounded-2xl bg-[#0E1018] border border-white/10 p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-4 border-b border-white/10">
+              <div>
+                <h2 className="text-lg font-bold text-white">
+                  Applicants — {viewingJob.title}
+                </h2>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {applications.length} candidate{applications.length === 1 ? "" : "s"} applied
+                </p>
+              </div>
+              <button
+                onClick={() => setViewingJob(null)}
+                className="text-gray-400 hover:text-white"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="pt-4 space-y-4">
+              {loadingApps ? (
+                <div className="py-12 flex items-center justify-center text-gray-400 text-sm">
+                  <Loader2 className="h-5 w-5 animate-spin mr-2 text-violet-400" />
+                  Loading candidates...
+                </div>
+              ) : applications.length === 0 ? (
+                <div className="py-12 text-center text-gray-500 text-sm">
+                  No applications received for this opening yet.
+                </div>
+              ) : (
+                applications.map((app) => (
+                  <div
+                    key={app.id}
+                    className="p-4 rounded-xl bg-white/[0.03] border border-white/10 space-y-3"
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <h3 className="text-sm font-bold text-white">{app.name}</h3>
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-gray-400 mt-0.5">
+                          <a href={`mailto:${app.email}`} className="text-violet-400 hover:underline inline-flex items-center gap-1">
+                            <Mail className="h-3 w-3" /> {app.email}
+                          </a>
+                          {app.phone && <span>{app.phone}</span>}
+                          {app.expectedSalary && (
+                            <span className="text-emerald-400">Expected: {app.expectedSalary}</span>
+                          )}
+                          <span>{new Date(app.createdAt).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={app.status}
+                          onChange={(e) =>
+                            updateAppStatus(app.id, e.target.value as JobApplication["status"])
+                          }
+                          className="rounded-lg border border-white/10 bg-[#0B0D14] px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-violet-500"
+                        >
+                          <option value="PENDING">Pending</option>
+                          <option value="REVIEWING">Reviewing</option>
+                          <option value="INTERVIEW">Interview</option>
+                          <option value="OFFER">Offer</option>
+                          <option value="REJECTED">Rejected</option>
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => deleteApp(app.id)}
+                          className="p-1.5 rounded-lg text-gray-500 hover:text-red-400 hover:bg-red-500/10"
+                          title="Delete application"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      {app.resumeUrl && (
+                        <a
+                          href={app.resumeUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-violet-600/20 border border-violet-500/30 text-violet-300 hover:bg-violet-600/30"
+                        >
+                          <FileText className="h-3.5 w-3.5" /> View / Download Resume
+                        </a>
+                      )}
+                      {app.linkedinUrl && (
+                        <a
+                          href={app.linkedinUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-gray-300 hover:text-white"
+                        >
+                          LinkedIn <ExternalLink className="h-3 w-3" />
+                        </a>
+                      )}
+                      {app.portfolioUrl && (
+                        <a
+                          href={app.portfolioUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-gray-300 hover:text-white"
+                        >
+                          Portfolio <ExternalLink className="h-3 w-3" />
+                        </a>
+                      )}
+                    </div>
+
+                    {app.coverLetter && (
+                      <div className="p-3 rounded-lg bg-[#0B0D14] border border-white/5 text-xs text-gray-300 whitespace-pre-wrap">
+                        {app.coverLetter}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       )}

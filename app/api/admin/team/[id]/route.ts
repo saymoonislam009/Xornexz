@@ -1,7 +1,7 @@
 import { requireRole, isAuthError } from "@/lib/requireRole";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
+import { revalidatePublicSite } from "@/lib/revalidate";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireRole("VIEWER");
@@ -48,7 +48,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       data,
     });
 
-    revalidateTag("team");
+    revalidatePublicSite(["team"], ["/about"]);
     return NextResponse.json(member);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to update team member";
@@ -68,8 +68,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
       where: { id },
     });
 
-    revalidateTag("team");
-    revalidateTag('team');
+    revalidatePublicSite(["team"], ["/about"]);
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to delete team member";

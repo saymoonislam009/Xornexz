@@ -151,7 +151,7 @@ export default function CodeShowcase() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.15, duration: 0.6 }}
-            className="rounded-xl border border-white/10 bg-[#0B0D14] overflow-hidden"
+            className="dark-card-overlay rounded-2xl border border-slate-800 dark:border-white/10 bg-[#0B0D14] overflow-hidden shadow-2xl"
           >
             {/* Chrome bar */}
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5 bg-[#0E1018]">

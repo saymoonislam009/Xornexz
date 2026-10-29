@@ -1,5 +1,7 @@
 import "./globals.css"
 import { buildOrganizationSchema, buildWebsiteSchema } from "@/lib/seo"
+import { getPublicSiteConfig } from "@/lib/site-config"
+import { getPublicServices } from "@/lib/content"
 import type { Metadata, Viewport } from "next"
 import { Space_Grotesk, Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/providers/ThemeProvider"
@@ -30,63 +32,63 @@ const inter = Inter({
   display: "swap",
 })
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://xornexz.com';
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://xornexz.com"
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    template: '%s | Xornexz',
-    default: 'Xornexz — We Build What\'s Next',
+    template: "%s | Xornexz",
+    default: "Xornexz — We Build What's Next",
   },
   description:
-    'Xornexz is a premium technology studio building websites, web apps, mobile apps, SaaS platforms, and AI-powered systems for ambitious founders and enterprises.',
+    "Xornexz is a premium technology studio building websites, web apps, mobile apps, SaaS platforms, and AI-powered systems for ambitious founders and enterprises.",
   keywords: [
-    'web development agency',
-    'software development studio',
-    'SaaS development',
-    'mobile app development',
-    'React Next.js development',
-    'UI UX design agency',
-    'AI automation development',
-    'custom software development',
-    'web application development',
-    'startup tech studio',
-    'enterprise software development',
-    'TypeScript React agency',
+    "web development agency",
+    "software development studio",
+    "SaaS development",
+    "mobile app development",
+    "React Next.js development",
+    "UI UX design agency",
+    "AI automation development",
+    "custom software development",
+    "web application development",
+    "startup tech studio",
+    "enterprise software development",
+    "TypeScript React agency",
   ],
-  authors: [{ name: 'Xornexz', url: BASE_URL }],
-  creator: 'Xornexz',
-  publisher: 'Xornexz',
-  category: 'Technology',
-  classification: 'Business',
+  authors: [{ name: "Xornexz", url: BASE_URL }],
+  creator: "Xornexz",
+  publisher: "Xornexz",
+  category: "Technology",
+  classification: "Business",
   alternates: {
     canonical: BASE_URL,
   },
   openGraph: {
-    type: 'website',
-    locale: 'en_US',
+    type: "website",
+    locale: "en_US",
     url: BASE_URL,
-    siteName: 'Xornexz',
-    title: 'Xornexz — We Build What\'s Next',
+    siteName: "Xornexz",
+    title: "Xornexz — We Build What's Next",
     description:
-      'A premium technology studio building world-class websites, SaaS platforms, mobile apps, and AI systems.',
+      "A premium technology studio building world-class websites, SaaS platforms, mobile apps, and AI systems.",
     images: [
       {
-        url: '/og-image.png',
+        url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: 'Xornexz — We Build What\'s Next',
+        alt: "Xornexz — We Build What's Next",
       },
     ],
   },
   twitter: {
-    card: 'summary_large_image',
-    site: '@xornexz',
-    creator: '@xornexz',
-    title: 'Xornexz — We Build What\'s Next',
+    card: "summary_large_image",
+    site: "@xornexz",
+    creator: "@xornexz",
+    title: "Xornexz — We Build What's Next",
     description:
-      'A premium technology studio building world-class websites, SaaS platforms, mobile apps, and AI systems.',
-    images: ['/og-image.png'],
+      "A premium technology studio building world-class websites, SaaS platforms, mobile apps, and AI systems.",
+    images: ["/og-image.png"],
   },
   robots: {
     index: true,
@@ -94,30 +96,42 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
     },
   },
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
   },
-  manifest: '/site.webmanifest',
+  manifest: "/site.webmanifest",
   verification: {
-    google: process.env.GOOGLE_SITE_VERIFICATION || '',
+    google: process.env.GOOGLE_SITE_VERIFICATION || "",
   },
-};
+}
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const [siteConfig, services] = await Promise.all([
+    getPublicSiteConfig(),
+    getPublicServices(),
+  ])
+
+  const navServices = services.map((s) => ({
+    title: s.title,
+    slug: s.slug,
+    tagline: s.tagline,
+    icon: s.icon,
+  }))
+
   return (
-    <html lang="en" suppressHydrationWarning className={`${spaceGrotesk.variable} ${inter.variable}`}>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      </head>
-      <body className="font-sans bg-[#05060A] text-white antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${spaceGrotesk.variable} ${inter.variable}`}
+    >
+      <body className="font-sans bg-slate-50 dark:bg-[#05060A] text-slate-900 dark:text-white antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
         {/* JSON-LD: Organization + WebSite structured data */}
         <script
           type="application/ld+json"
@@ -143,7 +157,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <CommandPalette />
 
             {/* Global navigation */}
-            <Navbar />
+            <Navbar
+              siteName={siteConfig.siteName}
+              logoUrl={siteConfig.logoUrl}
+              services={navServices}
+            />
 
             {/* Page content */}
             <main id="main-content" className="w-full max-w-full overflow-x-hidden relative">
@@ -151,10 +169,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </main>
 
             {/* Global footer */}
-            <Footer />
+            <Footer
+              siteName={siteConfig.siteName}
+              siteTagline={siteConfig.siteTagline}
+              contactEmail={siteConfig.email}
+              socials={siteConfig.socials}
+              services={navServices}
+            />
 
             {/* Utilities */}
-            <CookieConsent />
+            <CookieConsent enabled={siteConfig.cookieConsentEnabled} />
             <Toaster position="bottom-right" theme="dark" richColors />
           </LenisProvider>
         </ThemeProvider>

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireRole, isAuthError } from '@/lib/requireRole';
-import { revalidateTag } from 'next/cache';
+import { revalidatePublicSite } from '@/lib/revalidate';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,7 +21,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         order: body.order !== undefined ? parseInt(body.order) : 0,
       },
     });
-    revalidateTag('process');
+    revalidatePublicSite(['process'], ['/process']);
     return NextResponse.json(step);
   } catch {
     return NextResponse.json({ error: 'Failed to update process step' }, { status: 500 });
@@ -37,7 +37,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
   try {
     const { id } = await params;
     await prisma.processStep.delete({ where: { id } });
-    revalidateTag('process');
+    revalidatePublicSite(['process'], ['/process']);
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: 'Failed to delete process step' }, { status: 500 });

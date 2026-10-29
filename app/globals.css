@@ -2,9 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Google Fonts ─────────────────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
-
 /* ── CSS Custom Properties (Design Tokens) ────────────────────────────────── */
 @layer base {
   :root {
@@ -549,6 +546,7 @@ body { overflow-x: hidden; }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    PREMIUM LUXURY LIGHT THEME (Stripe / Linear Caliber)
+   Scoped strictly outside [data-admin-root] so /admin always stays dark.
    ═══════════════════════════════════════════════════════════════════════════ */
 html.light,
 html:not(.dark) {
@@ -563,181 +561,127 @@ html:not(.dark) {
   --text-muted: #64748B;
   --card-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 1px 4px -1px rgba(15, 23, 42, 0.02);
   --card-shadow-hover: 0 12px 30px -4px rgba(124, 58, 237, 0.1), 0 4px 10px -2px rgba(15, 23, 42, 0.04);
-  background-color: var(--bg-page);
-  color: var(--text-main);
 }
 html.dark { color-scheme: dark; }
 
-/* Backgrounds */
-html.light body,
-html:not(.dark) body {
+/* Admin portal always keeps native dark theme regardless of public toggle */
+[data-admin-root],
+[data-admin-root] * {
+  color-scheme: dark;
+}
+
+/* Backgrounds (public site only) */
+html:not(.dark) body:not(:has([data-admin-root])) {
   background-color: var(--bg-page) !important;
   color: var(--text-main) !important;
 }
 
-html.light section,
-html:not(.dark) section {
+html:not(.dark) section:not([data-admin-root] *):not(.dark-card-overlay):not(.dark-card-overlay *) {
+  background-color: var(--bg-page);
+}
+
+html:not(.dark) [class*="bg-[#05060A]"]:not([data-admin-root]):not([data-admin-root] *):not(.dark-card-overlay):not(.dark-card-overlay *),
+html:not(.dark) [class*="bg-[#05060a]"]:not([data-admin-root]):not([data-admin-root] *):not(.dark-card-overlay):not(.dark-card-overlay *) {
   background-color: var(--bg-page) !important;
 }
 
-html.light [class*="bg-[#05060A]"],
-html:not(.dark) [class*="bg-[#05060A]"],
-html.light [class*="bg-[#05060a]"],
-html:not(.dark) [class*="bg-[#05060a]"] {
-  background-color: var(--bg-page) !important;
-}
-
-html.light [class*="bg-[#0B0D14]"],
-html:not(.dark) [class*="bg-[#0B0D14]"],
-html.light [class*="bg-[#0E1018]"],
-html:not(.dark) [class*="bg-[#0E1018]"],
-html.light [class*="bg-[#0A0D14]"],
-html:not(.dark) [class*="bg-[#0A0D14]"] {
+html:not(.dark) [class*="bg-[#0B0D14]"]:not([data-admin-root]):not([data-admin-root] *):not(.dark-card-overlay):not(.dark-card-overlay *),
+html:not(.dark) [class*="bg-[#0E1018]"]:not([data-admin-root]):not([data-admin-root] *):not(.dark-card-overlay):not(.dark-card-overlay *),
+html:not(.dark) [class*="bg-[#0A0D14]"]:not([data-admin-root]):not([data-admin-root] *):not(.dark-card-overlay):not(.dark-card-overlay *),
+html:not(.dark) [class*="bg-[#0A0C14]"]:not([data-admin-root]):not([data-admin-root] *):not(.dark-card-overlay):not(.dark-card-overlay *) {
   background-color: var(--bg-card) !important;
   box-shadow: var(--card-shadow);
 }
 
 /* Card surfaces */
-html.light [class*="bg-white/[0.02]"],
-html:not(.dark) [class*="bg-white/[0.02]"],
-html.light [class*="bg-white/[0.03]"],
-html:not(.dark) [class*="bg-white/[0.03]"],
-html.light [class*="bg-white/[0.04]"],
-html:not(.dark) [class*="bg-white/[0.04]"] {
+html:not(.dark) [class*="bg-white/[0.02]"]:not([data-admin-root] *):not(.dark-card-overlay *),
+html:not(.dark) [class*="bg-white/[0.03]"]:not([data-admin-root] *):not(.dark-card-overlay *),
+html:not(.dark) [class*="bg-white/[0.04]"]:not([data-admin-root] *):not(.dark-card-overlay *) {
   background-color: var(--bg-card) !important;
   box-shadow: var(--card-shadow);
 }
 
-html.light [class*="bg-white/5"],
-html:not(.dark) [class*="bg-white/5"] {
-  background-color: rgba(15, 23, 42, 0.03) !important;
+html:not(.dark) [class*="bg-white/5"]:not([data-admin-root] *):not(.dark-card-overlay *) {
+  background-color: rgba(15, 23, 42, 0.04) !important;
 }
 
-html.light [class*="bg-white/10"],
-html:not(.dark) [class*="bg-white/10"] {
-  background-color: rgba(15, 23, 42, 0.05) !important;
+html:not(.dark) [class*="bg-white/10"]:not([data-admin-root] *):not(.dark-card-overlay *) {
+  background-color: rgba(15, 23, 42, 0.06) !important;
 }
 
 /* Borders */
-html.light [class*="border-white/5"],
-html:not(.dark) [class*="border-white/5"],
-html.light [class*="border-white/10"],
-html:not(.dark) [class*="border-white/10"],
-html.light [class*="border-white/15"],
-html:not(.dark) [class*="border-white/15"],
-html.light [class*="border-white/20"],
-html:not(.dark) [class*="border-white/20"],
-html.light [class*="border-white/[0.0"],
-html:not(.dark) [class*="border-white/[0.0"] {
+html:not(.dark) [class*="border-white/5"]:not([data-admin-root] *):not(.dark-card-overlay *),
+html:not(.dark) [class*="border-white/10"]:not([data-admin-root] *):not(.dark-card-overlay *),
+html:not(.dark) [class*="border-white/15"]:not([data-admin-root] *):not(.dark-card-overlay *),
+html:not(.dark) [class*="border-white/20"]:not([data-admin-root] *):not(.dark-card-overlay *),
+html:not(.dark) [class*="border-white/[0.0"]:not([data-admin-root] *):not(.dark-card-overlay *) {
   border-color: var(--border-light) !important;
 }
 
 /* Headings & Text */
-html.light h1:not([class*="bg-clip-text"]),
-html:not(.dark) h1:not([class*="bg-clip-text"]),
-html.light h2:not([class*="bg-clip-text"]),
-html:not(.dark) h2:not([class*="bg-clip-text"]),
-html.light h3:not([class*="bg-clip-text"]),
-html:not(.dark) h3:not([class*="bg-clip-text"]),
-html.light h4:not([class*="bg-clip-text"]),
-html:not(.dark) h4:not([class*="bg-clip-text"]) {
-  color: var(--text-main) !important;
+html:not(.dark) h1:not([class*="bg-clip-text"]):not([data-admin-root] *):not(.dark-card-overlay *),
+html:not(.dark) h2:not([class*="bg-clip-text"]):not([data-admin-root] *):not(.dark-card-overlay *),
+html:not(.dark) h3:not([class*="bg-clip-text"]):not([data-admin-root] *):not(.dark-card-overlay *),
+html:not(.dark) h4:not([class*="bg-clip-text"]):not([data-admin-root] *):not(.dark-card-overlay *) {
+  color: var(--text-main);
 }
 
-html.light p,
-html:not(.dark) p {
+html:not(.dark) p:not([data-admin-root] *):not(.dark-card-overlay *) {
   color: var(--text-body);
 }
 
-html.light .text-gray-400,
-html:not(.dark) .text-gray-400,
-html.light .text-gray-500,
-html:not(.dark) .text-gray-500,
-html.light .text-gray-600,
-html:not(.dark) .text-gray-600 {
+html:not(.dark) .text-gray-400:not([data-admin-root] *):not(.dark-card-overlay *),
+html:not(.dark) .text-gray-500:not([data-admin-root] *):not(.dark-card-overlay *),
+html:not(.dark) .text-gray-600:not([data-admin-root] *):not(.dark-card-overlay *),
+html:not(.dark) .text-slate-400:not([data-admin-root] *):not(.dark-card-overlay *) {
   color: var(--text-muted) !important;
 }
 
-html.light .text-gray-300,
-html:not(.dark) .text-gray-300 {
+html:not(.dark) .text-gray-300:not([data-admin-root] *):not(.dark-card-overlay *),
+html:not(.dark) .text-slate-300:not([data-admin-root] *):not(.dark-card-overlay *) {
   color: var(--text-body) !important;
 }
 
-/* Gradient text remains vivid and translucent */
-html.light [class*="bg-clip-text"],
-html:not(.dark) [class*="bg-clip-text"] {
-  -webkit-text-fill-color: transparent !important;
-}
-
-/* Gradient buttons and badges MUST retain white text */
-html.light [class*="bg-gradient-to-"] .text-white,
-html:not(.dark) [class*="bg-gradient-to-"] .text-white,
-html.light [class*="bg-gradient-to-"] [class*="text-white"],
-html:not(.dark) [class*="bg-gradient-to-"] [class*="text-white"],
-html.light [class*="from-violet-"] [class*="text-white"],
-html:not(.dark) [class*="from-violet-"] [class*="text-white"],
-html.light a[class*="bg-gradient-"],
-html:not(.dark) a[class*="bg-gradient-"],
-html.light button[class*="bg-gradient-"],
-html:not(.dark) button[class*="bg-gradient-"],
-html.light .btn-gradient,
-html:not(.dark) .btn-gradient {
-  color: #FFFFFF !important;
-}
-
-/* Featured projects dark image cards: text must remain white */
-html.light [class*="from-black"] ~ div h3,
-html:not(.dark) [class*="from-black"] ~ div h3,
-html.light [class*="from-black"] ~ div span,
-html:not(.dark) [class*="from-black"] ~ div span {
-  color: #FFFFFF !important;
-}
-html.light [class*="from-black"] ~ div p,
-html:not(.dark) [class*="from-black"] ~ div p {
-  color: rgba(255, 255, 255, 0.8) !important;
-}
-
-/* Footer in light mode */
-html.light footer,
-html:not(.dark) footer {
-  background-color: #EDF2F7 !important;
-  border-top: 1px solid var(--border-light) !important;
-}
-
-html.light footer .text-gray-400,
-html:not(.dark) footer .text-gray-400,
-html.light footer .text-gray-500,
-html:not(.dark) footer .text-gray-500 {
-  color: var(--text-muted) !important;
-}
-
-html.light footer .text-white,
-html:not(.dark) footer .text-white {
+/* Convert legacy hardcoded .text-white on light cards to legible dark text,
+   while preserving white text on buttons, badges, dark overlays, and admin */
+html:not(.dark) .text-white:not([data-admin-root]):not([data-admin-root] *):not(.dark-card-overlay):not(.dark-card-overlay *):not(.btn-gradient):not(.btn-gradient *):not([class*="bg-gradient-"]):not([class*="bg-gradient-"] *):not([class*="bg-violet-6"]):not([class*="bg-violet-6"] *):not([class*="bg-black"]):not([class*="bg-black"] *):not([class*="bg-slate-9"]):not([class*="bg-slate-9"] *) {
   color: var(--text-main) !important;
 }
 
-/* Code blocks stay dark for high-contrast syntax highlighting */
-html.light pre,
-html:not(.dark) pre,
-html.light code,
-html:not(.dark) code,
-html.light [class*="font-mono"],
-html:not(.dark) [class*="font-mono"] {
+/* Gradient text remains vivid and translucent */
+html:not(.dark) [class*="bg-clip-text"]:not([data-admin-root] *) {
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* Gradient buttons, badges, and dark photo overlay cards MUST retain white text */
+html:not(.dark) .btn-gradient,
+html:not(.dark) .btn-gradient *,
+html:not(.dark) a[class*="bg-gradient-"]:not([class*="bg-clip-text"]),
+html:not(.dark) button[class*="bg-gradient-"]:not([class*="bg-clip-text"]),
+html:not(.dark) .dark-card-overlay h2,
+html:not(.dark) .dark-card-overlay h3,
+html:not(.dark) .dark-card-overlay span:not(.text-black):not(.text-slate-950):not(pre *) {
+  color: #FFFFFF !important;
+}
+
+html:not(.dark) .dark-card-overlay p {
+  color: rgba(255, 255, 255, 0.82) !important;
+}
+
+/* Code blocks stay dark for high-contrast syntax highlighting (NOT inline font-mono!) */
+html:not(.dark) pre:not([data-admin-root] *) {
   background-color: #0F172A !important;
   color: #E2E8F0 !important;
 }
 
 /* Accordion in light mode */
-html.light [data-state="open"],
-html:not(.dark) [data-state="open"],
-html.light [data-state="closed"],
-html:not(.dark) [data-state="closed"] {
+html:not(.dark) [data-state="open"]:not([data-admin-root] *),
+html:not(.dark) [data-state="closed"]:not([data-admin-root] *) {
   background-color: var(--bg-card) !important;
   border-color: var(--border-light) !important;
 }
 
 /* Hover effects on cards in light mode */
-html.light [class*="rounded-2xl"]:hover,
-html:not(.dark) [class*="rounded-2xl"]:hover {
+html:not(.dark) [class*="rounded-2xl"]:not([data-admin-root] *):hover {
   box-shadow: var(--card-shadow-hover);
 }

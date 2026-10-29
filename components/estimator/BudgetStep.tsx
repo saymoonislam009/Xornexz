@@ -1,59 +1,66 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-
-const budgets = [
-  { id: 'small', title: '< $5k', desc: 'MVP or simple projects' },
-  { id: 'medium', title: '$5k - $15k', desc: 'Standard business solutions' },
-  { id: 'large', title: '$15k - $50k', desc: 'Complex applications' },
-  { id: 'enterprise', title: '$50k+', desc: 'Enterprise-grade systems' },
-];
+import type { EstimatorBudget } from '@/lib/site-config';
 
 type Props = {
+  options: EstimatorBudget[];
   value: string;
   onChange: (val: string) => void;
   onNext: () => void;
   onBack: () => void;
 };
 
-export const BudgetStep = ({ value, onChange, onNext, onBack }: Props) => {
+export const BudgetStep = ({ options, value, onChange, onNext, onBack }: Props) => {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
+      exit={{ opacity: 0, y: -16 }}
       className="max-w-3xl mx-auto"
     >
-      <h2 className="text-3xl font-space-grotesk font-bold text-white mb-2 text-center">What is your budget?</h2>
-      <p className="text-white/60 font-inter text-center mb-8">This helps us propose the best solution within your means.</p>
-      
+      <h2 className="text-2xl sm:text-3xl font-display font-bold text-slate-900 dark:text-white mb-2 text-center">
+        Target Investment Tier
+      </h2>
+      <p className="text-slate-600 dark:text-gray-400 text-center mb-8">
+        Helps us tailor our architecture and staffing recommendations.
+      </p>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {budgets.map((budget) => (
-          <button
-            key={budget.id}
-            onClick={() => onChange(budget.id)}
-            className={`p-6 rounded-2xl border text-center transition-all duration-300 ${
-              value === budget.id
-                ? 'bg-cyan-900/30 border-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.2)]'
-                : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/30'
-            }`}
-          >
-            <h3 className="text-2xl font-space-grotesk text-white font-bold mb-2">{budget.title}</h3>
-            <p className="text-sm font-inter text-white/50">{budget.desc}</p>
-          </button>
-        ))}
+        {options.map((budget) => {
+          const selected = value === budget.id;
+          return (
+            <button
+              key={budget.id}
+              type="button"
+              onClick={() => onChange(budget.id)}
+              className={`p-6 rounded-2xl border text-center transition-all duration-200 ${
+                selected
+                  ? 'bg-cyan-500/10 dark:bg-cyan-900/30 border-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.18)]'
+                  : 'bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 hover:border-cyan-500/40'
+              }`}
+            >
+              <h3 className="text-2xl font-display text-slate-900 dark:text-white font-bold mb-2">
+                {budget.title}
+              </h3>
+              <p className="text-sm text-slate-600 dark:text-gray-400">{budget.desc}</p>
+            </button>
+          );
+        })}
       </div>
 
       <div className="mt-10 flex justify-between">
         <button
+          type="button"
           onClick={onBack}
-          className="px-8 py-3 bg-white/5 text-white rounded-full font-space-grotesk hover:bg-white/10 transition-colors"
+          className="px-8 py-3 border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-800 dark:text-white rounded-full font-medium hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
         >
           Back
         </button>
         <button
+          type="button"
           onClick={onNext}
           disabled={!value}
-          className="px-8 py-3 bg-gradient-to-r from-violet-600 to-cyan-500 text-white font-bold rounded-full font-space-grotesk hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+          className="btn-gradient px-8 py-3 bg-gradient-to-r from-violet-600 to-cyan-500 text-white font-semibold rounded-full hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
           Calculate Estimate
         </button>

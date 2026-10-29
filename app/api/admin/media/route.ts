@@ -11,8 +11,26 @@ export async function GET(_req: NextRequest) {
   try {
     const media = await prisma.media.findMany({
       orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        key: true,
+        url: true,
+        mimeType: true,
+        size: true,
+        width: true,
+        height: true,
+        folder: true,
+        alt: true,
+        caption: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
-    return NextResponse.json(media);
+    const normalized = media.map((m) => ({
+      ...m,
+      url: m.url.startsWith("data:") ? `/api/media/item/${m.id}` : m.url,
+    }));
+    return NextResponse.json(normalized);
   } catch (error: any) {
     return NextResponse.json({ error: "Failed to fetch media" }, { status: 500 });
   }

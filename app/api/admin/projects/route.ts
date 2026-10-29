@@ -1,7 +1,8 @@
 import { requireRole, isAuthError } from '@/lib/requireRole'
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
-import { revalidateTag, revalidatePath } from "next/cache";
+import { revalidatePublicSite } from "@/lib/revalidate";
+import { resolveEntityImageUrl } from "@/lib/media-url";
 
 
 export async function POST(req: Request) {
@@ -34,11 +35,7 @@ export async function POST(req: Request) {
       },
     });
 
-    try {
-      revalidatePath('/', 'page');
-      revalidatePath('/portfolio', 'page');
-      revalidateTag('projects');
-    } catch {}
+    revalidatePublicSite(["projects"], ["/portfolio", project.slug ? `/portfolio/${project.slug}` : "/portfolio"]);
 
     return NextResponse.json(project);
   } catch (error: any) {
@@ -55,7 +52,12 @@ export async function GET() {
     const projects = await prisma.project.findMany({
       orderBy: { createdAt: "desc" },
     });
-    return NextResponse.json(projects);
+    return NextResponse.json(
+      projects.map((p) => ({
+        ...p,
+        coverImage: resolveEntityImageUrl(p.coverImage, "project", p.id, p.updatedAt, p.coverImage),
+      }))
+    );
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

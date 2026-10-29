@@ -1,7 +1,7 @@
 import { requireRole, isAuthError } from '@/lib/requireRole';
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
+import { revalidatePublicSite } from "@/lib/revalidate";
 
 export async function GET() {
   const auth = await requireRole('VIEWER');
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
       },
     });
 
-    revalidateTag('services');
+    revalidatePublicSite(["services"], ["/services", `/services/${service.slug}`]);
     return NextResponse.json(service);
   } catch (error: any) {
     console.error("Error creating service:", error);

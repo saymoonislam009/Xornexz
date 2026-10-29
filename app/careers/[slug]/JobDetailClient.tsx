@@ -40,6 +40,7 @@ export default function JobDetailClient({ job }: { job: Job }) {
         data.append(key, value);
       });
       data.append('jobId', job.id);
+      data.append('jobSlug', job.slug);
       data.append('jobTitle', job.title);
       
       if (file) {

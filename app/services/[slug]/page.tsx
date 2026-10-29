@@ -28,14 +28,12 @@ const iconMap: Record<string, LucideIcon> = {
 };
 
 import { prisma } from '@/lib/db';
-import { ensureContentSeeded } from '@/lib/content';
 
 export const dynamicParams = true;
-export const dynamic = 'force-dynamic';
+export const revalidate = 30;
 
 async function getService(slug: string) {
   try {
-    await ensureContentSeeded();
     const dbService = await prisma.service.findUnique({
       where: { slug },
     });

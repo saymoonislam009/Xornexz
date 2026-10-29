@@ -1,7 +1,7 @@
 import { requireRole, isAuthError } from "@/lib/requireRole";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
+import { revalidatePublicSite } from "@/lib/revalidate";
 
 export async function GET() {
   const auth = await requireRole("VIEWER");
@@ -39,8 +39,7 @@ export async function POST(req: Request) {
       },
     });
 
-    revalidateTag("faqs");
-    revalidateTag('faqs');
+    revalidatePublicSite(["faqs"], ["/pricing"]);
     return NextResponse.json(faq);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to create FAQ";

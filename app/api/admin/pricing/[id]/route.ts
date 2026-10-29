@@ -1,7 +1,7 @@
 import { requireRole, isAuthError } from "@/lib/requireRole";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
+import { revalidatePublicSite } from "@/lib/revalidate";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireRole("VIEWER");
@@ -46,7 +46,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       data,
     });
 
-    revalidateTag("pricing");
+    revalidatePublicSite(["pricing"], ["/pricing"]);
     return NextResponse.json(plan);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to update pricing plan";
@@ -66,8 +66,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
       where: { id },
     });
 
-    revalidateTag("pricing");
-    revalidateTag('pricing');
+    revalidatePublicSite(["pricing"], ["/pricing"]);
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to delete pricing plan";

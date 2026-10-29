@@ -1,7 +1,7 @@
 import { requireRole, isAuthError } from '@/lib/requireRole';
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
+import { revalidatePublicSite } from "@/lib/revalidate";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireRole('VIEWER');
@@ -39,7 +39,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       data: dataToUpdate,
     });
 
-    revalidateTag('services');
+    revalidatePublicSite(["services"], ["/services", `/services/${service.slug}`]);
     return NextResponse.json(service);
   } catch (error: any) {
     console.error("Error updating service:", error);
@@ -55,11 +55,11 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
   try {
     const { id } = await params;
-    await prisma.service.delete({
+    const deleted = await prisma.service.delete({
       where: { id },
     });
 
-    revalidateTag('services');
+    revalidatePublicSite(["services"], ["/services", ...(deleted?.slug ? [`/services/${deleted.slug}`] : [])]);
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error("Error deleting service:", error);

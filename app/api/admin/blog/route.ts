@@ -1,7 +1,8 @@
 import { requireRole, isAuthError } from '@/lib/requireRole'
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
+import { revalidatePublicSite } from "@/lib/revalidate";
+import { resolveEntityImageUrl } from "@/lib/media-url";
 
 
 export async function POST(req: Request) {
@@ -42,7 +43,7 @@ export async function POST(req: Request) {
       },
     });
 
-    revalidateTag('blog');
+    revalidatePublicSite(["blog"], ["/blog", ...(post.slug ? [`/blog/${post.slug}`] : [])]);
     return NextResponse.json(post);
   } catch (error: any) {
     console.error("Error creating blog post:", error);
@@ -59,7 +60,14 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
       include: { author: { select: { id: true, name: true, email: true, role: true, isActive: true } } },
     });
-    return NextResponse.json(posts);
+    return NextResponse.json(
+      posts.map((p) => ({
+        ...p,
+        coverImage: p.coverImage
+          ? resolveEntityImageUrl(p.coverImage, "blog", p.id, p.updatedAt, p.coverImage)
+          : null,
+      }))
+    );
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

@@ -102,15 +102,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const url = `data:${file.type};base64,${buffer.toString("base64")}`;
+    const dataUrl = `data:${file.type};base64,${buffer.toString("base64")}`;
     const inlineKey = `inline-${randomUUID()}`;
-    let mediaRecord: unknown = { url, key: inlineKey, inline: true };
+    let mediaRecord: unknown = { url: dataUrl, key: inlineKey, inline: true };
 
     try {
-      mediaRecord = await prisma.media.create({
+      const created = await prisma.media.create({
         data: {
           key: inlineKey,
-          url,
+          url: dataUrl,
           mimeType: file.type,
           size: file.size,
           folder,
@@ -120,6 +120,11 @@ export async function POST(req: NextRequest) {
           uploadedById: authResult.userId,
         },
       });
+      // Serve via fast binary endpoint instead of embedding MBs of base64 into pages
+      mediaRecord = {
+        ...created,
+        url: `/api/media/item/${created.id}`,
+      };
       revalidateTag("media");
     } catch (dbErr) {
       console.warn("[media/upload] could not save fallback to media table:", dbErr);

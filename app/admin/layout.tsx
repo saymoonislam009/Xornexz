@@ -6,5 +6,9 @@ import { ReactNode } from "react";
 export const dynamic = "force-dynamic";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  return (
+    <div data-admin-root="true" className="dark min-h-screen bg-[#05060A] text-white">
+      {children}
+    </div>
+  );
 }

@@ -76,14 +76,25 @@ export default function AboutClient({ team }: { team: any[] }) {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {team.map((member, i) => (
             <div key={i} className="group relative overflow-hidden rounded-3xl bg-[#0B0D14] border border-white/10">
-              <div className="aspect-square bg-slate-800 relative">
-                {/* Image Placeholder if actual images fail */}
+              <div className="aspect-square bg-slate-800 relative flex items-center justify-center">
                 <div className="absolute inset-0 bg-gradient-to-br from-violet-900/50 to-cyan-900/50" />
-                <img 
-                  src={member.image} 
-                  alt={member.name}
-                  className="w-full h-full object-cover mix-blend-overlay grayscale group-hover:grayscale-0 transition-all duration-500"
-                />
+                {member.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={member.image}
+                    alt={member.name}
+                    className="w-full h-full object-cover mix-blend-overlay grayscale group-hover:grayscale-0 transition-all duration-500"
+                  />
+                ) : (
+                  <span className="relative z-10 text-5xl font-display font-black text-white/80">
+                    {(member.name || 'X')
+                      .split(' ')
+                      .map((w: string) => w[0])
+                      .join('')
+                      .slice(0, 2)
+                      .toUpperCase()}
+                  </span>
+                )}
               </div>
               <div className="p-8 relative bg-[#0B0D14] z-10">
                 <h3 className="text-2xl font-bold mb-1">{member.name}</h3>
@@ -103,7 +114,7 @@ export default function AboutClient({ team }: { team: any[] }) {
           <h2 className="text-4xl md:text-5xl font-display font-bold mb-8">Ready to do the best work of your life?</h2>
           <p className="text-xl text-slate-600 mb-12">
             We are a remote-first, async-friendly team. We value output over hours logged. 
-            If you're an exceptional builder, we want to hear from you.
+            If you&apos;re an exceptional builder, we want to hear from you.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link 

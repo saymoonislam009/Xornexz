@@ -1,7 +1,7 @@
 import { requireRole, isAuthError } from "@/lib/requireRole";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
+import { revalidatePublicSite } from "@/lib/revalidate";
 
 export async function GET() {
   const auth = await requireRole("VIEWER");
@@ -45,8 +45,7 @@ export async function POST(req: Request) {
       },
     });
 
-    revalidateTag("team");
-    revalidateTag('team');
+    revalidatePublicSite(["team"], ["/about"]);
     return NextResponse.json(member);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to create team member";

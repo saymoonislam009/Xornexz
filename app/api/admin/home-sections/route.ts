@@ -1,7 +1,7 @@
 import { requireRole, isAuthError } from '@/lib/requireRole';
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
+import { revalidatePublicSite } from "@/lib/revalidate";
 
 const DEFAULT_SECTIONS = [
   { key: 'hero', order: 0, enabled: true },
@@ -75,7 +75,7 @@ export async function PUT(req: Request) {
       });
     }
 
-    revalidateTag('home-sections');
+    revalidatePublicSite(['home-sections']);
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error("Failed to update home sections:", error);

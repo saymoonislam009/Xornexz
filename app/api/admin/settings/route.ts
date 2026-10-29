@@ -1,7 +1,7 @@
 import { requireRole, isAuthError } from "@/lib/requireRole";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { revalidateTag } from "next/cache";
+import { revalidatePublicSite } from "@/lib/revalidate";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -101,13 +101,22 @@ export async function PUT(req: NextRequest) {
       }
     }
 
+    if (dataToSave.statsJson && typeof dataToSave.statsJson === "object") {
+      const existing = await prisma.siteSettings.findUnique({ where: { id: "default" } });
+      const prevStats =
+        existing?.statsJson && typeof existing.statsJson === "object"
+          ? (existing.statsJson as Record<string, unknown>)
+          : {};
+      dataToSave.statsJson = { ...prevStats, ...dataToSave.statsJson };
+    }
+
     const settings = await prisma.siteSettings.upsert({
       where: { id: "default" },
       update: dataToSave as any,
       create: { id: "default", ...dataToSave } as any,
     });
 
-    revalidateTag("site-settings");
+    revalidatePublicSite(["site-settings"], ["/contact", "/estimator"]);
     return NextResponse.json(settings);
   } catch (error: any) {
     console.error("Failed to update settings:", error);

@@ -1,24 +1,28 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { usePathname } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 
-export function CookieConsent() {
+export function CookieConsent({ enabled = true }: { enabled?: boolean }) {
+  const pathname = usePathname()
   const [show, setShow] = useState(false)
 
   useEffect(() => {
+    if (!enabled) return
     try {
       const consent = localStorage.getItem("cookie-consent")
       if (!consent) {
-        // Delay showing the banner slightly for better UX
-        const timer = setTimeout(() => setShow(true), 1500)
+        const timer = setTimeout(() => setShow(true), 1800)
         return () => clearTimeout(timer)
       }
     } catch {
-      // In private mode or restricted contexts
+      // Private mode or restricted storage
     }
-  }, [])
+  }, [enabled])
+
+  if (!enabled || pathname?.startsWith("/admin")) return null
 
   const handleAccept = () => {
     try {
@@ -42,13 +46,13 @@ export function CookieConsent() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-4xl rounded-xl border border-white/10 bg-[#05060A]/95 p-6 shadow-2xl backdrop-blur-lg sm:flex sm:items-center sm:justify-between"
+          className="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-4xl rounded-2xl border border-slate-200 dark:border-white/10 bg-white/95 dark:bg-[#05060A]/95 p-5 shadow-2xl backdrop-blur-lg sm:flex sm:items-center sm:justify-between"
         >
           <div className="mb-4 sm:mb-0 sm:mr-8">
-            <p className="text-sm text-gray-300">
-              We use cookies to enhance your experience, analyze site traffic, and serve tailored content. 
-              By continuing to browse, you consent to our use of cookies. Read our{" "}
-              <Link href="/legal/cookies" className="text-cyan-400 underline hover:text-cyan-300">
+            <p className="text-sm text-slate-600 dark:text-gray-300">
+              We use cookies to enhance your experience, analyze site traffic, and serve tailored content.
+              Read our{" "}
+              <Link href="/legal/cookies" className="text-cyan-600 dark:text-cyan-400 underline hover:opacity-80">
                 Cookie Policy
               </Link>
               .
@@ -57,13 +61,15 @@ export function CookieConsent() {
           <div className="flex flex-shrink-0 flex-col gap-2 sm:flex-row">
             <button
               onClick={handleReject}
-              className="rounded-lg border border-white/10 bg-transparent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/5"
+              type="button"
+              className="rounded-xl border border-slate-200 dark:border-white/10 bg-transparent px-4 py-2 text-sm font-medium text-slate-700 dark:text-white transition-colors hover:bg-slate-100 dark:hover:bg-white/5"
             >
               Reject All
             </button>
             <button
               onClick={handleAccept}
-              className="rounded-lg bg-gradient-to-r from-violet-600 to-cyan-500 px-4 py-2 text-sm font-medium text-white transition-all hover:from-violet-500 hover:to-cyan-400 hover:shadow-[0_0_15px_rgba(6,182,212,0.5)]"
+              type="button"
+              className="btn-gradient rounded-xl bg-gradient-to-r from-violet-600 to-cyan-500 px-4 py-2 text-sm font-semibold text-white transition-all hover:from-violet-500 hover:to-cyan-400 hover:shadow-[0_0_15px_rgba(6,182,212,0.5)]"
             >
               Accept All
             </button>

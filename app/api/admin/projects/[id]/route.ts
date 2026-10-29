@@ -1,7 +1,7 @@
 import { requireRole, isAuthError } from '@/lib/requireRole'
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
-import { revalidateTag, revalidatePath } from "next/cache";
+import { revalidatePublicSite } from "@/lib/revalidate";
 
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -26,14 +26,10 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       data: dataToUpdate,
     });
 
-    try {
-      revalidatePath('/', 'page');
-      revalidatePath('/portfolio', 'page');
-      if (project?.slug) {
-        revalidatePath(`/portfolio/${project.slug}`, 'page');
-      }
-      revalidateTag('projects');
-    } catch {}
+    revalidatePublicSite(
+      ["projects"],
+      ["/portfolio", ...(project?.slug ? [`/portfolio/${project.slug}`] : [])]
+    );
 
     return NextResponse.json(project);
   } catch (error: any) {
@@ -53,14 +49,10 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     const project = await prisma.project.delete({
       where: { id },
     });
-    try {
-      revalidatePath('/', 'page');
-      revalidatePath('/portfolio', 'page');
-      if (project?.slug) {
-        revalidatePath(`/portfolio/${project.slug}`, 'page');
-      }
-      revalidateTag('projects');
-    } catch {}
+    revalidatePublicSite(
+      ["projects"],
+      ["/portfolio", ...(project?.slug ? [`/portfolio/${project.slug}`] : [])]
+    );
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error("Error deleting project:", error);

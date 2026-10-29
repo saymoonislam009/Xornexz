@@ -1,7 +1,7 @@
 import { requireRole, isAuthError } from "@/lib/requireRole";
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
+import { revalidatePublicSite } from "@/lib/revalidate";
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireRole("VIEWER");
@@ -56,7 +56,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       data,
     });
 
-    revalidateTag("jobs");
+    revalidatePublicSite(["jobs"], ["/careers", `/careers/${job.slug}`]);
     return NextResponse.json(job);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to update job";
@@ -72,11 +72,11 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
   try {
     const { id } = await params;
-    await prisma.job.delete({
+    const deleted = await prisma.job.delete({
       where: { id },
     });
 
-    revalidateTag("jobs");
+    revalidatePublicSite(["jobs"], ["/careers", ...(deleted?.slug ? [`/careers/${deleted.slug}`] : [])]);
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Failed to delete job";

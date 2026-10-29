@@ -1,14 +1,12 @@
 import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { jobs as staticJobs, type Job } from '@/lib/data/jobs';
-import { ensureContentSeeded } from '@/lib/content';
 import JobDetailClient from './JobDetailClient';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 30;
 
 async function getJob(slug: string): Promise<Job | null> {
   try {
-    await ensureContentSeeded();
     const j = await prisma.job.findUnique({ where: { slug } });
     if (j) {
       if (j.status !== 'OPEN') return null;
