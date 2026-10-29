@@ -2,6 +2,7 @@ import { requireRole, isAuthError } from '@/lib/requireRole'
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { revalidatePublicSite } from "@/lib/revalidate";
+import { persistDataUrlIfInline } from "@/lib/media-persist";
 
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -13,6 +14,18 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const body = await req.json();
     
     const dataToUpdate: any = { ...body };
+    if (
+      typeof dataToUpdate.coverImage === "string" &&
+      dataToUpdate.coverImage.startsWith("/api/media/entity/blog/")
+    ) {
+      delete dataToUpdate.coverImage;
+    } else if (typeof dataToUpdate.coverImage === "string") {
+      dataToUpdate.coverImage = await persistDataUrlIfInline(
+        dataToUpdate.coverImage,
+        "blog",
+        dataToUpdate.title || ""
+      );
+    }
     if (dataToUpdate.readingTime) {
       dataToUpdate.readingTime = parseInt(dataToUpdate.readingTime);
     }

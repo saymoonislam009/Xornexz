@@ -2,6 +2,7 @@ import { requireRole, isAuthError } from '@/lib/requireRole'
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { revalidatePublicSite } from "@/lib/revalidate";
+import { persistDataUrlIfInline, persistGalleryIfInline } from "@/lib/media-persist";
 
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -13,8 +14,30 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const body = await req.json();
     
     const dataToUpdate: any = { ...body };
-    if (dataToUpdate.order) {
-      dataToUpdate.order = parseInt(dataToUpdate.order);
+    if (dataToUpdate.order !== undefined) {
+      dataToUpdate.order = parseInt(String(dataToUpdate.order), 10) || 0;
+    }
+
+    // Never allow a synthetic /api/media/entity/project/<id> proxy URL to overwrite stored data
+    if (
+      typeof dataToUpdate.coverImage === "string" &&
+      dataToUpdate.coverImage.startsWith(`/api/media/entity/project/`)
+    ) {
+      delete dataToUpdate.coverImage;
+    } else if (typeof dataToUpdate.coverImage === "string") {
+      dataToUpdate.coverImage = await persistDataUrlIfInline(
+        dataToUpdate.coverImage,
+        "projects",
+        dataToUpdate.title || ""
+      );
+    }
+
+    if (Array.isArray(dataToUpdate.gallery)) {
+      dataToUpdate.gallery = await persistGalleryIfInline(
+        dataToUpdate.gallery,
+        "projects",
+        dataToUpdate.title || ""
+      );
     }
     
     if (dataToUpdate.status === "PUBLISHED" && !dataToUpdate.publishedAt) {

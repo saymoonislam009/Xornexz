@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Plus, Edit, ExternalLink, FolderGit2 } from "lucide-react";
 import StatusBadge from "@/components/admin/ui/StatusBadge";
+import { resolveEntityImageUrl, isUnoptimizedImageSrc } from "@/lib/media-url";
 
 export default async function ProjectsAdminPage() {
   const projects = await prisma.project.findMany({
@@ -50,17 +51,27 @@ export default async function ProjectsAdminPage() {
                     ? "warning"
                     : "default";
 
+                const thumbUrl = resolveEntityImageUrl(
+                  project.coverImage,
+                  "project",
+                  project.id,
+                  project.updatedAt,
+                  ""
+                );
+
                 return (
                   <tr key={project.id} className="hover:bg-white/5 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        {project.coverImage ? (
+                        {thumbUrl ? (
                           <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border border-white/10 bg-[#0E1018]">
                             <Image
-                              src={project.coverImage}
+                              src={thumbUrl}
                               alt={project.title}
                               fill
+                              sizes="48px"
                               className="object-cover"
+                              unoptimized={isUnoptimizedImageSrc(thumbUrl)}
                             />
                           </div>
                         ) : (

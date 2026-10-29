@@ -9,6 +9,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Save, Trash2, Loader2, FolderGit2, Link as LinkIcon, X } from "lucide-react";
 import MediaPicker from "@/components/admin/MediaPicker";
+import { isUnoptimizedImageSrc } from "@/lib/media-url";
 
 const projectSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -78,7 +79,7 @@ export default function ProjectForm({ initialData }: ProjectFormProps) {
       category: initialData?.category || "",
       tags: initialData?.tags?.join(", ") || "",
       techStack: initialData?.techStack?.join(", ") || "",
-      status: initialData?.status || "DRAFT",
+      status: initialData?.status || "PUBLISHED",
       featured: initialData?.featured || false,
       order: initialData?.order !== undefined ? initialData.order.toString() : "0",
     },
@@ -280,18 +281,29 @@ export default function ProjectForm({ initialData }: ProjectFormProps) {
 
         {gallery.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-            {gallery.map((url, i) => (
-              <div key={i} className="relative aspect-video rounded-lg overflow-hidden border border-white/10 group bg-[#0E1018]">
-                <Image src={url} alt={`Gallery ${i}`} fill className="object-cover" />
-                <button
-                  type="button"
-                  onClick={() => removeGalleryImage(i)}
-                  className="absolute top-1.5 right-1.5 p-1 bg-red-500 text-white rounded-md opacity-0 group-hover:opacity-100 transition-opacity z-10"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            ))}
+            {gallery.map((url, i) => {
+              const previewUrl =
+                url.startsWith("/api/media/item/") && !url.includes("?") ? `${url}?v=2` : url;
+              return (
+                <div key={i} className="relative aspect-video rounded-lg overflow-hidden border border-white/10 group bg-[#0E1018]">
+                  <Image
+                    src={previewUrl}
+                    alt={`Gallery ${i}`}
+                    fill
+                    sizes="200px"
+                    className="object-cover"
+                    unoptimized={isUnoptimizedImageSrc(previewUrl)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeGalleryImage(i)}
+                    className="absolute top-1.5 right-1.5 p-1 bg-red-500 text-white rounded-md opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
 

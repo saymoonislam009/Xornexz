@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { revalidatePublicSite } from "@/lib/revalidate";
 import { resolveEntityImageUrl } from "@/lib/media-url";
+import { persistDataUrlIfInline } from "@/lib/media-persist";
 
 
 export async function POST(req: Request) {
@@ -11,6 +12,9 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
+    const coverImage = body.coverImage
+      ? await persistDataUrlIfInline(body.coverImage, "blog", body.title || "")
+      : null;
     
     // Default author logic: if authorId is not provided, find the first super admin or use whatever we have
     let authorId = body.authorId;
@@ -31,7 +35,7 @@ export async function POST(req: Request) {
         slug: body.slug,
         excerpt: body.excerpt,
         content: body.content,
-        coverImage: body.coverImage,
+        coverImage: coverImage ?? null,
         authorId: authorId,
         category: body.category,
         tags: body.tags || [],

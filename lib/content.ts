@@ -8,6 +8,8 @@
  *  - `getPublic*()` / `getHome*()` read from the database via Next.js
  *    `unstable_cache` (instant 0ms reads on repeat visits, busted immediately
  *    via `revalidatePublicSite()` whenever admin saves changes).
+ *  - `try/catch` fallbacks live OUTSIDE `unstable_cache` so a cold-start or
+ *    build-time DB error never caches static fallback data into Vercel's Data Cache.
  */
 import { unstable_cache } from "next/cache";
 import { randomUUID } from "crypto";
@@ -19,6 +21,7 @@ import { team as staticTeam } from "@/lib/data/team";
 import { jobs as staticJobs } from "@/lib/data/jobs";
 import { DEFAULT_FAQS, DEFAULT_TESTIMONIALS, DEFAULT_PRICING, DEFAULT_FEATURED } from "@/lib/data/home";
 import { resolveEntityImageUrl, resolveGalleryUrls } from "@/lib/media-url";
+import { parseDataUrl } from "@/lib/media-mime";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -90,21 +93,22 @@ async function migrateInlineDataUrls() {
       select: { id: true, title: true, coverImage: true },
     });
     for (const proj of inlineProjects) {
-      const mimeMatch = proj.coverImage.match(/^data:([^;,]+)/);
-      const mimeType = mimeMatch?.[1] || "image/webp";
+      const parsed = parseDataUrl(proj.coverImage);
+      const mimeType = parsed?.mimeType || "image/png";
+      const size = parsed?.bytes.byteLength ?? Math.round(proj.coverImage.length * 0.75);
       const created = await prisma.media.create({
         data: {
           key: `inline-${randomUUID()}`,
           url: proj.coverImage,
           mimeType,
-          size: Math.round(proj.coverImage.length * 0.75),
+          size,
           folder: "projects",
           alt: proj.title,
         },
       });
       await prisma.project.update({
         where: { id: proj.id },
-        data: { coverImage: `/api/media/item/${created.id}` },
+        data: { coverImage: `/api/media/item/${created.id}?v=2` },
       });
     }
 
@@ -114,21 +118,22 @@ async function migrateInlineDataUrls() {
     });
     for (const post of inlinePosts) {
       if (!post.coverImage) continue;
-      const mimeMatch = post.coverImage.match(/^data:([^;,]+)/);
-      const mimeType = mimeMatch?.[1] || "image/webp";
+      const parsed = parseDataUrl(post.coverImage);
+      const mimeType = parsed?.mimeType || "image/png";
+      const size = parsed?.bytes.byteLength ?? Math.round(post.coverImage.length * 0.75);
       const created = await prisma.media.create({
         data: {
           key: `inline-${randomUUID()}`,
           url: post.coverImage,
           mimeType,
-          size: Math.round(post.coverImage.length * 0.75),
+          size,
           folder: "blog",
           alt: post.title,
         },
       });
       await prisma.blogPost.update({
         where: { id: post.id },
-        data: { coverImage: `/api/media/item/${created.id}` },
+        data: { coverImage: `/api/media/item/${created.id}?v=2` },
       });
     }
   } catch (err) {
@@ -345,386 +350,426 @@ const BLOG_GRADIENTS = [
   "from-emerald-500 to-cyan-500",
 ];
 
-export const getPublicServices = unstable_cache(
+const getPublicServicesCached = unstable_cache(
   async () => {
-    try {
-      let rows = await prisma.service.findMany({
+    let rows = await prisma.service.findMany({
+      where: { isActive: true },
+      orderBy: { order: "asc" },
+    });
+    if (rows.length === 0) {
+      await ensureContentSeeded();
+      rows = await prisma.service.findMany({
         where: { isActive: true },
         orderBy: { order: "asc" },
       });
-      if (rows.length === 0) {
-        await ensureContentSeeded();
-        rows = await prisma.service.findMany({
-          where: { isActive: true },
-          orderBy: { order: "asc" },
-        });
-      }
-      if (rows.length === 0) return staticServices as any[];
-      return rows.map((s) => ({
-        id: s.id,
-        slug: s.slug,
-        title: s.title,
-        tagline: s.tagline,
-        description: s.description,
-        icon: s.icon,
-        features: s.features,
-        deliverables: s.deliverables,
-        techStack: s.techStack,
-        processSteps: Array.isArray(s.processSteps) ? (s.processSteps as any[]) : [],
-        startingPrice:
-          (staticServices as any[]).find((x) => x.slug === s.slug)?.startingPrice ?? 8000,
-        order: s.order,
-      }));
-    } catch (e) {
-      console.error("[content] services fallback:", e);
-      return staticServices as any[];
     }
+    if (rows.length === 0) return staticServices as any[];
+    return rows.map((s) => ({
+      id: s.id,
+      slug: s.slug,
+      title: s.title,
+      tagline: s.tagline,
+      description: s.description,
+      icon: s.icon,
+      features: s.features,
+      deliverables: s.deliverables,
+      techStack: s.techStack,
+      processSteps: Array.isArray(s.processSteps) ? (s.processSteps as any[]) : [],
+      startingPrice:
+        (staticServices as any[]).find((x) => x.slug === s.slug)?.startingPrice ?? 8000,
+      order: s.order,
+    }));
   },
-  ["public-services"],
+  ["public-services-v2"],
   { revalidate: 60, tags: ["services", "home-content"] }
 );
 
-export const getPublicProjects = unstable_cache(
+export async function getPublicServices() {
+  try {
+    return await getPublicServicesCached();
+  } catch (e) {
+    console.error("[content] services fallback:", e);
+    return staticServices as any[];
+  }
+}
+
+const getPublicProjectsCached = unstable_cache(
   async () => {
-    try {
-      let rows = await prisma.project.findMany({
+    let rows = await prisma.project.findMany({
+      where: { status: "PUBLISHED" },
+      orderBy: [{ order: "asc" }, { updatedAt: "desc" }],
+    });
+    if (rows.length === 0) {
+      await ensureContentSeeded();
+      rows = await prisma.project.findMany({
         where: { status: "PUBLISHED" },
         orderBy: [{ order: "asc" }, { updatedAt: "desc" }],
       });
-      if (rows.length === 0) {
-        await ensureContentSeeded();
-        rows = await prisma.project.findMany({
-          where: { status: "PUBLISHED" },
-          orderBy: [{ order: "asc" }, { updatedAt: "desc" }],
-        });
-      }
-      if (rows.length === 0) {
-        return (staticProjects as any[]).map((p) => ({ ...p }));
-      }
-      return rows.map((p, i) => {
-        const staticMatch = (staticProjects as any[]).find((s) => s.slug === p.slug);
-        const defaultImg =
-          staticMatch?.coverImage ||
-          DEFAULT_FEATURED.find((d) => d.slug === p.slug)?.image ||
-          DEFAULT_FEATURED[i % DEFAULT_FEATURED.length]?.image ||
-          "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2070";
-
-        return {
-          id: p.id,
-          slug: p.slug,
-          title: p.title,
-          tagline: p.tagline,
-          client: p.client || "",
-          category: p.category,
-          tags: p.tags && p.tags.length > 0 ? p.tags : staticMatch?.tags || ["Engineering"],
-          coverGradient: GRADIENTS[i % GRADIENTS.length],
-          coverImage: resolveEntityImageUrl(p.coverImage, "project", p.id, p.updatedAt, defaultImg),
-          gallery: resolveGalleryUrls(p.gallery, p.id, p.updatedAt, staticMatch?.gallery || []),
-          year: String((p.publishedAt ?? p.createdAt).getFullYear()),
-          featured: p.featured,
-        };
-      });
-    } catch (e) {
-      console.error("[content] projects fallback:", e);
+    }
+    if (rows.length === 0) {
       return (staticProjects as any[]).map((p) => ({ ...p }));
     }
+    return rows.map((p, i) => {
+      const staticMatch = (staticProjects as any[]).find((s) => s.slug === p.slug);
+      const defaultImg =
+        staticMatch?.coverImage ||
+        DEFAULT_FEATURED.find((d) => d.slug === p.slug)?.image ||
+        DEFAULT_FEATURED[i % DEFAULT_FEATURED.length]?.image ||
+        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2070";
+
+      return {
+        id: p.id,
+        slug: p.slug,
+        title: p.title,
+        tagline: p.tagline,
+        client: p.client || "",
+        category: p.category,
+        tags: p.tags && p.tags.length > 0 ? p.tags : staticMatch?.tags || ["Engineering"],
+        coverGradient: GRADIENTS[i % GRADIENTS.length],
+        coverImage: resolveEntityImageUrl(p.coverImage, "project", p.id, p.updatedAt, defaultImg),
+        gallery: resolveGalleryUrls(p.gallery, p.id, p.updatedAt, staticMatch?.gallery || []),
+        year: String((p.publishedAt ?? p.createdAt).getFullYear()),
+        featured: p.featured,
+      };
+    });
   },
-  ["public-projects"],
+  ["public-projects-v2"],
   { revalidate: 60, tags: ["projects", "home-content"] }
 );
 
-export const getPublicBlogPosts = unstable_cache(
+export async function getPublicProjects() {
+  try {
+    return await getPublicProjectsCached();
+  } catch (e) {
+    console.error("[content] projects fallback:", e);
+    return (staticProjects as any[]).map((p) => ({ ...p }));
+  }
+}
+
+const getPublicBlogPostsCached = unstable_cache(
   async () => {
-    try {
-      let rows = await prisma.blogPost.findMany({
+    let rows = await prisma.blogPost.findMany({
+      where: { status: "PUBLISHED" },
+      orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+      include: { author: { select: { name: true } } },
+    });
+    if (rows.length === 0) {
+      await ensureContentSeeded();
+      rows = await prisma.blogPost.findMany({
         where: { status: "PUBLISHED" },
         orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
         include: { author: { select: { name: true } } },
       });
-      if (rows.length === 0) {
-        await ensureContentSeeded();
-        rows = await prisma.blogPost.findMany({
-          where: { status: "PUBLISHED" },
-          orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
-          include: { author: { select: { name: true } } },
-        });
-      }
-      if (rows.length === 0) return staticBlog as any[];
-      return rows.map((p, i) => {
-        const name = p.author?.name || "Xornexz Editorial";
-        const staticMatch = (staticBlog as any[]).find((b) => b.slug === p.slug);
-        return {
-          slug: p.slug,
-          title: p.title,
-          excerpt: p.excerpt,
-          content: p.content,
-          author: {
-            name,
-            role: "Engineering Team",
-            avatar: name.slice(0, 2).toUpperCase(),
-          },
-          publishedAt: (p.publishedAt ?? p.createdAt).toISOString(),
-          readingTime: `${p.readingTime ?? 5} min read`,
-          category: p.category,
-          tags: p.tags,
-          coverGradient: BLOG_GRADIENTS[i % BLOG_GRADIENTS.length],
-          coverImage:
-            resolveEntityImageUrl(
-              p.coverImage,
-              "blog",
-              p.id,
-              p.updatedAt,
-              staticMatch?.coverImage || ""
-            ) || null,
-        };
-      });
-    } catch (e) {
-      console.error("[content] blog fallback:", e);
-      return staticBlog as any[];
     }
+    if (rows.length === 0) return staticBlog as any[];
+    return rows.map((p, i) => {
+      const name = p.author?.name || "Xornexz Editorial";
+      const staticMatch = (staticBlog as any[]).find((b) => b.slug === p.slug);
+      return {
+        slug: p.slug,
+        title: p.title,
+        excerpt: p.excerpt,
+        content: p.content,
+        author: {
+          name,
+          role: "Engineering Team",
+          avatar: name.slice(0, 2).toUpperCase(),
+        },
+        publishedAt: (p.publishedAt ?? p.createdAt).toISOString(),
+        readingTime: `${p.readingTime ?? 5} min read`,
+        category: p.category,
+        tags: p.tags,
+        coverGradient: BLOG_GRADIENTS[i % BLOG_GRADIENTS.length],
+        coverImage:
+          resolveEntityImageUrl(
+            p.coverImage,
+            "blog",
+            p.id,
+            p.updatedAt,
+            staticMatch?.coverImage || ""
+          ) || null,
+      };
+    });
   },
-  ["public-blog"],
+  ["public-blog-v2"],
   { revalidate: 60, tags: ["blog", "home-content"] }
 );
 
-export const getPublicTeam = unstable_cache(
+export async function getPublicBlogPosts() {
+  try {
+    return await getPublicBlogPostsCached();
+  } catch (e) {
+    console.error("[content] blog fallback:", e);
+    return staticBlog as any[];
+  }
+}
+
+const getPublicTeamCached = unstable_cache(
   async () => {
-    try {
-      let rows = await prisma.teamMember.findMany({
+    let rows = await prisma.teamMember.findMany({
+      where: { isActive: true },
+      orderBy: { order: "asc" },
+    });
+    if (rows.length === 0) {
+      await ensureContentSeeded();
+      rows = await prisma.teamMember.findMany({
         where: { isActive: true },
         orderBy: { order: "asc" },
       });
-      if (rows.length === 0) {
-        await ensureContentSeeded();
-        rows = await prisma.teamMember.findMany({
-          where: { isActive: true },
-          orderBy: { order: "asc" },
-        });
-      }
-      if (rows.length === 0) return staticTeam as any[];
-      return rows.map((m) => ({
-        name: m.name,
-        role: m.role,
-        bio: m.bio ?? "",
-        image: resolveEntityImageUrl(m.avatarUrl, "team", m.id, m.updatedAt, ""),
-      }));
-    } catch (e) {
-      console.error("[content] team fallback:", e);
-      return staticTeam as any[];
     }
+    if (rows.length === 0) return staticTeam as any[];
+    return rows.map((m) => ({
+      name: m.name,
+      role: m.role,
+      bio: m.bio ?? "",
+      image: resolveEntityImageUrl(m.avatarUrl, "team", m.id, m.updatedAt, ""),
+    }));
   },
-  ["public-team"],
+  ["public-team-v2"],
   { revalidate: 60, tags: ["team", "home-content"] }
 );
 
-export const getHomeFaqs = unstable_cache(
+export async function getPublicTeam() {
+  try {
+    return await getPublicTeamCached();
+  } catch (e) {
+    console.error("[content] team fallback:", e);
+    return staticTeam as any[];
+  }
+}
+
+const getHomeFaqsCached = unstable_cache(
   async () => {
-    try {
-      let rows = await prisma.fAQ.findMany({
+    let rows = await prisma.fAQ.findMany({
+      where: { isActive: true },
+      orderBy: { order: "asc" },
+    });
+    if (rows.length === 0) {
+      await ensureContentSeeded();
+      rows = await prisma.fAQ.findMany({
         where: { isActive: true },
         orderBy: { order: "asc" },
       });
-      if (rows.length === 0) {
-        await ensureContentSeeded();
-        rows = await prisma.fAQ.findMany({
-          where: { isActive: true },
-          orderBy: { order: "asc" },
-        });
-      }
-      if (rows.length === 0) return DEFAULT_FAQS;
-      return rows.map((f) => ({ question: f.question, answer: f.answer }));
-    } catch (e) {
-      console.error("[content] faq fallback:", e);
-      return DEFAULT_FAQS;
     }
+    if (rows.length === 0) return DEFAULT_FAQS;
+    return rows.map((f) => ({ question: f.question, answer: f.answer }));
   },
-  ["home-faqs"],
+  ["home-faqs-v2"],
   { revalidate: 60, tags: ["faqs", "home-content"] }
 );
 
-export const getHomeTestimonials = unstable_cache(
+export async function getHomeFaqs() {
+  try {
+    return await getHomeFaqsCached();
+  } catch (e) {
+    console.error("[content] faq fallback:", e);
+    return DEFAULT_FAQS;
+  }
+}
+
+const getHomeTestimonialsCached = unstable_cache(
   async () => {
-    try {
-      let rows = await prisma.testimonial.findMany({
+    let rows = await prisma.testimonial.findMany({
+      where: { isActive: true },
+      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+    });
+    if (rows.length === 0) {
+      await ensureContentSeeded();
+      rows = await prisma.testimonial.findMany({
         where: { isActive: true },
         orderBy: [{ order: "asc" }, { createdAt: "desc" }],
       });
-      if (rows.length === 0) {
-        await ensureContentSeeded();
-        rows = await prisma.testimonial.findMany({
-          where: { isActive: true },
-          orderBy: [{ order: "asc" }, { createdAt: "desc" }],
-        });
-      }
-      if (rows.length === 0) return DEFAULT_TESTIMONIALS;
-      return rows.map((t) => ({
-        id: t.id,
-        name: t.name,
-        title: t.company ? `${t.title}, ${t.company}` : t.title,
-        avatar: resolveEntityImageUrl(
-          t.avatarUrl,
-          "testimonial",
-          t.id,
-          t.updatedAt,
-          DEFAULT_TESTIMONIALS[0].avatar
-        ),
-        quote: t.content,
-        rating: t.rating,
-      }));
-    } catch (e) {
-      console.error("[content] testimonials fallback:", e);
-      return DEFAULT_TESTIMONIALS;
     }
+    if (rows.length === 0) return DEFAULT_TESTIMONIALS;
+    return rows.map((t) => ({
+      id: t.id,
+      name: t.name,
+      title: t.company ? `${t.title}, ${t.company}` : t.title,
+      avatar: resolveEntityImageUrl(
+        t.avatarUrl,
+        "testimonial",
+        t.id,
+        t.updatedAt,
+        DEFAULT_TESTIMONIALS[0].avatar
+      ),
+      quote: t.content,
+      rating: t.rating,
+    }));
   },
-  ["home-testimonials"],
+  ["home-testimonials-v2"],
   { revalidate: 60, tags: ["testimonials", "home-content"] }
 );
 
-export const getHomePricing = unstable_cache(
+export async function getHomeTestimonials() {
+  try {
+    return await getHomeTestimonialsCached();
+  } catch (e) {
+    console.error("[content] testimonials fallback:", e);
+    return DEFAULT_TESTIMONIALS;
+  }
+}
+
+const getHomePricingCached = unstable_cache(
   async () => {
-    try {
-      let rows = await prisma.pricingPlan.findMany({ orderBy: { order: "asc" } });
-      if (rows.length === 0) {
-        await ensureContentSeeded();
-        rows = await prisma.pricingPlan.findMany({ orderBy: { order: "asc" } });
-      }
-      if (rows.length === 0) return DEFAULT_PRICING;
-      return rows.map((p) => ({
-        id: p.id,
-        name: p.name,
-        description: p.tagline,
-        price: p.price,
-        period: p.period,
-        ctaLabel: p.ctaLabel || "Let's Talk",
-        ctaHref: p.ctaHref || "/contact",
-        features: Array.isArray(p.features) ? (p.features as string[]) : [],
-        highlighted: p.highlighted,
-      }));
-    } catch (e) {
-      console.error("[content] pricing fallback:", e);
-      return DEFAULT_PRICING;
+    let rows = await prisma.pricingPlan.findMany({ orderBy: { order: "asc" } });
+    if (rows.length === 0) {
+      await ensureContentSeeded();
+      rows = await prisma.pricingPlan.findMany({ orderBy: { order: "asc" } });
     }
+    if (rows.length === 0) return DEFAULT_PRICING;
+    return rows.map((p) => ({
+      id: p.id,
+      name: p.name,
+      description: p.tagline,
+      price: p.price,
+      period: p.period,
+      ctaLabel: p.ctaLabel || "Let's Talk",
+      ctaHref: p.ctaHref || "/contact",
+      features: Array.isArray(p.features) ? (p.features as string[]) : [],
+      highlighted: p.highlighted,
+    }));
   },
-  ["home-pricing"],
+  ["home-pricing-v2"],
   { revalidate: 60, tags: ["pricing", "home-content"] }
 );
 
-export const getHomeProcessSteps = unstable_cache(
+export async function getHomePricing() {
+  try {
+    return await getHomePricingCached();
+  } catch (e) {
+    console.error("[content] pricing fallback:", e);
+    return DEFAULT_PRICING;
+  }
+}
+
+const getHomeProcessStepsCached = unstable_cache(
   async () => {
-    try {
-      let rows = await prisma.processStep.findMany({ orderBy: { order: "asc" } });
-      if (rows.length === 0) {
-        await ensureContentSeeded();
-        rows = await prisma.processStep.findMany({ orderBy: { order: "asc" } });
-      }
-      if (rows.length === 0) return DEFAULT_PROCESS_STEPS;
-      return rows.map((s, i) => ({
-        id: s.id,
-        icon: s.icon,
-        title: s.title,
-        description: s.description,
-        order: s.order ?? i,
-      }));
-    } catch (e) {
-      console.error("[content] process steps fallback:", e);
-      return DEFAULT_PROCESS_STEPS;
+    let rows = await prisma.processStep.findMany({ orderBy: { order: "asc" } });
+    if (rows.length === 0) {
+      await ensureContentSeeded();
+      rows = await prisma.processStep.findMany({ orderBy: { order: "asc" } });
     }
+    if (rows.length === 0) return DEFAULT_PROCESS_STEPS;
+    return rows.map((s, i) => ({
+      id: s.id,
+      icon: s.icon,
+      title: s.title,
+      description: s.description,
+      order: s.order ?? i,
+    }));
   },
-  ["home-process"],
+  ["home-process-v2"],
   { revalidate: 60, tags: ["process", "home-content"] }
 );
 
-export const getHomeFeaturedProjects = unstable_cache(
+export async function getHomeProcessSteps() {
+  try {
+    return await getHomeProcessStepsCached();
+  } catch (e) {
+    console.error("[content] process steps fallback:", e);
+    return DEFAULT_PROCESS_STEPS;
+  }
+}
+
+const getHomeFeaturedProjectsCached = unstable_cache(
   async () => {
-    try {
-      let rows = await prisma.project.findMany({
+    let rows = await prisma.project.findMany({
+      where: { status: "PUBLISHED" },
+      orderBy: [{ featured: "desc" }, { order: "asc" }, { updatedAt: "desc" }],
+      take: 6,
+    });
+
+    if (rows.length === 0) {
+      await ensureContentSeeded();
+      rows = await prisma.project.findMany({
         where: { status: "PUBLISHED" },
         orderBy: [{ featured: "desc" }, { order: "asc" }, { updatedAt: "desc" }],
         take: 6,
       });
+    }
 
-      if (rows.length === 0) {
-        await ensureContentSeeded();
-        rows = await prisma.project.findMany({
-          where: { status: "PUBLISHED" },
-          orderBy: [{ featured: "desc" }, { order: "asc" }, { updatedAt: "desc" }],
-          take: 6,
-        });
-      }
-
-      if (rows.length === 0) {
-        return DEFAULT_FEATURED;
-      }
-
-      return rows.map((p, i) => {
-        const defaultImg =
-          DEFAULT_FEATURED.find((d) => d.slug === p.slug)?.image ||
-          (staticProjects as any[]).find((s) => s.slug === p.slug)?.coverImage ||
-          DEFAULT_FEATURED[i % DEFAULT_FEATURED.length]?.image ||
-          "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2070";
-
-        return {
-          id: p.id,
-          title: p.title,
-          client: p.client || "",
-          category: p.category,
-          image: resolveEntityImageUrl(p.coverImage, "project", p.id, p.updatedAt, defaultImg),
-          slug: p.slug,
-          year: String((p.publishedAt ?? p.createdAt).getFullYear()),
-        };
-      });
-    } catch (e) {
-      console.error("[content] featured fallback:", e);
+    if (rows.length === 0) {
       return DEFAULT_FEATURED;
     }
-  },
-  ["home-featured-projects"],
-  { revalidate: 60, tags: ["projects", "home-content"] }
-);
 
-export const getHomeFeaturedCaseStudy = unstable_cache(
-  async () => {
-    try {
-      let project = await prisma.project.findFirst({
-        where: { status: "PUBLISHED", featured: true },
-        orderBy: [{ updatedAt: "desc" }, { order: "asc" }],
-      });
-      if (!project) {
-        project = await prisma.project.findFirst({
-          where: { status: "PUBLISHED" },
-          orderBy: [{ updatedAt: "desc" }, { order: "asc" }],
-        });
-      }
-      if (!project) return null;
-
+    return rows.map((p, i) => {
       const defaultImg =
-        (staticProjects as any[]).find((s) => s.slug === project.slug)?.coverImage ||
-        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1470";
+        DEFAULT_FEATURED.find((d) => d.slug === p.slug)?.image ||
+        (staticProjects as any[]).find((s) => s.slug === p.slug)?.coverImage ||
+        DEFAULT_FEATURED[i % DEFAULT_FEATURED.length]?.image ||
+        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2070";
 
       return {
-        id: project.id,
-        title: project.title,
-        tagline: project.tagline,
-        description: project.description,
-        client: project.client || "Featured Client",
-        coverImage: resolveEntityImageUrl(
-          project.coverImage,
-          "project",
-          project.id,
-          project.updatedAt,
-          defaultImg
-        ),
-        slug: project.slug,
-        metrics: (project.metrics as any) || null,
+        id: p.id,
+        title: p.title,
+        client: p.client || "",
+        category: p.category,
+        image: resolveEntityImageUrl(p.coverImage, "project", p.id, p.updatedAt, defaultImg),
+        slug: p.slug,
+        year: String((p.publishedAt ?? p.createdAt).getFullYear()),
       };
-    } catch (e) {
-      console.error("[content] case study fallback:", e);
-      return null;
-    }
+    });
   },
-  ["home-featured-case-study"],
+  ["home-featured-projects-v2"],
   { revalidate: 60, tags: ["projects", "home-content"] }
 );
+
+export async function getHomeFeaturedProjects() {
+  try {
+    return await getHomeFeaturedProjectsCached();
+  } catch (e) {
+    console.error("[content] featured fallback:", e);
+    return DEFAULT_FEATURED;
+  }
+}
+
+const getHomeFeaturedCaseStudyCached = unstable_cache(
+  async () => {
+    let project = await prisma.project.findFirst({
+      where: { status: "PUBLISHED", featured: true },
+      orderBy: [{ updatedAt: "desc" }, { order: "asc" }],
+    });
+    if (!project) {
+      project = await prisma.project.findFirst({
+        where: { status: "PUBLISHED" },
+        orderBy: [{ updatedAt: "desc" }, { order: "asc" }],
+      });
+    }
+    if (!project) return null;
+
+    const defaultImg =
+      (staticProjects as any[]).find((s) => s.slug === project.slug)?.coverImage ||
+      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1470";
+
+    return {
+      id: project.id,
+      title: project.title,
+      tagline: project.tagline,
+      description: project.description,
+      client: project.client || "Featured Client",
+      coverImage: resolveEntityImageUrl(
+        project.coverImage,
+        "project",
+        project.id,
+        project.updatedAt,
+        defaultImg
+      ),
+      slug: project.slug,
+      metrics: (project.metrics as any) || null,
+    };
+  },
+  ["home-featured-case-study-v2"],
+  { revalidate: 60, tags: ["projects", "home-content"] }
+);
+
+export async function getHomeFeaturedCaseStudy() {
+  try {
+    return await getHomeFeaturedCaseStudyCached();
+  } catch (e) {
+    console.error("[content] case study fallback:", e);
+    return null;
+  }
+}
 
 export const DEFAULT_HOME_SECTIONS = [
   { key: "hero", order: 0, enabled: true },
@@ -739,21 +784,25 @@ export const DEFAULT_HOME_SECTIONS = [
   { key: "cta", order: 9, enabled: true },
 ];
 
-export const getHomeSections = unstable_cache(
+const getHomeSectionsCached = unstable_cache(
   async () => {
-    try {
-      const rows = await prisma.homeSection.findMany({ orderBy: { order: "asc" } });
-      if (rows.length === 0) return DEFAULT_HOME_SECTIONS;
-      return rows.map((r, i) => ({
-        key: r.key,
-        order: r.order ?? i,
-        enabled: r.enabled,
-      }));
-    } catch (e) {
-      console.error("[content] home sections fallback:", e);
-      return DEFAULT_HOME_SECTIONS;
-    }
+    const rows = await prisma.homeSection.findMany({ orderBy: { order: "asc" } });
+    if (rows.length === 0) return DEFAULT_HOME_SECTIONS;
+    return rows.map((r, i) => ({
+      key: r.key,
+      order: r.order ?? i,
+      enabled: r.enabled,
+    }));
   },
-  ["home-sections-config"],
+  ["home-sections-config-v2"],
   { revalidate: 60, tags: ["home-sections", "home-content"] }
 );
+
+export async function getHomeSections() {
+  try {
+    return await getHomeSectionsCached();
+  } catch (e) {
+    console.error("[content] home sections fallback:", e);
+    return DEFAULT_HOME_SECTIONS;
+  }
+}

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
 import { revalidatePublicSite } from "@/lib/revalidate";
 import { resolveEntityImageUrl } from "@/lib/media-url";
+import { persistDataUrlIfInline, persistGalleryIfInline } from "@/lib/media-persist";
 
 
 export async function POST(req: Request) {
@@ -11,6 +12,11 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
+    const coverImage =
+      (await persistDataUrlIfInline(body.coverImage, "projects", body.title || "")) ?? "";
+    const gallery =
+      (await persistGalleryIfInline(body.gallery, "projects", body.title || "")) ?? [];
+
     const project = await prisma.project.create({
       data: {
         title: body.title,
@@ -21,17 +27,17 @@ export async function POST(req: Request) {
         client: body.client,
         clientLogo: body.clientLogo,
         clientUrl: body.clientUrl,
-        coverImage: body.coverImage,
-        gallery: body.gallery || [],
+        coverImage,
+        gallery,
         videoUrl: body.videoUrl,
         liveUrl: body.liveUrl,
         category: body.category,
         tags: body.tags || [],
         techStack: body.techStack || [],
-        status: body.status || "DRAFT",
+        status: body.status || "PUBLISHED",
         featured: body.featured || false,
         order: body.order ? parseInt(body.order) : 0,
-        publishedAt: body.status === "PUBLISHED" ? new Date() : null,
+        publishedAt: (body.status || "PUBLISHED") === "PUBLISHED" ? new Date() : null,
       },
     });
 

@@ -5,6 +5,7 @@ import { revalidateTag } from "next/cache";
 import { requireRole, isAuthError } from "@/lib/requireRole";
 import { prisma } from "@/lib/db";
 import { r2, R2_BUCKET, mediaUrl, ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE } from "@/lib/r2";
+import { detectBufferMimeType } from "@/lib/media-mime";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -15,13 +16,29 @@ const HARD_LIMIT = 4.5 * 1024 * 1024;
 // Inline database fallback
 const INLINE_LIMIT = 3.5 * 1024 * 1024;
 
+function isRealEnvValue(val: string | undefined): boolean {
+  if (!val) return false;
+  const trimmed = val.trim();
+  if (!trimmed || trimmed === "missing" || trimmed.startsWith("your_")) return false;
+  return true;
+}
+
 function r2Configured() {
-  return Boolean(
-    process.env.R2_ACCOUNT_ID &&
-      process.env.R2_ACCESS_KEY_ID &&
-      process.env.R2_SECRET_ACCESS_KEY &&
-      process.env.NEXT_PUBLIC_MEDIA_URL
+  return (
+    isRealEnvValue(process.env.R2_ACCOUNT_ID) &&
+    isRealEnvValue(process.env.R2_ACCESS_KEY_ID) &&
+    isRealEnvValue(process.env.R2_SECRET_ACCESS_KEY) &&
+    isRealEnvValue(process.env.NEXT_PUBLIC_MEDIA_URL)
   );
+}
+
+function extFromMime(mimeType: string, fallbackName: string): string {
+  if (mimeType === "image/webp") return "webp";
+  if (mimeType === "image/png") return "png";
+  if (mimeType === "image/jpeg") return "jpg";
+  if (mimeType === "image/gif") return "gif";
+  if (mimeType === "image/svg+xml") return "svg";
+  return (fallbackName.split(".").pop() || "jpg").toLowerCase();
 }
 
 export async function POST(req: NextRequest) {
@@ -40,22 +57,41 @@ export async function POST(req: NextRequest) {
     if (!(file instanceof File)) {
       return NextResponse.json({ error: "No file received." }, { status: 400 });
     }
-    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-      return NextResponse.json(
-        { error: `Unsupported image type "${file.type || "unknown"}". Use JPG, PNG, WebP or GIF.` },
-        { status: 400 }
-      );
-    }
     if (file.size > Math.min(HARD_LIMIT, MAX_IMAGE_SIZE)) {
-      return NextResponse.json({ error: "Image is too large (max 4.5 MB). Try a smaller image." }, { status: 413 });
+      return NextResponse.json(
+        { error: "Image is too large (max 4.5 MB). Try a smaller image." },
+        { status: 413 }
+      );
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
+    const trueMime = detectBufferMimeType(buffer, file.type);
+
+    if (!ALLOWED_IMAGE_TYPES.includes(trueMime)) {
+      return NextResponse.json(
+        {
+          error: `Unsupported image type "${trueMime || "unknown"}". Use JPG, PNG, WebP, SVG or GIF.`,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Verify user row exists so uploadedById never triggers a foreign-key error
+    let uploadedById: string | undefined = undefined;
+    try {
+      const existingUser = await prisma.user.findUnique({
+        where: { id: authResult.userId },
+        select: { id: true },
+      });
+      if (existingUser) uploadedById = existingUser.id;
+    } catch {
+      uploadedById = undefined;
+    }
 
     // ── Preferred: Cloudflare R2 ────────────────────────────────────────────
     if (r2Configured()) {
       const now = new Date();
-      const ext = file.type === "image/webp" ? "webp" : (file.name.split(".").pop() || "jpg").toLowerCase();
+      const ext = extFromMime(trueMime, file.name);
       const key = `${folder}/${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, "0")}/${randomUUID()}.${ext}`;
       try {
         await r2.send(
@@ -63,7 +99,7 @@ export async function POST(req: NextRequest) {
             Bucket: R2_BUCKET,
             Key: key,
             Body: buffer,
-            ContentType: file.type,
+            ContentType: trueMime,
             CacheControl: "public, max-age=31536000, immutable",
           })
         );
@@ -74,13 +110,13 @@ export async function POST(req: NextRequest) {
             data: {
               key,
               url,
-              mimeType: file.type,
-              size: file.size,
+              mimeType: trueMime,
+              size: buffer.byteLength,
               folder,
-              alt,
+              alt: alt || file.name,
               width,
               height,
-              uploadedById: authResult.userId,
+              ...(uploadedById ? { uploadedById } : {}),
             },
           });
           revalidateTag("media");
@@ -90,20 +126,20 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ media: mediaRecord });
       } catch (r2Err) {
         console.error("[media/upload] R2 failed, falling back to database inline", r2Err);
-        // fall through to inline storage
       }
     }
 
-    // ── Fallback: inline data URL (works with zero external services configured) ─
-    if (file.size > INLINE_LIMIT) {
+    // ── Fallback: inline database Media row served via /api/media/item/[id] ─
+    if (buffer.byteLength > INLINE_LIMIT) {
       return NextResponse.json(
         { error: "Image is over 3.5 MB. Please use a smaller image." },
         { status: 413 }
       );
     }
 
-    const dataUrl = `data:${file.type};base64,${buffer.toString("base64")}`;
+    const dataUrl = `data:${trueMime};base64,${buffer.toString("base64")}`;
     const inlineKey = `inline-${randomUUID()}`;
+    const querySuffix = trueMime === "image/svg+xml" ? "?v=2&ext=svg" : "?v=2";
     let mediaRecord: unknown = { url: dataUrl, key: inlineKey, inline: true };
 
     try {
@@ -111,19 +147,18 @@ export async function POST(req: NextRequest) {
         data: {
           key: inlineKey,
           url: dataUrl,
-          mimeType: file.type,
-          size: file.size,
+          mimeType: trueMime,
+          size: buffer.byteLength,
           folder,
-          alt,
+          alt: alt || file.name,
           width,
           height,
-          uploadedById: authResult.userId,
+          ...(uploadedById ? { uploadedById } : {}),
         },
       });
-      // Serve via fast binary endpoint instead of embedding MBs of base64 into pages
       mediaRecord = {
         ...created,
-        url: `/api/media/item/${created.id}`,
+        url: `/api/media/item/${created.id}${querySuffix}`,
       };
       revalidateTag("media");
     } catch (dbErr) {

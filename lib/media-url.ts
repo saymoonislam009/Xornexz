@@ -9,6 +9,13 @@ export type InlineEntityKind =
   | "team"
   | "testimonial";
 
+function withMediaCacheVersion(url: string): string {
+  if (url.startsWith("/api/media/item/") && !url.includes("?")) {
+    return `${url}?v=2`;
+  }
+  return url;
+}
+
 export function resolveEntityImageUrl(
   rawUrl: string | null | undefined,
   kind: InlineEntityKind,
@@ -20,10 +27,10 @@ export function resolveEntityImageUrl(
     return fallback;
   }
   if (rawUrl.startsWith("data:")) {
-    const version = updatedAt ? new Date(updatedAt).getTime() : 1;
+    const version = updatedAt ? new Date(updatedAt).getTime() : 2;
     return `/api/media/entity/${kind}/${encodeURIComponent(id)}?v=${version}`;
   }
-  return rawUrl;
+  return withMediaCacheVersion(rawUrl);
 }
 
 export function resolveGalleryUrls(
@@ -33,12 +40,13 @@ export function resolveGalleryUrls(
   fallback: string[] = []
 ): string[] {
   if (!gallery || gallery.length === 0) return fallback;
-  const version = updatedAt ? new Date(updatedAt).getTime() : 1;
+  const version = updatedAt ? new Date(updatedAt).getTime() : 2;
   return gallery.map((item, index) => {
-    if (item && item.startsWith("data:")) {
+    if (!item) return item;
+    if (item.startsWith("data:")) {
       return `/api/media/entity/project-gallery/${encodeURIComponent(projectId)}?i=${index}&v=${version}`;
     }
-    return item;
+    return withMediaCacheVersion(item);
   });
 }
 
@@ -47,6 +55,7 @@ export function isUnoptimizedImageSrc(src: string | null | undefined): boolean {
   return (
     src.startsWith("data:") ||
     src.startsWith("blob:") ||
-    src.startsWith("/api/media/")
+    src.endsWith(".svg") ||
+    src.includes("ext=svg")
   );
 }

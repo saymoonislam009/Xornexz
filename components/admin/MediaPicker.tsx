@@ -12,6 +12,15 @@ interface MediaPickerProps {
   folder?: "uploads" | "blog" | "projects" | "team" | "services" | "logos" | "testimonials" | (string & {});
 }
 
+function extForMime(mime: string): string {
+  if (mime === "image/webp") return "webp";
+  if (mime === "image/jpeg") return "jpg";
+  if (mime === "image/png") return "png";
+  if (mime === "image/gif") return "gif";
+  if (mime === "image/svg+xml") return "svg";
+  return "img";
+}
+
 export default function MediaPicker({
   value,
   onChange,
@@ -28,13 +37,12 @@ export default function MediaPicker({
   const [urlInput, setUrlInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const convertToWebP = (file: File): Promise<File> => {
-    // If already webp or svg/gif, don't re-compress
+  const compressImage = (file: File): Promise<File> => {
     if (file.type === "image/svg+xml" || file.type === "image/gif") {
       return Promise.resolve(file);
     }
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const img = document.createElement("img");
       const url = URL.createObjectURL(file);
 
@@ -42,10 +50,11 @@ export default function MediaPicker({
         URL.revokeObjectURL(url);
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
-        if (!ctx) return reject(new Error("Failed to get canvas context"));
+        if (!ctx) return resolve(file);
 
-        // Resize down if too large (max 1600px dimension)
         let { width, height } = img;
+        const origWidth = width;
+        const origHeight = height;
         const MAX_DIM = 1600;
         if (width > MAX_DIM || height > MAX_DIM) {
           const ratio = Math.min(MAX_DIM / width, MAX_DIM / height);
@@ -57,24 +66,48 @@ export default function MediaPicker({
         canvas.height = height;
         ctx.drawImage(img, 0, 0, width, height);
 
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) return reject(new Error("Canvas toBlob failed"));
-            const originalName = file.name.substring(0, file.name.lastIndexOf("."));
-            const webpFile = new File([blob], `${originalName || "image"}.webp`, {
-              type: "image/webp",
+        const baseName =
+          file.name.lastIndexOf(".") > 0
+            ? file.name.substring(0, file.name.lastIndexOf("."))
+            : file.name || "image";
+
+        const finishWithBlob = (blob: Blob | null) => {
+          if (!blob) return resolve(file);
+          const actualMime = blob.type || file.type || "image/png";
+          const wasResized = width !== origWidth || height !== origHeight;
+          if (!wasResized && blob.size >= file.size) {
+            return resolve(file);
+          }
+          const ext = extForMime(actualMime);
+          resolve(
+            new File([blob], `${baseName}.${ext}`, {
+              type: actualMime,
               lastModified: Date.now(),
-            });
-            resolve(webpFile);
+            })
+          );
+        };
+
+        // Try WebP first; on Safari `toBlob("image/webp")` silently returns `image/png`.
+        // When that happens on a non-transparent source (e.g. JPEG), encode as JPEG 0.86
+        // so photos stay ~150-300 KB instead of ballooning to 2 MB lossless PNGs.
+        canvas.toBlob(
+          (webpBlob) => {
+            if (webpBlob && webpBlob.type === "image/webp") {
+              return finishWithBlob(webpBlob);
+            }
+            if (file.type === "image/jpeg" || file.type === "image/jpg") {
+              canvas.toBlob((jpegBlob) => finishWithBlob(jpegBlob), "image/jpeg", 0.86);
+              return;
+            }
+            finishWithBlob(webpBlob);
           },
           "image/webp",
-          0.82
+          0.84
         );
       };
 
       img.onerror = () => {
         URL.revokeObjectURL(url);
-        // Fallback: upload original file directly if canvas fails
         resolve(file);
       };
 
@@ -92,7 +125,7 @@ export default function MediaPicker({
         throw new Error("Only image files are allowed");
       }
 
-      const fileToUpload = await convertToWebP(rawFile);
+      const fileToUpload = await compressImage(rawFile);
 
       if (fileToUpload.size > maxSizeMB * 1024 * 1024) {
         throw new Error(`File is too large (max ${maxSizeMB}MB)`);
@@ -163,6 +196,11 @@ export default function MediaPicker({
     }
   };
 
+  const previewSrc =
+    value && value.startsWith("/api/media/item/") && !value.includes("?")
+      ? `${value}?v=2`
+      : value;
+
   return (
     <div className="w-full space-y-2">
       <div className="flex items-center justify-between">
@@ -191,7 +229,11 @@ export default function MediaPicker({
       {value ? (
         <div className="relative w-full h-52 rounded-xl border border-white/10 overflow-hidden bg-[#0E1018] group">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={value} alt="Uploaded preview" className="absolute inset-0 w-full h-full object-cover" />
+          <img
+            src={previewSrc}
+            alt="Uploaded preview"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
             <button
               type="button"
@@ -274,7 +316,7 @@ export default function MediaPicker({
                 <UploadCloud size={24} className="text-white/60" />
               </div>
               <p className="text-sm text-white/70 font-medium mb-1">Click or drag image to upload</p>
-              <p className="text-xs text-white/40">Auto-converts to WebP (max. {maxSizeMB}MB)</p>
+              <p className="text-xs text-white/40">Auto-optimizes image (max. {maxSizeMB}MB)</p>
             </>
           )}
         </div>

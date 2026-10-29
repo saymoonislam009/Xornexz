@@ -10,6 +10,7 @@ export async function GET(_req: NextRequest) {
 
   try {
     const media = await prisma.media.findMany({
+      where: { folder: { not: "resumes" } },
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
@@ -26,12 +27,21 @@ export async function GET(_req: NextRequest) {
         updatedAt: true,
       },
     });
-    const normalized = media.map((m) => ({
-      ...m,
-      url: m.url.startsWith("data:") ? `/api/media/item/${m.id}` : m.url,
-    }));
+    const normalized = media.map((m) => {
+      const extParam = m.mimeType === "image/svg+xml" ? "&ext=svg" : "";
+      const url = m.url.startsWith("data:")
+        ? `/api/media/item/${m.id}?v=2${extParam}`
+        : m.url.startsWith("/api/media/item/") && !m.url.includes("?")
+          ? `${m.url}?v=2${extParam}`
+          : m.url;
+      return {
+        ...m,
+        filename: m.alt || m.key,
+        url,
+      };
+    });
     return NextResponse.json(normalized);
-  } catch (error: any) {
+  } catch (_error) {
     return NextResponse.json({ error: "Failed to fetch media" }, { status: 500 });
   }
 }
@@ -56,7 +66,6 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Media not found" }, { status: 404 });
     }
 
-    // Try to delete from Cloudflare R2
     try {
       if (process.env.R2_ACCOUNT_ID && !mediaItem.key.startsWith('inline-')) {
         await r2.send(
@@ -70,14 +79,14 @@ export async function DELETE(req: NextRequest) {
       console.warn("Could not delete from R2 bucket directly:", r2Err);
     }
 
-    // Delete record from DB
     await prisma.media.delete({
       where: { id },
     });
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Delete media error:", error);
-    return NextResponse.json({ error: error.message || "Failed to delete media" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Failed to delete media";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { X, Copy, Check, Trash2, ExternalLink, Image as ImageIcon, Plus } from "lucide-react";
 import Image from "next/image";
 import MediaPicker from "@/components/admin/MediaPicker";
+import { isUnoptimizedImageSrc } from "@/lib/media-url";
 
 interface MediaItem {
   id: string;
@@ -103,9 +104,11 @@ export default function MediaPage() {
                   >
                     <Image
                       src={media.url}
-                      alt={media.filename}
+                      alt={media.filename || media.key}
                       fill
+                      sizes="240px"
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
+                      unoptimized={isUnoptimizedImageSrc(media.url)}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
                       <span className="text-[11px] text-white font-medium truncate w-full">
@@ -135,9 +138,11 @@ export default function MediaPage() {
             <div className="relative aspect-video w-full rounded-lg overflow-hidden border border-white/10 bg-[#0E1018]">
               <Image
                 src={selectedMedia.url}
-                alt={selectedMedia.filename}
+                alt={selectedMedia.filename || selectedMedia.key}
                 fill
+                sizes="320px"
                 className="object-contain"
+                unoptimized={isUnoptimizedImageSrc(selectedMedia.url)}
               />
             </div>
 
