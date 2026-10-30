@@ -685,3 +685,16 @@ html:not(.dark) [data-state="closed"]:not([data-admin-root] *) {
 html:not(.dark) [class*="rounded-2xl"]:not([data-admin-root] *):hover {
   box-shadow: var(--card-shadow-hover);
 }
+
+/* ── Interaction polish ───────────────────────────────────────────────── */
+@layer utilities {
+  button:not(:disabled):active,
+  a.btn-gradient:active {
+    transform: scale(0.97);
+  }
+  button, a { transition-property: color, background-color, border-color, opacity, transform, box-shadow; transition-duration: 180ms; }
+  :focus-visible { outline: 2px solid #8b5cf6; outline-offset: 2px; border-radius: 6px; }
+  @media (prefers-reduced-motion: reduce) {
+    button:not(:disabled):active, a.btn-gradient:active { transform: none; }
+  }
+}

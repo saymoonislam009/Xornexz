@@ -9,9 +9,12 @@ export type InlineEntityKind =
   | "team"
   | "testimonial";
 
+/** Bump NEXT_PUBLIC_MEDIA_VERSION to force a fresh fetch of all legacy (unstamped) images. */
+const MEDIA_VERSION = process.env.NEXT_PUBLIC_MEDIA_VERSION || "2";
+
 function withMediaCacheVersion(url: string): string {
   if (url.startsWith("/api/media/item/") && !url.includes("?")) {
-    return `${url}?v=2`;
+    return `${url}?v=${MEDIA_VERSION}`;
   }
   return url;
 }

@@ -139,7 +139,8 @@ export async function POST(req: NextRequest) {
 
     const dataUrl = `data:${trueMime};base64,${buffer.toString("base64")}`;
     const inlineKey = `inline-${randomUUID()}`;
-    const querySuffix = trueMime === "image/svg+xml" ? "?v=2&ext=svg" : "?v=2";
+    const stamp = Date.now();
+    const querySuffix = trueMime === "image/svg+xml" ? `?v=${stamp}&ext=svg` : `?v=${stamp}`;
     let mediaRecord: unknown = { url: dataUrl, key: inlineKey, inline: true };
 
     try {

@@ -7,18 +7,19 @@ import ServicesSection from "@/components/home/ServicesSection";
 import KineticMarquee from "@/components/home/KineticMarquee";
 import FeaturedCaseStudy from "@/components/home/FeaturedCaseStudy";
 import FeaturedProjects from "@/components/home/FeaturedProjects";
-import WhyUs from "@/components/home/WhyUs";
-import ProcessSection from "@/components/home/ProcessSection";
-import CodeShowcase from "@/components/home/CodeShowcase";
-import TechStack from "@/components/home/TechStack";
-import LiveMetrics from "@/components/home/LiveMetrics";
-import ComparisonTable from "@/components/home/ComparisonTable";
-import Testimonials from "@/components/home/Testimonials";
-import Recognition from "@/components/home/Recognition";
 import AvailabilityBanner from "@/components/home/AvailabilityBanner";
-import PricingSection from "@/components/home/PricingSection";
-import FAQSection from "@/components/home/FAQSection";
-import CTASection from "@/components/home/CTASection";
+import dynamic from "next/dynamic";
+const WhyUs = dynamic(() => import("@/components/home/WhyUs"));
+const ProcessSection = dynamic(() => import("@/components/home/ProcessSection"));
+const CodeShowcase = dynamic(() => import("@/components/home/CodeShowcase"));
+const TechStack = dynamic(() => import("@/components/home/TechStack"));
+const LiveMetrics = dynamic(() => import("@/components/home/LiveMetrics"));
+const ComparisonTable = dynamic(() => import("@/components/home/ComparisonTable"));
+const Testimonials = dynamic(() => import("@/components/home/Testimonials"));
+const Recognition = dynamic(() => import("@/components/home/Recognition"));
+const PricingSection = dynamic(() => import("@/components/home/PricingSection"));
+const FAQSection = dynamic(() => import("@/components/home/FAQSection"));
+const CTASection = dynamic(() => import("@/components/home/CTASection"));
 import {
   getHomeFaqs,
   getHomeTestimonials,

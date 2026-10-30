@@ -705,12 +705,18 @@ const getHomeFeaturedProjectsCached = unstable_cache(
         client: p.client || "",
         category: p.category,
         image: resolveEntityImageUrl(p.coverImage, "project", p.id, p.updatedAt, defaultImg),
+        images: [
+          resolveEntityImageUrl(p.coverImage, "project", p.id, p.updatedAt, defaultImg),
+          ...((p.gallery?.length
+            ? resolveGalleryUrls(p.gallery, p.id, p.updatedAt, [])
+            : []) as string[]),
+        ].filter((u, idx, arr) => !!u && arr.indexOf(u) === idx),
         slug: p.slug,
         year: String((p.publishedAt ?? p.createdAt).getFullYear()),
       };
     });
   },
-  ["home-featured-projects-v2"],
+  ["home-featured-projects-v3"],
   { revalidate: 60, tags: ["projects", "home-content"] }
 );
 

@@ -1,10 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { isUnoptimizedImageSrc } from "@/lib/media-url";
+import { CoverCarousel } from "@/components/ui/CoverCarousel";
 
 type FeaturedProject = {
   id: string | number;
@@ -12,6 +11,7 @@ type FeaturedProject = {
   client: string;
   category: string;
   image: string;
+  images?: string[];
   slug: string;
   year: string;
 };
@@ -58,13 +58,11 @@ export default function FeaturedProjects({ projects }: { projects: FeaturedProje
                 className="dark-card-overlay group relative block w-full overflow-hidden rounded-2xl border border-slate-200/60 dark:border-white/10 shadow-md dark:shadow-none bg-slate-900"
               >
                 <div className="relative w-full h-[300px] sm:h-[360px] md:h-[400px]">
-                  <Image
-                    src={project.image}
+                  <CoverCarousel
+                    images={project.images?.length ? project.images : [project.image]}
                     alt={project.title}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    unoptimized={isUnoptimizedImageSrc(project.image)}
+                    imageClassName="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/10" />
                   <div className="absolute inset-0 bg-violet-600/0 group-hover:bg-violet-600/10 transition-colors duration-500" />

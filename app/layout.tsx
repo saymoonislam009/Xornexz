@@ -6,7 +6,7 @@ import type { Metadata, Viewport } from "next"
 import { Space_Grotesk, Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/providers/ThemeProvider"
 import { LenisProvider } from "@/components/providers/LenisProvider"
-import { CommandPalette } from "@/components/ui/CommandPalette"
+import { LazyCommandPalette } from "@/components/ui/LazyCommandPalette"
 import { CookieConsent } from "@/components/ui/CookieConsent"
 import { Toaster } from "sonner"
 import { Navbar } from "@/components/layout/Navbar"
@@ -154,7 +154,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           <LenisProvider>
             {/* Cmd+K command palette */}
-            <CommandPalette />
+            <LazyCommandPalette />
 
             {/* Global navigation */}
             <Navbar
